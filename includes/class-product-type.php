@@ -15,6 +15,16 @@ class OBA_Product_Type {
 		add_action( 'init', array( $this, 'register_product_class' ) );
 	}
 
+	public static function lucide_svg( $name ) {
+		$icons = array(
+			'check-circle' => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>',
+			'lock'         => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',
+			'chevron-up'   => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>',
+			'chevron-down' => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>',
+		);
+		return isset( $icons[ $name ] ) ? $icons[ $name ] : '';
+	}
+
 	public function register_type( $types ) {
 		$types['auction'] = __( 'Auction', 'one-ba-auctions' );
 		return $types;
@@ -187,22 +197,22 @@ class OBA_Product_Type {
 		<div class="oba-explainer-wrap">
 			<div class="oba-explainer">
 				<div class="oba-step-pill is-active" data-step="registration">
-					<span class="number">1</span>
+					<span class="badge"><span class="badge-number">1</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
 					<span class="label"><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></span>
 					<span class="desc"><?php esc_html_e( 'Join the lobby with credits.', 'one-ba-auctions' ); ?></span>
 				</div>
 				<div class="oba-step-pill" data-step="pre_live">
-					<span class="number">2</span>
+					<span class="badge"><span class="badge-number">2</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
 					<span class="label"><?php esc_html_e( 'Countdown to Live', 'one-ba-auctions' ); ?></span>
 					<span class="desc"><?php esc_html_e( 'Short pre-live timer.', 'one-ba-auctions' ); ?></span>
 				</div>
 				<div class="oba-step-pill" data-step="live">
-					<span class="number">3</span>
+					<span class="badge"><span class="badge-number">3</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
 					<span class="label"><?php esc_html_e( 'Live Bidding', 'one-ba-auctions' ); ?></span>
 					<span class="desc"><?php esc_html_e( 'Bid, reset timer, compete.', 'one-ba-auctions' ); ?></span>
 				</div>
 				<div class="oba-step-pill" data-step="ended">
-					<span class="number">4</span>
+					<span class="badge"><span class="badge-number">4</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
 					<span class="label"><?php esc_html_e( 'Auction Ended', 'one-ba-auctions' ); ?></span>
 					<span class="desc"><?php esc_html_e( 'Claim or view results.', 'one-ba-auctions' ); ?></span>
 				</div>

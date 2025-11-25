@@ -17,6 +17,17 @@
 	margin-bottom: 20px;
 }
 
+.icon {
+	width: 18px;
+	height: 18px;
+	stroke: currentColor;
+	fill: none;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	display: inline-block;
+}
+
 .oba-step-pill {
 	background: #f5f7fb;
 	border: 1px solid #e5e7eb;
@@ -29,16 +40,33 @@
 	align-items: center;
 }
 
-.oba-step-pill .number {
-	width: 28px;
-	height: 28px;
+.oba-step-pill .badge {
+	width: 30px;
+	height: 30px;
 	border-radius: 50%;
-	background: #e2e8f0;
+	background: #fff;
+	border: 2px solid #cbd5e1;
 	color: #0f172a;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-weight: 700;
+	font-weight: 800;
+	font-size: 13px;
+	position: relative;
+}
+
+.oba-step-pill .badge-number {
+	display: inline-block;
+}
+
+.oba-step-pill .badge-check {
+	display: none;
+	color: #22c55e;
+}
+
+.oba-step-pill .badge-check svg {
+	width: 18px;
+	height: 18px;
 }
 
 .oba-step-pill .label {
@@ -57,18 +85,29 @@
 	background: #eff6ff;
 }
 
-.oba-step-pill.is-active .number {
+.oba-step-pill.is-active .badge {
 	background: #3b82f6;
+	border-color: #3b82f6;
 	color: #fff;
 }
 
-.oba-step-pill.is-complete .number {
-	background: #22c55e;
-	color: #fff;
+.oba-step-pill.is-complete .badge {
+	border-color: #22c55e;
+	background: #ecfdf3;
+	color: #22c55e;
 }
 
-.oba-step-pill.is-complete .label {
-	color: #166534;
+.oba-step-pill.is-complete .badge-number {
+	display: none;
+}
+
+.oba-step-pill.is-complete .badge-check {
+	display: inline-flex;
+}
+
+.oba-step-pill:not(.is-active):not(.is-complete) .badge {
+	background: #fff;
+	border-color: #cbd5e1;
 }
 
 .oba-layout {
@@ -123,16 +162,18 @@
 }
 
 .oba-phase-icon {
+	display: inline-flex;
 	color: #94a3b8;
 }
 
-.oba-phase-card.is-active .oba-phase-icon {
-	color: #3b82f6;
+.oba-phase-icon .icon {
+	display: none;
 }
 
-.oba-phase-card.is-complete .oba-phase-icon {
-	color: #22c55e;
-}
+.oba-phase-icon.icon-lock .icon-lock { display: inline-flex; color: #94a3b8; }
+.oba-phase-icon.icon-check .icon-check { display: inline-flex; color: #22c55e; }
+.oba-phase-icon.icon-up .icon-up { display: inline-flex; color: #3b82f6; }
+.oba-phase-icon.icon-down .icon-down { display: inline-flex; color: #0f172a; }
 
 .oba-phase-body {
 	margin-top: 14px;

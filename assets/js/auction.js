@@ -156,32 +156,39 @@
 			const step = $(el).data('step');
 			const idx = order.indexOf(step);
 			const cur = order.indexOf(status);
-			const icon = $(el).find('.oba-phase-icon');
+			const iconWrap = $(el).find('.oba-phase-icon');
 			$(el).removeClass('is-active is-complete is-collapsed');
+			iconWrap.removeClass('icon-check icon-lock icon-up icon-down');
+			let iconState = 'lock';
 			if (idx < cur || (step === 'registration' && state.data.user_registered && status !== 'registration')) {
 				$(el).addClass('is-complete');
-				icon.text('✔');
+				iconState = 'check';
 				$(el).addClass('is-collapsed');
 			} else if (idx === cur) {
 				$(el).addClass('is-active');
-				icon.text('');
+				iconState = 'up';
 			} else {
 				$(el).addClass('is-collapsed');
-				icon.text('🔒');
+				iconState = 'lock';
 			}
 			if (step === 'registration' && state.data.user_registered && status === 'registration') {
 				$(el).addClass('is-complete');
-				icon.text('✔');
 				if (state.data.lobby_percent >= 100) {
 					$(el).addClass('is-collapsed');
+					iconState = 'check';
 				} else {
 					$(el).removeClass('is-collapsed');
+					iconState = 'up';
 				}
 			}
 			if (step === 'ended' && status === 'ended') {
 				$(el).removeClass('is-collapsed').addClass('is-active');
-				icon.text('');
+				iconState = 'up';
 			}
+			if (!$(el).hasClass('is-active') && !$(el).hasClass('is-complete') && iconState !== 'lock') {
+				iconState = 'down';
+			}
+			iconWrap.addClass(`icon-${iconState}`);
 		});
 	}
 

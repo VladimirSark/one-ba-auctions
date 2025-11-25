@@ -25,7 +25,12 @@ $desc     = $product->get_short_description();
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>1.</span><span><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></span></div>
-					<span class="oba-phase-icon" aria-hidden="true">🔒</span>
+					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
+						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
+						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
+						<span class="icon icon-down"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-down' ) ); ?></span>
+					</span>
 				</div>
 				<div class="oba-phase-body">
 					<p><?php echo esc_html( sprintf( __( 'Registration fee: %s credits', 'one-ba-auctions' ), $meta['registration_fee'] ) ); ?></p>
@@ -74,7 +79,12 @@ $desc     = $product->get_short_description();
 			<div class="oba-card oba-phase-card is-collapsed" data-step="pre_live">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>2.</span><span><?php esc_html_e( 'Countdown to Live', 'one-ba-auctions' ); ?></span></div>
-					<span class="oba-phase-icon" aria-hidden="true">🔒</span>
+					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
+						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
+						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
+						<span class="icon icon-down"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-down' ) ); ?></span>
+					</span>
 				</div>
 				<div class="oba-phase-body">
 					<p class="oba-badge info"><?php esc_html_e( 'Auction is about to go live', 'one-ba-auctions' ); ?></p>
@@ -86,7 +96,12 @@ $desc     = $product->get_short_description();
 			<div class="oba-card oba-phase-card is-collapsed" data-step="live">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>3.</span><span><?php esc_html_e( 'Live Bidding', 'one-ba-auctions' ); ?></span></div>
-					<span class="oba-phase-icon" aria-hidden="true">🔒</span>
+					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
+						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
+						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
+						<span class="icon icon-down"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-down' ) ); ?></span>
+					</span>
 				</div>
 				<div class="oba-phase-body">
 					<p><?php echo esc_html( sprintf( __( 'Bid cost: %s credits', 'one-ba-auctions' ), $meta['bid_cost'] ) ); ?></p>
@@ -112,7 +127,12 @@ $desc     = $product->get_short_description();
 			<div class="oba-card oba-phase-card is-collapsed" data-step="ended">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>4.</span><span><?php esc_html_e( 'Auction Ended', 'one-ba-auctions' ); ?></span></div>
-					<span class="oba-phase-icon" aria-hidden="true">🔒</span>
+					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
+						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
+						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
+						<span class="icon icon-down"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-down' ) ); ?></span>
+					</span>
 				</div>
 				<div class="oba-phase-body">
 					<div class="oba-winner-claim" style="display:none;">
