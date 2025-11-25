@@ -159,8 +159,9 @@
 			const icon = $(el).find('.oba-phase-icon');
 			$(el).removeClass('is-active is-complete is-collapsed');
 			if (idx < cur || (step === 'registration' && state.data.user_registered && status !== 'registration')) {
-				$(el).addClass('is-complete is-collapsed');
+				$(el).addClass('is-complete');
 				icon.text('✔');
+				$(el).addClass('is-collapsed');
 			} else if (idx === cur) {
 				$(el).addClass('is-active');
 				icon.text('');
@@ -169,8 +170,13 @@
 				icon.text('🔒');
 			}
 			if (step === 'registration' && state.data.user_registered && status === 'registration') {
-				$(el).addClass('is-complete is-collapsed');
+				$(el).addClass('is-complete');
 				icon.text('✔');
+				if (state.data.lobby_percent >= 100) {
+					$(el).addClass('is-collapsed');
+				} else {
+					$(el).removeClass('is-collapsed');
+				}
 			}
 			if (step === 'ended' && status === 'ended') {
 				$(el).removeClass('is-collapsed').addClass('is-active');
