@@ -261,6 +261,14 @@
 - **Constraints/Assumptions:** Uses WordPress mail; sender name/email configurable in Settings; notifications go to registered participants; claim emails re-use winner template.
 - **How to test:** Reach required participants to trigger pre-live email; allow live start to send live email; end auction to send winner/loser emails; edit credits in admin and confirm credit update email; remove/ban participant and confirm status email.
 
+## 2025-11-21 — Auction page redesign
+- **Summary:** Rebuilt single auction template with two-column layout (product left, phase cards right), top 4-step explainer bar, collapsible phase cards, refreshed styling, and floating bottom-right credits pill (global) with modal links.
+- **Why:** Improve clarity of the auction flow and separate product info from live controls while keeping credits accessible.
+- **Files/Classes:** `templates/oba-single-auction.php`, `assets/css/auction.css`, `assets/js/auction.js`, `includes/class-frontend.php`.
+- **DB:** No schema change.
+- **Constraints/Assumptions:** Auction logic unchanged; inline credits pill removed in favor of global floating pill; credit modal rendered via header except on auction page (template supplies it).
+- **How to test:** Load an auction page on desktop/mobile—see step bar, product card, and phase cards with collapse/complete states; floating credits pill bottom-right opens buy links; registration/live/ended flows still function (register, bid, end, claim).
+
 ## 2025-11-21 — Login prompt on register
 - **Summary:** Register action now redirects logged-out users to the login page (with return to auction) instead of silently failing.
 - **Why:** Prevent confusion for anonymous users trying to register.

@@ -65,24 +65,12 @@
 		if (!state.data) return;
 
 		const status = state.data.status;
-		const labelEl = $('.oba-pill-status .oba-pill-label');
-		if (labelEl.length) {
-			labelEl.text(statusLabels[status] || status);
-		} else {
-			$('.oba-pill-status').text(statusLabels[status] || status);
-		}
 
-		if (state.data.is_admin && status === 'live') {
-			$('.oba-admin-end-now').show();
-		} else {
-			$('.oba-admin-end-now').hide();
-		}
-
-		$('.oba-step-card').removeClass('is-active');
-		$(`.oba-step-card[data-step="${status}"]`).addClass('is-active');
+		updateStepBar(status);
+		updatePhaseCards(status);
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
-		$('.oba-lobby-count').text(`${state.data.lobby_percent}%`);
+		$('.oba-lobby-count').text(`Lobby progress: ${state.data.lobby_percent}%`);
 
 		$('.oba-prelive-seconds').text(formatTime(state.data.pre_live_seconds_left));
 		updateBar('.oba-prelive-bar span', Number(state.data.pre_live_seconds_left), Number(state.data.pre_live_total));
@@ -94,14 +82,22 @@
 		$('.oba-user-cost').text(state.data.user_cost);
 
 		const regBtn = $('.oba-register');
+		const regText = obaAuction.i18n?.register || 'Register & Reserve Spot';
+		const fee = (state.data.registration_fee ?? state.data.registration_fee_credits ?? '').toString().trim();
+		const feeText = fee ? ` (${fee} cr)` : '';
+		regBtn.text(`${regText}${feeText}`);
 		if (state.data.user_registered) {
-			regBtn.addClass('oba-registered').prop('disabled', true).text(obaAuction.i18n?.registered || 'Registered');
+			regBtn.addClass('oba-registered').prop('disabled', true);
 			$('.oba-terms').hide();
 			$('.oba-registered-note').show();
+			$('.oba-not-registered').hide();
+			$('.oba-registered').show();
 		} else {
-			regBtn.removeClass('oba-registered').prop('disabled', false).text(obaAuction.i18n?.register || 'Register');
+			regBtn.removeClass('oba-registered').prop('disabled', false);
 			$('.oba-terms').show();
 			$('.oba-registered-note').hide();
+			$('.oba-not-registered').show();
+			$('.oba-registered').hide();
 		}
 
 		const bidBtn = $('.oba-bid');
@@ -118,19 +114,6 @@
 			const time = formatTimeStamp(row.time);
 			historyList.append(`<li><span>${row.name}</span><span>${row.cost} cr</span><span>${time}</span></li>`);
 		});
-
-		const buyBox = $('.oba-buy-credits');
-		const buyLinks = $('.oba-buy-links');
-		buyLinks.empty();
-		if (obaAuction.pack_links && obaAuction.pack_links.length && status === 'live' && !state.data.has_enough_credits) {
-			buyBox.show();
-			obaAuction.pack_links.forEach((url, idx) => {
-				const label = (obaAuction.pack_labels && obaAuction.pack_labels[idx]) ? obaAuction.pack_labels[idx] : `Pack ${idx + 1}`;
-				buyLinks.append(`<a class="button" href="${url}" target="_blank" rel="noopener">${label}</a>`);
-			});
-		} else {
-			buyBox.hide();
-		}
 
 		if (state.data.error_message) {
 			showAlert(state.data.error_message);
@@ -165,7 +148,50 @@
 		}
 
 		updateCreditPill(state.data.user_credits_balance);
-		updateLastRefreshed();
+	}
+
+	function updatePhaseCards(status) {
+		const order = ['registration', 'pre_live', 'live', 'ended'];
+		$('.oba-phase-card').each((_, el) => {
+			const step = $(el).data('step');
+			const idx = order.indexOf(step);
+			const cur = order.indexOf(status);
+			const icon = $(el).find('.oba-phase-icon');
+			$(el).removeClass('is-active is-complete is-collapsed');
+			if (idx < cur || (step === 'registration' && state.data.user_registered && status !== 'registration')) {
+				$(el).addClass('is-complete is-collapsed');
+				icon.text('✔');
+			} else if (idx === cur) {
+				$(el).addClass('is-active');
+				icon.text('');
+			} else {
+				$(el).addClass('is-collapsed');
+				icon.text('🔒');
+			}
+			if (step === 'registration' && state.data.user_registered && status === 'registration') {
+				$(el).addClass('is-complete is-collapsed');
+				icon.text('✔');
+			}
+			if (step === 'ended' && status === 'ended') {
+				$(el).removeClass('is-collapsed').addClass('is-active');
+				icon.text('');
+			}
+		});
+	}
+
+	function updateStepBar(status) {
+		const order = ['registration', 'pre_live', 'live', 'ended'];
+		const cur = order.indexOf(status);
+		$('.oba-step-pill').each((_, el) => {
+			const step = $(el).data('step');
+			const idx = order.indexOf(step);
+			$(el).removeClass('is-active is-complete');
+			if (idx < cur) {
+				$(el).addClass('is-complete');
+			} else if (idx === cur) {
+				$(el).addClass('is-active');
+			}
+		});
 	}
 
 	function updateBar(selector, remaining, total) {
@@ -249,6 +275,9 @@
 	}
 
 	function claim() {
+		if (!state.data || state.data.status !== 'ended' || !state.data.current_user_is_winner) {
+			return;
+		}
 		openClaimModal();
 	}
 

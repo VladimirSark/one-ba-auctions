@@ -44,6 +44,7 @@
 - Further increased modal top offset/max-height (with admin-bar adjustment) to prevent hiding under sticky headers.
 - Added ended auction logging (winner, credits consumed/refunded, trigger, last bid) and a new “Ended Logs” admin page; claims are now logged with mode/order.
 - Email notifications added: configurable sender; pre-live/live start emails to participants; winner/loser end emails; claim emails; credit edit emails; participant status (removed/banned/restored) emails.
+- Full auction page redesign: two-column layout (product card + phase cards), 4-step explainer bar, collapsible phase cards, refreshed styling, and floating bottom-right credits pill (global) with modal buy links.
 
 ### Fixed
 - Prevented nested class declaration fatal by moving `WC_Product_Auction` to its own file.

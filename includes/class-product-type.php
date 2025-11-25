@@ -11,6 +11,7 @@ class OBA_Product_Type {
 		add_action( 'woocommerce_product_data_panels', array( $this, 'render_fields' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_fields' ) );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_frontend_wrapper' ), 5 );
+		add_action( 'woocommerce_before_single_product', array( $this, 'render_explainer_bar' ), 1 );
 		add_action( 'init', array( $this, 'register_product_class' ) );
 	}
 
@@ -161,6 +162,7 @@ class OBA_Product_Type {
 			return;
 		}
 
+		// Remove add-to-cart/price; keep gallery/title/description intact.
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
 
@@ -173,5 +175,39 @@ class OBA_Product_Type {
 			'',
 			OBA_PLUGIN_DIR . 'templates/'
 		);
+	}
+
+	public function render_explainer_bar() {
+		global $product;
+
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		?>
+		<div class="oba-explainer-wrap">
+			<div class="oba-explainer">
+				<div class="oba-step-pill is-active" data-step="registration">
+					<span class="number">1</span>
+					<span class="label"><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></span>
+					<span class="desc"><?php esc_html_e( 'Join the lobby with credits.', 'one-ba-auctions' ); ?></span>
+				</div>
+				<div class="oba-step-pill" data-step="pre_live">
+					<span class="number">2</span>
+					<span class="label"><?php esc_html_e( 'Countdown to Live', 'one-ba-auctions' ); ?></span>
+					<span class="desc"><?php esc_html_e( 'Short pre-live timer.', 'one-ba-auctions' ); ?></span>
+				</div>
+				<div class="oba-step-pill" data-step="live">
+					<span class="number">3</span>
+					<span class="label"><?php esc_html_e( 'Live Bidding', 'one-ba-auctions' ); ?></span>
+					<span class="desc"><?php esc_html_e( 'Bid, reset timer, compete.', 'one-ba-auctions' ); ?></span>
+				</div>
+				<div class="oba-step-pill" data-step="ended">
+					<span class="number">4</span>
+					<span class="label"><?php esc_html_e( 'Auction Ended', 'one-ba-auctions' ); ?></span>
+					<span class="desc"><?php esc_html_e( 'Claim or view results.', 'one-ba-auctions' ); ?></span>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }

@@ -90,8 +90,35 @@ class OBA_Frontend {
 			return;
 		}
 
-		// Inline pill and modal are rendered inside the auction template; suppress floating pill everywhere.
-		return;
+		$render_modal = true;
+		if ( is_product() ) {
+			global $product;
+			if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
+				$render_modal = false; // Template includes its own credit modal.
+			}
+		}
+
+		$credits_service = new OBA_Credits_Service();
+		$balance         = $credits_service->get_balance( get_current_user_id() );
+		$is_low          = $balance < 10;
+
+		$links  = $settings['credit_pack_links'];
+		$labels = $settings['credit_pack_labels'];
+		$html_links = '';
+		foreach ( $links as $idx => $url ) {
+			if ( empty( $url ) ) {
+				continue;
+			}
+			$label = ! empty( $labels[ $idx ] ) ? $labels[ $idx ] : sprintf( __( 'Pack %d', 'one-ba-auctions' ), $idx + 1 );
+			$html_links .= '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( $label ) . '</a>';
+		}
+
+		$low_class = $is_low ? ' low' : '';
+		echo '<div class="oba-credit-pill' . esc_attr( $low_class ) . '" data-balance="' . esc_attr( $balance ) . '"><span class="oba-credit-balance">Credits: ' . esc_html( $balance ) . '</span><span class="oba-credit-links">' . $html_links . '</span></div>';
+
+		if ( $render_modal ) {
+			echo '<div class="oba-credit-overlay" style="display:none;"></div><div class="oba-credit-modal" style="display:none;"><div class="oba-credit-modal__inner"><button class="oba-credit-close" type="button" aria-label="' . esc_attr__( 'Close', 'one-ba-auctions' ) . '">&times;</button><h4>' . esc_html__( 'Buy credits', 'one-ba-auctions' ) . '</h4><div class="oba-credit-options"></div></div></div>';
+		}
 	}
 
 	public function shortcode_balance() {
