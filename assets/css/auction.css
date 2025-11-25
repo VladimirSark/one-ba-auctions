@@ -62,11 +62,13 @@
 .oba-step-pill .badge-check {
 	display: none;
 	color: #22c55e;
+	align-items: center;
+	justify-content: center;
 }
 
 .oba-step-pill .badge-check svg {
-	width: 18px;
-	height: 18px;
+	width: 16px;
+	height: 16px;
 }
 
 .oba-step-pill .label {
