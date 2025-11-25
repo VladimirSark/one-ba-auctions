@@ -1,0 +1,452 @@
+(function ($) {
+	const state = { data: null };
+
+	const statusLabels = {
+		registration: obaAuction.i18n?.step1_short || '1. Registration',
+		pre_live: obaAuction.i18n?.step2_short || '2. Time to Live',
+		live: obaAuction.i18n?.step3_short || '3. Live',
+		ended: obaAuction.i18n?.step4_short || '4. End',
+	};
+
+	function formatTime(seconds) {
+		const total = Math.max(0, parseInt(seconds || 0, 10));
+		const mins = Math.floor(total / 60);
+		const secs = total % 60;
+		if (mins > 0) {
+			return `${mins}:${secs.toString().padStart(2, '0')}`;
+		}
+		return `${secs}s`;
+	}
+
+	function formatTimeStamp(ts) {
+		const d = new Date(ts);
+		if (Number.isNaN(d.getTime())) return ts;
+		return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+	}
+
+	function showAlert(message) {
+		if (!message) return;
+		$('.oba-alert-error').text(message).show();
+	}
+
+	function showToast(message, isError = false) {
+		const toast = $('.oba-toast');
+		toast.text(message || '').removeClass('oba-error');
+		if (isError) toast.addClass('oba-error');
+		toast.fadeIn(150, () => {
+			setTimeout(() => toast.fadeOut(200), 1500);
+		});
+	}
+
+	function clearAlert() {
+		$('.oba-alert-error').hide().text('');
+	}
+
+	function poll() {
+		$.getJSON(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_get_state',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+			},
+			(response) => {
+				if (!response || !response.success) {
+					return;
+				}
+				state.data = response.data;
+				clearAlert();
+				render();
+			}
+		);
+	}
+
+	function render() {
+		if (!state.data) return;
+
+		const status = state.data.status;
+		const labelEl = $('.oba-pill-status .oba-pill-label');
+		if (labelEl.length) {
+			labelEl.text(statusLabels[status] || status);
+		} else {
+			$('.oba-pill-status').text(statusLabels[status] || status);
+		}
+
+		if (state.data.is_admin && status === 'live') {
+			$('.oba-admin-end-now').show();
+		} else {
+			$('.oba-admin-end-now').hide();
+		}
+
+		$('.oba-step-card').removeClass('is-active');
+		$(`.oba-step-card[data-step="${status}"]`).addClass('is-active');
+
+		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
+		$('.oba-lobby-count').text(`${state.data.lobby_percent}%`);
+
+		$('.oba-prelive-seconds').text(formatTime(state.data.pre_live_seconds_left));
+		updateBar('.oba-prelive-bar span', Number(state.data.pre_live_seconds_left), Number(state.data.pre_live_total));
+
+		$('.oba-live-seconds').text(formatTime(state.data.live_seconds_left));
+		updateBar('.oba-live-bar span', Number(state.data.live_seconds_left), Number(state.data.live_total));
+
+		$('.oba-user-bids').text(state.data.user_bids_count);
+		$('.oba-user-cost').text(state.data.user_cost);
+
+		const regBtn = $('.oba-register');
+		if (state.data.user_registered) {
+			regBtn.addClass('oba-registered').prop('disabled', true).text(obaAuction.i18n?.registered || 'Registered');
+			$('.oba-terms').hide();
+			$('.oba-registered-note').show();
+		} else {
+			regBtn.removeClass('oba-registered').prop('disabled', false).text(obaAuction.i18n?.register || 'Register');
+			$('.oba-terms').show();
+			$('.oba-registered-note').hide();
+		}
+
+		const bidBtn = $('.oba-bid');
+		if (state.data.can_bid) {
+			bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
+		} else {
+			const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
+			bidBtn.prop('disabled', true).text(btnText);
+		}
+
+		const historyList = $('.oba-history');
+		historyList.empty();
+		(state.data.history || []).slice(0, 5).forEach((row) => {
+			const time = formatTimeStamp(row.time);
+			historyList.append(`<li><span>${row.name}</span><span>${row.cost} cr</span><span>${time}</span></li>`);
+		});
+
+		const buyBox = $('.oba-buy-credits');
+		const buyLinks = $('.oba-buy-links');
+		buyLinks.empty();
+		if (obaAuction.pack_links && obaAuction.pack_links.length && status === 'live' && !state.data.has_enough_credits) {
+			buyBox.show();
+			obaAuction.pack_links.forEach((url, idx) => {
+				const label = (obaAuction.pack_labels && obaAuction.pack_labels[idx]) ? obaAuction.pack_labels[idx] : `Pack ${idx + 1}`;
+				buyLinks.append(`<a class="button" href="${url}" target="_blank" rel="noopener">${label}</a>`);
+			});
+		} else {
+			buyBox.hide();
+		}
+
+		if (state.data.error_message) {
+			showAlert(state.data.error_message);
+			showToast(state.data.error_message, true);
+		} else {
+			clearAlert();
+		}
+
+		if (state.data.success_message) {
+			$('.oba-success-banner').text(state.data.success_message).show();
+		} else {
+			$('.oba-success-banner').hide();
+		}
+
+		if (state.data.wc_order_id) {
+			$('.oba-claim-status').show().text(`Claimed. Order #${state.data.wc_order_id}`);
+			$('.oba-claim').prop('disabled', true);
+		} else {
+			$('.oba-claim-status').hide();
+			$('.oba-claim').prop('disabled', false);
+		}
+
+		if (state.data.current_user_is_winner) {
+			$('.oba-winner-claim').show();
+			$('.oba-claim-amount').text(state.data.claim_amount);
+			$('.oba-loser').hide();
+		} else {
+			$('.oba-winner-claim').hide();
+			if (status === 'ended') {
+				$('.oba-loser').show();
+			}
+		}
+
+		updateCreditPill(state.data.user_credits_balance);
+		updateLastRefreshed();
+	}
+
+	function updateBar(selector, remaining, total) {
+		if (!total) {
+			$(selector).css('width', '0%');
+			return;
+		}
+		const percent = Math.max(0, Math.min(100, (remaining / total) * 100));
+		$(selector).css('width', `${percent}%`);
+	}
+
+	function register() {
+		if (obaAuction.terms_text && !$('.oba-terms-checkbox').is(':checked')) {
+			$('.oba-terms').addClass('oba-terms-error');
+			return;
+		}
+		$('.oba-terms').removeClass('oba-terms-error');
+
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_register_for_auction',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+				accepted_terms: $('.oba-terms-checkbox').is(':checked') ? 1 : 0,
+			},
+			(response) => {
+				if (response && response.success) {
+					state.data = response.data;
+					clearAlert();
+					showToast(obaAuction.i18n?.registered || 'Registered');
+					render();
+				} else if (response && response.message) {
+					showAlert(response.message);
+					showToast(response.message, true);
+					if (response.code === 'not_logged_in') {
+						showLoginHint();
+					}
+				} else {
+					const msg = obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
+					showAlert(msg);
+					showToast(msg, true);
+					showLoginHint();
+				}
+			}
+		).fail(() => {
+			const msg = obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
+			showAlert(msg);
+			showToast(msg, true);
+			showLoginHint();
+		});
+	}
+
+	function bid() {
+		const btn = $('.oba-bid');
+		if (btn.prop('disabled')) return;
+
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_place_bid',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+			},
+			(response) => {
+				if (response && response.success) {
+					state.data = response.data;
+					clearAlert();
+					showToast(obaAuction.i18n?.bid_placed || 'Bid placed');
+					render();
+				} else if (response && response.message) {
+					showAlert(response.message);
+					showToast(response.message, true);
+				} else {
+					showToast(obaAuction.i18n?.bid_failed || 'Bid failed', true);
+				}
+			}
+		).fail(() => {
+			showToast(obaAuction.i18n?.bid_failed || 'Bid failed. Check connection and try again.', true);
+		});
+	}
+
+	function claim() {
+		openClaimModal();
+	}
+
+	function openClaimModal() {
+		$('.oba-modal-overlay').show();
+		$('.oba-claim-modal').show();
+	}
+
+	function closeClaimModal() {
+		$('.oba-modal-overlay').hide();
+		$('.oba-claim-modal').hide();
+		$('.oba-claim-error').hide().text('');
+	}
+
+	function openInfoModal() {
+		$('.oba-info-overlay, .oba-info-modal').show();
+	}
+
+	function closeInfoModal() {
+		$('.oba-info-overlay, .oba-info-modal').hide();
+	}
+
+	function submitClaim() {
+		const method = $('input[name="oba-claim-method"]:checked').val() || 'credits';
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_claim_prize',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+				payment_method: method,
+			},
+			(response) => {
+				if (response && response.success && response.data.redirect_url) {
+					showToast(obaAuction.i18n?.claim_started || 'Claim started');
+					setTimeout(() => {
+						window.location = response.data.redirect_url;
+					}, 200);
+					return;
+				}
+				if (response && response.message) {
+					$('.oba-claim-error').text(response.message).show();
+					showToast(response.message, true);
+				} else {
+					showToast(obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
+				}
+			}
+		).fail(() => {
+			showToast(obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
+		});
+	}
+
+	$(document).on('click', '.oba-register', (e) => {
+		e.preventDefault();
+		register();
+	});
+
+	$(document).on('click', '.oba-bid', (e) => {
+		e.preventDefault();
+		bid();
+	});
+
+	$(document).on('click', '.oba-admin-end-now', (e) => {
+		e.preventDefault();
+		if (!confirm('End auction now?')) return;
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_place_bid',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+				force_end: 1,
+			},
+			() => {
+				poll();
+			}
+		);
+	});
+
+	$(document).on('click', '.oba-claim', (e) => {
+		e.preventDefault();
+		claim();
+	});
+
+	$(document).on('click', '.oba-terms-link', (e) => {
+		e.preventDefault();
+		$('.oba-terms-modal, .oba-terms-overlay').show();
+	});
+
+	$(document).on('click', '.oba-terms-close, .oba-terms-overlay', () => {
+		$('.oba-terms-modal, .oba-terms-overlay').hide();
+	});
+
+	$(document).on('change', '.oba-terms-checkbox', () => {
+		if ($('.oba-terms-checkbox').is(':checked')) {
+			$('.oba-terms').removeClass('oba-terms-error');
+		}
+	});
+
+	$(document).on('click', '.oba-modal-overlay, .oba-claim-cancel', () => {
+		closeClaimModal();
+	});
+
+	$(document).on('click', '.oba-claim-confirm', (e) => {
+		e.preventDefault();
+		submitClaim();
+	});
+
+	$(document).on('click', '.oba-pill-status', (e) => {
+		e.preventDefault();
+		openInfoModal();
+	});
+
+	$(document).on('click', '.oba-info-overlay, .oba-info-close', (e) => {
+		e.preventDefault();
+		closeInfoModal();
+	});
+
+	setInterval(poll, obaAuction.poll_interval);
+	$(poll);
+
+	function buildPackLinks() {
+		const container = $('.oba-credit-links');
+		if (!container.length) return;
+		container.empty();
+		const links = (obaAuction.pack_links || []).filter(Boolean);
+		const labels = obaAuction.pack_labels || [];
+		links.forEach((url, idx) => {
+			const label = labels[idx] || `Pack ${idx + 1}`;
+			container.append(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`);
+		});
+	}
+
+	function buildCreditModal() {
+		const modal = $('.oba-credit-modal');
+		const overlay = $('.oba-credit-overlay');
+		if (!modal.length || !overlay.length) return;
+		const container = modal.find('.oba-credit-options');
+		container.empty();
+		const links = (obaAuction.pack_links || []).filter(Boolean);
+		const labels = obaAuction.pack_labels || [];
+		if (!links.length) {
+			container.append(`<p>${obaAuction.i18n?.buy_credits || 'Buy credits'}</p>`);
+		} else {
+			links.forEach((url, idx) => {
+				const label = labels[idx] || `Pack ${idx + 1}`;
+				container.append(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`);
+			});
+		}
+		overlay.show();
+		modal.show();
+	}
+
+	function closeCreditModal() {
+		$('.oba-credit-overlay, .oba-credit-modal').hide();
+	}
+
+	function updateCreditPill(balance) {
+		const pill = $('.oba-credit-pill');
+		if (!pill.length) return;
+		if (typeof balance === 'undefined' || balance === null) {
+			balance = parseFloat(pill.data('balance') || 0);
+		}
+		pill.attr('data-balance', balance);
+		pill.find('.oba-credit-balance').text(`Credits: ${balance}`);
+		if (balance < 10) {
+			pill.addClass('low');
+		} else {
+			pill.removeClass('low');
+		}
+	}
+
+	buildPackLinks();
+	closeCreditModal();
+
+	function updateLastRefreshed() {
+		// Intentionally left blank; system time hidden to avoid user confusion.
+	}
+
+	function showLoginHint() {
+		const hint = $('.oba-login-hint');
+		if (!hint.length) return;
+		if (obaAuction.login_url) {
+			hint.find('a').attr('href', obaAuction.login_url);
+		}
+		hint.show();
+	}
+
+	$(document).on('click', '.oba-credit-pill', (e) => {
+		if ($(e.target).is('a') || $(e.target).closest('a').length) {
+			return;
+		}
+		e.preventDefault();
+		buildCreditModal();
+	});
+
+	$(document).on('click', '.oba-credit-overlay, .oba-credit-close', (e) => {
+		e.preventDefault();
+		closeCreditModal();
+	});
+})(jQuery);

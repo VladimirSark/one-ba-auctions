@@ -1,0 +1,697 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: One BA Auctions\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-21 11:11+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.0; wp-6.8.3; php-8.2.27\n"
+"X-Domain: one-ba-auctions"
+
+#: includes/class-admin.php:337
+msgid "Action"
+msgstr ""
+
+#: includes/class-admin.php:130 includes/class-admin.php:566
+msgid "Actions"
+msgstr ""
+
+#: includes/class-admin.php:527
+msgid "Active"
+msgstr ""
+
+#: includes/class-admin.php:516
+msgid "Active: %d"
+msgstr ""
+
+#: includes/class-admin.php:335
+msgid "Actor"
+msgstr ""
+
+#: includes/class-admin.php:526
+msgid "All statuses"
+msgstr ""
+
+#: includes/class-admin.php:365
+msgid "Amount"
+msgstr ""
+
+#: includes/class-ajax-controller.php:298
+msgid "Anon"
+msgstr ""
+
+#: includes/class-admin.php:693
+msgid "Appears in live auctions so users can quickly buy credits when low."
+msgstr ""
+
+#: includes/class-admin.php:282 includes/class-admin.php:336
+#: includes/class-product-type.php:18 includes/class-product-type.php:30
+msgid "Auction"
+msgstr ""
+
+#: includes/class-ajax-controller.php:188
+msgid "Auction credits"
+msgstr ""
+
+#: templates/oba-single-auction.php:105
+msgid "Auction ended. Better luck next time."
+msgstr ""
+
+#: includes/class-ajax-controller.php:204
+msgid "Auction gateway"
+msgstr ""
+
+#: includes/class-ajax-controller.php:143
+msgid "Auction has not ended yet."
+msgstr ""
+
+#: includes/class-admin.php:649
+msgid "Auction Settings"
+msgstr ""
+
+#: includes/class-product-type.php:119
+msgid "Auction status"
+msgstr ""
+
+#: includes/class-admin.php:49
+msgid "Auctions"
+msgstr ""
+
+#: includes/class-admin.php:53 includes/class-admin.php:330
+msgid "Audit Log"
+msgstr ""
+
+#: includes/class-admin.php:409
+msgctxt "Balansas"
+msgid "Balance"
+msgstr ""
+
+#: includes/class-admin.php:366
+msgid "Balance after"
+msgstr ""
+
+#: includes/class-admin.php:529
+msgid "Banned"
+msgstr ""
+
+#: includes/class-admin.php:518
+msgid "Banned: %d"
+msgstr ""
+
+#: includes/class-product-type.php:59
+msgid "Bid cost (credits)"
+msgstr ""
+
+#: templates/oba-single-auction.php:71
+#, php-format
+msgid "Bid cost: %s credits"
+msgstr ""
+
+#: includes/class-frontend.php:57
+msgid "Bid failed. Check connection and try again."
+msgstr ""
+
+#: includes/class-frontend.php:56
+msgid "Bid placed"
+msgstr ""
+
+#: includes/class-ajax-controller.php:119
+msgid "Bid placed."
+msgstr ""
+
+#: includes/class-auction-engine.php:112
+msgid "Bidding is closed."
+msgstr ""
+
+#: includes/class-admin.php:555
+msgid "Bulk ban (filtered or all)"
+msgstr ""
+
+#: includes/class-admin.php:553
+msgid "Bulk remove (filtered or all)"
+msgstr ""
+
+#: includes/class-admin.php:554
+msgid "Bulk restore to active"
+msgstr ""
+
+#: includes/class-frontend.php:63
+msgid "Buy credits"
+msgstr ""
+
+#: templates/oba-single-auction.php:120
+msgid "Cancel"
+msgstr ""
+
+#: includes/class-frontend.php:61
+msgid "Cannot bid"
+msgstr ""
+
+#: templates/oba-single-auction.php:112
+msgid "Choose how to claim"
+msgstr ""
+
+#: includes/class-frontend.php:59
+msgid "Claim failed. Please try again."
+msgstr ""
+
+#: templates/oba-single-auction.php:102
+msgid "Claim now"
+msgstr ""
+
+#: includes/class-admin.php:286
+msgid "Claim price"
+msgstr ""
+
+#: includes/class-product-type.php:107
+msgid "Claim price (credits)"
+msgstr ""
+
+#: includes/class-frontend.php:58
+msgid "Claim started"
+msgstr ""
+
+#. Author of the plugin
+msgid "Codex"
+msgstr ""
+
+#: templates/oba-single-auction.php:119
+msgid "Continue"
+msgstr ""
+
+#: includes/class-admin.php:512
+msgid "Counts:"
+msgstr ""
+
+#: includes/class-admin.php:288
+msgid "Created"
+msgstr ""
+
+#: includes/class-credits-order-integration.php:37
+msgid "Credits amount"
+msgstr ""
+
+#: includes/class-admin.php:285
+msgid "Credits consumed"
+msgstr ""
+
+#: includes/class-product-type.php:48
+msgid "Credits required to register."
+msgstr ""
+
+#. Description of the plugin
+msgid "Credits-based auction system with AJAX-driven 4-step flow."
+msgstr ""
+
+#: includes/class-admin.php:40 includes/class-admin.php:41
+#: includes/class-admin.php:113
+msgid "Custom Auctions"
+msgstr ""
+
+#: includes/class-admin.php:660
+msgid "Default live timer (seconds)"
+msgstr ""
+
+#: includes/class-admin.php:656
+msgid "Default pre-live timer (seconds)"
+msgstr ""
+
+#: includes/class-admin.php:338
+msgid "Details"
+msgstr ""
+
+#: includes/class-admin.php:679
+msgid "Display a floating credits pill for logged-in users."
+msgstr ""
+
+#: includes/class-admin.php:411
+msgid "Edit"
+msgstr ""
+
+#: templates/oba-single-auction.php:29
+msgid "End now (admin)"
+msgstr ""
+
+#: includes/class-admin.php:73 includes/class-product-type.php:124
+msgid "Ended"
+msgstr ""
+
+#: includes/class-admin.php:546
+msgid "Export CSV"
+msgstr ""
+
+#: includes/class-admin.php:564
+msgid "Fee"
+msgstr ""
+
+#: includes/class-admin.php:532
+msgid "Filter"
+msgstr ""
+
+#: includes/class-admin.php:190
+msgid "Force End"
+msgstr ""
+
+#: includes/class-admin.php:932
+msgid "Force End (auctions)"
+msgstr ""
+
+#: includes/class-admin.php:125
+msgid "ID"
+msgstr ""
+
+#: includes/class-ajax-controller.php:33
+msgid "Invalid request."
+msgstr ""
+
+#: includes/class-credits-order-integration.php:29
+msgid "Is credit pack"
+msgstr ""
+
+#: includes/class-admin.php:690
+msgid "Label for pack 1, e.g. +10"
+msgstr ""
+
+#: includes/class-admin.php:691
+msgid "Label for pack 2, e.g. +25"
+msgstr ""
+
+#: includes/class-admin.php:692
+msgid "Label for pack 3, e.g. +50"
+msgstr ""
+
+#: includes/class-frontend.php:60
+msgid "Last refreshed"
+msgstr ""
+
+#: includes/class-admin.php:412
+msgid "Ledger"
+msgstr ""
+
+#: includes/class-admin.php:72 includes/class-product-type.php:123
+msgid "Live"
+msgstr ""
+
+#: includes/class-admin.php:129
+msgid "Live expires at"
+msgstr ""
+
+#: templates/oba-single-auction.php:74
+msgid "Live timer"
+msgstr ""
+
+#: includes/class-product-type.php:83
+msgid "Live timer (seconds)"
+msgstr ""
+
+#: includes/class-credits-order-integration.php:30
+msgid "Mark this product as a credit pack."
+msgstr ""
+
+#: includes/class-admin.php:369
+msgid "Meta"
+msgstr ""
+
+#: includes/class-credits-order-integration.php:89
+#: includes/class-credits-order-integration.php:96
+msgctxt "Mano kreditai"
+msgid "My Credits"
+msgstr ""
+
+#: includes/class-admin.php:232
+msgid "No auctions found for this status."
+msgstr ""
+
+#: includes/class-admin.php:354
+msgid "No audit entries yet."
+msgstr ""
+
+#: includes/class-admin.php:435
+msgid "No credit records yet."
+msgstr ""
+
+#: includes/class-admin.php:385
+msgid "No ledger entries yet."
+msgstr ""
+
+#: includes/class-admin.php:611
+msgid "No participants."
+msgstr ""
+
+#: includes/class-admin.php:309
+msgid "No winners yet."
+msgstr ""
+
+#: includes/class-admin.php:827
+msgid "Nonce check failed."
+msgstr ""
+
+#: includes/class-admin.php:705 includes/class-admin.php:744
+#: includes/class-admin.php:762 includes/class-admin.php:785
+#: includes/class-admin.php:812 includes/class-admin.php:873
+#: includes/class-admin.php:888
+msgid "Not allowed"
+msgstr ""
+
+#: includes/class-auction-engine.php:128
+msgid "Not enough credits to bid."
+msgstr ""
+
+#: includes/class-ajax-controller.php:178
+msgid "Not enough credits to claim."
+msgstr ""
+
+#: includes/class-auction-engine.php:43
+msgid "Not enough credits to register."
+msgstr ""
+
+#. Name of the plugin
+msgid "One BA Auctions"
+msgstr ""
+
+#: includes/class-ajax-controller.php:154
+msgid "Only the winner can claim this prize."
+msgstr ""
+
+#: includes/class-admin.php:689
+msgid "Optional labels for quick packs (defaults to Pack 1/2/3 if empty)."
+msgstr ""
+
+#: includes/class-admin.php:287
+msgid "Order"
+msgstr ""
+
+#: templates/oba-single-auction.php:89
+msgid "Out of credits? Buy more:"
+msgstr ""
+
+#: includes/class-frontend.php:64
+msgid "Pack"
+msgstr ""
+
+#: includes/class-frontend.php:92
+msgid "Pack %d"
+msgstr ""
+
+#: includes/class-ajax-controller.php:190
+msgid "Paid with auction credits."
+msgstr ""
+
+#: includes/class-admin.php:52 includes/class-admin.php:128
+#: includes/class-admin.php:466 includes/class-admin.php:510
+msgid "Participants"
+msgstr ""
+
+#: templates/oba-single-auction.php:115
+msgid "Pay via checkout"
+msgstr ""
+
+#: templates/oba-single-auction.php:114
+msgid "Pay with credits"
+msgstr ""
+
+#: templates/oba-single-auction.php:93
+msgid "Place bid"
+msgstr ""
+
+#: includes/class-admin.php:664
+msgid "Poll interval (ms)"
+msgstr ""
+
+#: includes/class-product-type.php:122
+msgid "Pre-live"
+msgstr ""
+
+#: templates/oba-single-auction.php:63
+msgid "Pre-live timer"
+msgstr ""
+
+#: includes/class-product-type.php:95
+msgid "Pre-live timer (seconds)"
+msgstr ""
+
+#: includes/class-ajax-controller.php:163
+msgid "Prize already claimed."
+msgstr ""
+
+#: includes/class-admin.php:684
+msgid "Quick credit pack links (shown in live auctions)"
+msgstr ""
+
+#: includes/class-admin.php:367
+msgid "Reason"
+msgstr ""
+
+#: includes/class-admin.php:193
+msgid "Recalculate Winner"
+msgstr ""
+
+#: includes/class-admin.php:368
+msgid "Reference"
+msgstr ""
+
+#: templates/oba-single-auction.php:28
+msgid "Refresh state"
+msgstr ""
+
+#: templates/oba-single-auction.php:56
+msgid "Register"
+msgstr ""
+
+#: includes/class-frontend.php:54
+msgid "Registered"
+msgstr ""
+
+#: includes/class-admin.php:563
+msgid "Registered at"
+msgstr ""
+
+#: includes/class-ajax-controller.php:82
+msgid "Registered for auction."
+msgstr ""
+
+#: includes/class-product-type.php:121 templates/oba-single-auction.php:21
+msgid "Registration"
+msgstr ""
+
+#: includes/class-frontend.php:55
+msgid "Registration failed. Please try again."
+msgstr ""
+
+#: includes/class-product-type.php:45
+msgid "Registration fee (credits)"
+msgstr ""
+
+#: templates/oba-single-auction.php:35
+#, php-format
+msgid "Registration fee: %s credits"
+msgstr ""
+
+#: includes/class-auction-engine.php:32
+msgid "Registration is closed."
+msgstr ""
+
+#: includes/class-admin.php:605
+msgid "Remove"
+msgstr ""
+
+#: includes/class-admin.php:528
+msgid "Removed"
+msgstr ""
+
+#: includes/class-admin.php:517
+msgid "Removed: %d"
+msgstr ""
+
+#: includes/class-product-type.php:71
+msgid "Required participants"
+msgstr ""
+
+#: includes/class-admin.php:533
+msgid "Reset"
+msgstr ""
+
+#: includes/class-admin.php:606
+msgid "Restore"
+msgstr ""
+
+#: includes/class-admin.php:557
+msgid "Restore all removed"
+msgstr ""
+
+#: includes/class-admin.php:238
+msgid "Run expiry check now"
+msgstr ""
+
+#: includes/class-admin.php:428
+msgid "Save"
+msgstr ""
+
+#: includes/class-admin.php:697
+msgid "Save Settings"
+msgstr ""
+
+#: includes/class-admin.php:467
+msgid "Select an auction to view participants."
+msgstr ""
+
+#: includes/class-admin.php:54
+msgid "Settings"
+msgstr ""
+
+#: includes/class-admin.php:675
+msgid "Show credits balance in header"
+msgstr ""
+
+#: includes/class-admin.php:671
+msgid "Shown in registration step and required to register when not empty."
+msgstr ""
+
+#: includes/class-admin.php:187
+msgid "Start Live"
+msgstr ""
+
+#: includes/class-admin.php:931
+msgid "Start Live (auctions)"
+msgstr ""
+
+#: includes/class-admin.php:184
+msgid "Start Pre-live"
+msgstr ""
+
+#: includes/class-admin.php:127 includes/class-admin.php:565
+msgid "Status"
+msgstr ""
+
+#: templates/oba-single-auction.php:34
+msgid "Step 1: Registration"
+msgstr ""
+
+#: templates/oba-single-auction.php:61
+msgid "Step 2: Countdown to Live"
+msgstr ""
+
+#: templates/oba-single-auction.php:70
+msgid "Step 3: Live Bidding"
+msgstr ""
+
+#: templates/oba-single-auction.php:98
+msgid "Step 4: Auction Ended"
+msgstr ""
+
+#: templates/oba-single-auction.php:42
+msgid "T&C must be accepted before registering to auction"
+msgstr ""
+
+#: includes/class-admin.php:668
+msgid "Terms & Conditions text"
+msgstr ""
+
+#: includes/class-admin.php:334 includes/class-admin.php:364
+msgid "Time"
+msgstr ""
+
+#: includes/class-admin.php:126
+msgid "Title"
+msgstr ""
+
+#: includes/class-admin.php:284
+msgid "Total bids"
+msgstr ""
+
+#: includes/class-admin.php:70
+msgid "Upcoming"
+msgstr ""
+
+#: includes/class-admin.php:410
+msgid "Updated"
+msgstr ""
+
+#: includes/class-admin.php:562
+msgid "User"
+msgstr ""
+
+#: includes/class-admin.php:360
+msgid "User Credit Ledger"
+msgstr ""
+
+#: includes/class-admin.php:51 includes/class-admin.php:404
+msgid "User Credits"
+msgstr ""
+
+#: includes/class-admin.php:408 includes/class-admin.php:531
+msgid "User ID"
+msgstr ""
+
+#: includes/class-admin.php:431
+msgid "View"
+msgstr ""
+
+#: includes/class-admin.php:556
+msgid "View removed"
+msgstr ""
+
+#: includes/class-admin.php:71
+msgid "Waiting to Go Live"
+msgstr ""
+
+#: includes/class-admin.php:283
+msgid "Winner"
+msgstr ""
+
+#: includes/class-admin.php:50 includes/class-admin.php:278
+msgid "Winners"
+msgstr ""
+
+#: includes/class-auction-engine.php:121
+msgid "You are already the leading bidder."
+msgstr ""
+
+#: includes/class-frontend.php:62
+msgid "You are leading"
+msgstr ""
+
+#: includes/class-auction-engine.php:116
+msgid "You are not registered for this auction."
+msgstr ""
+
+#: includes/class-ajax-controller.php:64
+msgid "You must accept the terms to register."
+msgstr ""
+
+#: includes/class-ajax-controller.php:96
+msgid "You must be logged in to bid."
+msgstr ""
+
+#: includes/class-ajax-controller.php:133
+msgid "You must be logged in to claim."
+msgstr ""
+
+#: includes/class-auction-engine.php:26
+msgid "You must be logged in to register."
+msgstr ""
+
+#: templates/oba-single-auction.php:100
+msgid "You won! Claim price:"
+msgstr ""
+
+#: templates/oba-single-auction.php:79
+msgid "Your bids"
+msgstr ""
+
+#: templates/oba-single-auction.php:83
+msgid "Your cost"
+msgstr ""
+
+#: includes/class-credits-order-integration.php:97
+#, php-format
+msgid "Your current balance: %s credits"
+msgstr ""
