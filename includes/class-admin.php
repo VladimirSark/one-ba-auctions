@@ -958,6 +958,9 @@ class OBA_Admin {
 			'refund_msg'     => __( 'Refund note', 'one-ba-auctions' ),
 			'register_note'  => __( 'Registered note', 'one-ba-auctions' ),
 			'buy_credits_title' => __( 'Buy credits title', 'one-ba-auctions' ),
+			'registration_fee_label' => __( 'Registration fee label', 'one-ba-auctions' ),
+			'registered_badge' => __( 'Registered badge text', 'one-ba-auctions' ),
+			'not_registered_badge' => __( 'Not registered badge text', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1007,6 +1010,9 @@ class OBA_Admin {
 				'refund_msg'     => isset( $_POST['refund_msg'] ) ? $_POST['refund_msg'] : '',
 				'register_note'  => isset( $_POST['register_note'] ) ? $_POST['register_note'] : '',
 				'buy_credits_title' => isset( $_POST['buy_credits_title'] ) ? $_POST['buy_credits_title'] : '',
+				'registration_fee_label' => isset( $_POST['registration_fee_label'] ) ? $_POST['registration_fee_label'] : '',
+				'registered_badge' => isset( $_POST['registered_badge'] ) ? $_POST['registered_badge'] : '',
+				'not_registered_badge' => isset( $_POST['not_registered_badge'] ) ? $_POST['not_registered_badge'] : '',
 			)
 		);
 

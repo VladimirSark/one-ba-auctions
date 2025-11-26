@@ -35,12 +35,12 @@ $get      = function( $key, $default ) use ( $tr ) {
 					</span>
 				</div>
 				<div class="oba-phase-body">
-					<p><?php echo esc_html( sprintf( __( 'Registration fee: %s credits', 'one-ba-auctions' ), $meta['registration_fee'] ) ); ?></p>
+					<p><?php echo esc_html( sprintf( __( '%s: %s credits', 'one-ba-auctions' ), $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ), $meta['registration_fee'] ) ); ?></p>
 					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
 					<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
 					<div class="oba-register-note">
-						<span class="oba-badge danger oba-not-registered"><?php esc_html_e( 'Not registered', 'one-ba-auctions' ); ?></span>
-						<span class="oba-badge success oba-registered" style="display:none;"><?php esc_html_e( 'Registered', 'one-ba-auctions' ); ?></span>
+						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
+						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
 					</div>
 					<div class="oba-registered-note" style="display:none;">
 						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>

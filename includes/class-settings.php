@@ -80,6 +80,9 @@ class OBA_Settings {
 			'refund_msg'     => '',
 			'register_note'  => '',
 			'buy_credits_title' => '',
+			'registration_fee_label' => '',
+			'registered_badge' => '',
+			'not_registered_badge' => '',
 		);
 
 		$translations = array();
