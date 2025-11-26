@@ -119,6 +119,14 @@ class OBA_Frontend {
 		if ( $render_modal ) {
 			echo '<div class="oba-credit-overlay" style="display:none;"></div><div class="oba-credit-modal" style="display:none;"><div class="oba-credit-modal__inner"><button class="oba-credit-close" type="button" aria-label="' . esc_attr__( 'Close', 'one-ba-auctions' ) . '">&times;</button><h4>' . esc_html__( 'Buy credits', 'one-ba-auctions' ) . '</h4><div class="oba-credit-options"></div></div></div>';
 		}
+
+		// Ensure styling is present on non-auction pages where main stylesheet may not enqueue.
+		echo '<style>
+		.oba-credit-pill{position:fixed;right:16px;bottom:16px;background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;font-weight:700;z-index:120005;box-shadow:0 10px 24px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;}
+		.oba-credit-pill.low{background:#b91c1c;}
+		.oba-credit-pill .oba-credit-links{display:none;}
+		@media(max-width:480px){.oba-credit-pill{right:10px;bottom:10px;padding:8px 12px;font-size:12px;}}
+		</style>';
 	}
 
 	public function shortcode_balance() {
