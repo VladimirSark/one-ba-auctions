@@ -116,16 +116,27 @@ $get      = function( $key, $default ) use ( $tr ) {
 					</span>
 				</div>
 				<div class="oba-phase-body">
-					<p><?php echo esc_html( sprintf( __( 'Bid cost: %s credits', 'one-ba-auctions' ), $meta['bid_cost'] ) ); ?></p>
+					<p>
+						<?php
+						$bid_label = $get( 'bid_cost_label', __( 'Bid cost', 'one-ba-auctions' ) );
+						$credits_label = $get( 'credit_plural', __( 'credits', 'one-ba-auctions' ) );
+						printf(
+							esc_html__( '%1$s: %2$s %3$s', 'one-ba-auctions' ),
+							esc_html( $bid_label ),
+							esc_html( $meta['bid_cost'] ),
+							esc_html( $credits_label )
+						);
+						?>
+					</p>
 					<div class="oba-timer-large"><span class="oba-live-seconds">0</span></div>
 					<div class="oba-bar oba-live-bar"><span style="width:0%"></span></div>
 					<div class="oba-legend">
 						<div class="oba-card">
-							<div class="oba-legend-label"><?php esc_html_e( 'Your bids', 'one-ba-auctions' ); ?></div>
+							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_bids_label', __( 'Your bids', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value oba-user-bids">0</div>
 						</div>
 						<div class="oba-card">
-							<div class="oba-legend-label"><?php esc_html_e( 'Your cost', 'one-ba-auctions' ); ?></div>
+							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_cost_label', __( 'Your cost', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value oba-user-cost">0</div>
 						</div>
 					</div>
@@ -151,7 +162,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 						<div class="oba-outcome oba-outcome--win">
 							<p><?php echo esc_html( $get( 'winner_msg', __( 'You won! Claim price:', 'one-ba-auctions' ) ) ); ?> <span class="oba-claim-amount"><?php echo esc_html( $meta['claim_price'] ); ?></span></p>
 							<div class="oba-claim-status" style="display:none;"></div>
-							<button class="button button-primary oba-claim"><?php esc_html_e( 'Claim now', 'one-ba-auctions' ); ?></button>
+							<button class="button button-primary oba-claim"><?php echo esc_html( $get( 'claim_button', __( 'Claim now', 'one-ba-auctions' ) ) ); ?></button>
 						</div>
 					</div>
 					<div class="oba-loser" style="display:none;">
@@ -173,15 +184,15 @@ $get      = function( $key, $default ) use ( $tr ) {
 
 <div class="oba-modal-overlay" style="display:none;"></div>
 <div class="oba-claim-modal">
-	<h4><?php esc_html_e( 'Choose how to claim', 'one-ba-auctions' ); ?></h4>
+	<h4><?php echo esc_html( $get( 'claim_modal_title', __( 'Choose how to claim', 'one-ba-auctions' ) ) ); ?></h4>
 	<div class="oba-claim-options">
-		<label><input type="radio" name="oba-claim-method" value="credits" checked /> <?php esc_html_e( 'Pay with credits', 'one-ba-auctions' ); ?></label>
-		<label><input type="radio" name="oba-claim-method" value="gateway" /> <?php esc_html_e( 'Pay via checkout', 'one-ba-auctions' ); ?></label>
+		<label><input type="radio" name="oba-claim-method" value="credits" checked /> <?php echo esc_html( $get( 'claim_option_credits', __( 'Pay with credits', 'one-ba-auctions' ) ) ); ?></label>
+		<label><input type="radio" name="oba-claim-method" value="gateway" /> <?php echo esc_html( $get( 'claim_option_gateway', __( 'Pay via checkout', 'one-ba-auctions' ) ) ); ?></label>
 	</div>
-	<div class="oba-claim-error oba-alert oba-alert-error"></div>
+	<div class="oba-claim-error oba-alert oba-alert-error"><?php echo esc_html( $get( 'claim_error', __( 'Claim failed. Please try again.', 'one-ba-auctions' ) ) ); ?></div>
 	<div class="oba-actions">
-		<button class="button button-primary oba-claim-confirm"><?php esc_html_e( 'Continue', 'one-ba-auctions' ); ?></button>
-		<button class="button oba-claim-cancel" type="button"><?php esc_html_e( 'Cancel', 'one-ba-auctions' ); ?></button>
+		<button class="button button-primary oba-claim-confirm"><?php echo esc_html( $get( 'claim_continue', __( 'Continue', 'one-ba-auctions' ) ) ); ?></button>
+		<button class="button oba-claim-cancel" type="button"><?php echo esc_html( $get( 'claim_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
 	</div>
 </div>
 

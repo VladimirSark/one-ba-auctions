@@ -106,7 +106,7 @@
 		if (state.data.can_bid) {
 			bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
 		} else {
-			const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
+			const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading_custom || obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
 			bidBtn.prop('disabled', true).text(btnText);
 		}
 
@@ -261,7 +261,7 @@
 				if (response && response.success) {
 					state.data = response.data;
 					clearAlert();
-					showToast(obaAuction.i18n?.registered || 'Registered');
+					showToast(obaAuction.i18n?.registration_success_custom || obaAuction.i18n?.registered || 'Registered');
 					render();
 				} else if (response && response.message) {
 					showAlert(response.message);
@@ -270,14 +270,14 @@
 						showLoginHint();
 					}
 				} else {
-					const msg = obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
+					const msg = obaAuction.i18n?.registration_fail_custom || obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
 					showAlert(msg);
 					showToast(msg, true);
 					showLoginHint();
 				}
 			}
 		).fail(() => {
-			const msg = obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
+			const msg = obaAuction.i18n?.registration_fail_custom || obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
 			showAlert(msg);
 			showToast(msg, true);
 			showLoginHint();
@@ -299,17 +299,17 @@
 				if (response && response.success) {
 					state.data = response.data;
 					clearAlert();
-					showToast(obaAuction.i18n?.bid_placed || 'Bid placed');
+					showToast(obaAuction.i18n?.bid_placed_custom || obaAuction.i18n?.bid_placed || 'Bid placed');
 					render();
 				} else if (response && response.message) {
 					showAlert(response.message);
 					showToast(response.message, true);
 				} else {
-					showToast(obaAuction.i18n?.bid_failed || 'Bid failed', true);
+					showToast(obaAuction.i18n?.bid_failed_custom || obaAuction.i18n?.bid_failed || 'Bid failed', true);
 				}
 			}
 		).fail(() => {
-			showToast(obaAuction.i18n?.bid_failed || 'Bid failed. Check connection and try again.', true);
+			showToast(obaAuction.i18n?.bid_failed_custom || obaAuction.i18n?.bid_failed || 'Bid failed. Check connection and try again.', true);
 		});
 	}
 
@@ -351,7 +351,7 @@
 			},
 			(response) => {
 				if (response && response.success && response.data.redirect_url) {
-					showToast(obaAuction.i18n?.claim_started || 'Claim started');
+					showToast(obaAuction.i18n?.claim_started_custom || obaAuction.i18n?.claim_started || 'Claim started');
 					setTimeout(() => {
 						window.location = response.data.redirect_url;
 					}, 200);
@@ -361,11 +361,11 @@
 					$('.oba-claim-error').text(response.message).show();
 					showToast(response.message, true);
 				} else {
-					showToast(obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
+					showToast(obaAuction.i18n?.claim_failed_custom || obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
 				}
 			}
 		).fail(() => {
-			showToast(obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
+			showToast(obaAuction.i18n?.claim_failed_custom || obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
 		});
 	}
 
