@@ -23,6 +23,7 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_recalc_winner', array( $this, 'handle_recalc_winner' ) );
 		add_action( 'admin_post_oba_edit_credits', array( $this, 'handle_edit_credits' ) );
 		add_action( 'admin_post_oba_save_settings', array( $this, 'handle_save_settings' ) );
+		add_action( 'admin_post_oba_save_translations', array( $this, 'handle_save_translations' ) );
 		add_action( 'admin_post_oba_run_expiry', array( $this, 'handle_run_expiry' ) );
 		add_action( 'admin_post_oba_remove_participant', array( $this, 'handle_remove_participant' ) );
 		add_action( 'admin_post_oba_export_participants', array( $this, 'handle_export_participants' ) );
@@ -53,6 +54,7 @@ class OBA_Admin {
 		add_submenu_page( 'oba-auctions', __( 'Participants', 'one-ba-auctions' ), __( 'Participants', 'one-ba-auctions' ), $cap, 'oba-participants', array( $this, 'render_participants_page' ) );
 		add_submenu_page( 'oba-auctions', __( 'Audit Log', 'one-ba-auctions' ), __( 'Audit Log', 'one-ba-auctions' ), $cap, 'oba-audit', array( $this, 'render_audit_page' ) );
 		add_submenu_page( 'oba-auctions', __( 'Settings', 'one-ba-auctions' ), __( 'Settings', 'one-ba-auctions' ), $cap, 'oba-settings', array( $this, 'render_settings_page' ) );
+		add_submenu_page( 'oba-auctions', __( 'Translations', 'one-ba-auctions' ), __( 'Translations', 'one-ba-auctions' ), $cap, 'oba-translations', array( $this, 'render_translations_page' ) );
 	}
 
 	private function get_status_filter() {
@@ -929,6 +931,86 @@ class OBA_Admin {
 		);
 
 		wp_redirect( admin_url( 'admin.php?page=oba-settings&updated=1' ) );
+		exit;
+	}
+
+	public function render_translations_page() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$settings     = $this->settings;
+		$translations = isset( $settings['translations'] ) ? $settings['translations'] : array();
+		$fields       = array(
+			'step1_label'    => __( 'Step 1 label', 'one-ba-auctions' ),
+			'step2_label'    => __( 'Step 2 label', 'one-ba-auctions' ),
+			'step3_label'    => __( 'Step 3 label', 'one-ba-auctions' ),
+			'step4_label'    => __( 'Step 4 label', 'one-ba-auctions' ),
+			'step1_desc'     => __( 'Step 1 description', 'one-ba-auctions' ),
+			'step2_desc'     => __( 'Step 2 description', 'one-ba-auctions' ),
+			'step3_desc'     => __( 'Step 3 description', 'one-ba-auctions' ),
+			'step4_desc'     => __( 'Step 4 description', 'one-ba-auctions' ),
+			'lobby_progress' => __( 'Lobby progress label', 'one-ba-auctions' ),
+			'register_cta'   => __( 'Register button text', 'one-ba-auctions' ),
+			'bid_button'     => __( 'Bid button text', 'one-ba-auctions' ),
+			'prelive_hint'   => __( 'Countdown hint text', 'one-ba-auctions' ),
+			'winner_msg'     => __( 'Winner message', 'one-ba-auctions' ),
+			'loser_msg'      => __( 'Loser message', 'one-ba-auctions' ),
+			'refund_msg'     => __( 'Refund note', 'one-ba-auctions' ),
+			'register_note'  => __( 'Registered note', 'one-ba-auctions' ),
+			'buy_credits_title' => __( 'Buy credits title', 'one-ba-auctions' ),
+		);
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></h1>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'oba_save_translations' ); ?>
+				<input type="hidden" name="action" value="oba_save_translations" />
+				<table class="form-table">
+					<?php foreach ( $fields as $key => $label ) : ?>
+						<tr>
+							<th scope="row"><?php echo esc_html( $label ); ?></th>
+							<td>
+								<input type="text" name="<?php echo esc_attr( $key ); ?>" value="<?php echo isset( $translations[ $key ] ) ? esc_attr( $translations[ $key ] ) : ''; ?>" style="width:100%;max-width:420px;" />
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+				<?php submit_button( __( 'Save Translations', 'one-ba-auctions' ) ); ?>
+			</form>
+		</div>
+		<?php
+	}
+
+	public function handle_save_translations() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+
+		check_admin_referer( 'oba_save_translations' );
+
+		OBA_Settings::update_translations(
+			array(
+				'step1_label'    => isset( $_POST['step1_label'] ) ? $_POST['step1_label'] : '',
+				'step2_label'    => isset( $_POST['step2_label'] ) ? $_POST['step2_label'] : '',
+				'step3_label'    => isset( $_POST['step3_label'] ) ? $_POST['step3_label'] : '',
+				'step4_label'    => isset( $_POST['step4_label'] ) ? $_POST['step4_label'] : '',
+				'step1_desc'     => isset( $_POST['step1_desc'] ) ? $_POST['step1_desc'] : '',
+				'step2_desc'     => isset( $_POST['step2_desc'] ) ? $_POST['step2_desc'] : '',
+				'step3_desc'     => isset( $_POST['step3_desc'] ) ? $_POST['step3_desc'] : '',
+				'step4_desc'     => isset( $_POST['step4_desc'] ) ? $_POST['step4_desc'] : '',
+				'lobby_progress' => isset( $_POST['lobby_progress'] ) ? $_POST['lobby_progress'] : '',
+				'register_cta'   => isset( $_POST['register_cta'] ) ? $_POST['register_cta'] : '',
+				'bid_button'     => isset( $_POST['bid_button'] ) ? $_POST['bid_button'] : '',
+				'prelive_hint'   => isset( $_POST['prelive_hint'] ) ? $_POST['prelive_hint'] : '',
+				'winner_msg'     => isset( $_POST['winner_msg'] ) ? $_POST['winner_msg'] : '',
+				'loser_msg'      => isset( $_POST['loser_msg'] ) ? $_POST['loser_msg'] : '',
+				'refund_msg'     => isset( $_POST['refund_msg'] ) ? $_POST['refund_msg'] : '',
+				'register_note'  => isset( $_POST['register_note'] ) ? $_POST['register_note'] : '',
+				'buy_credits_title' => isset( $_POST['buy_credits_title'] ) ? $_POST['buy_credits_title'] : '',
+			)
+		);
+
+		wp_redirect( admin_url( 'admin.php?page=oba-translations&updated=1' ) );
 		exit;
 	}
 

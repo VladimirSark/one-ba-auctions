@@ -158,6 +158,7 @@
 			const idx = order.indexOf(step);
 			const cur = order.indexOf(status);
 			const iconWrap = $(el).find('.oba-phase-icon');
+			const labelEl = $(el).find('.oba-phase-label');
 			$(el).removeClass('is-active is-complete is-collapsed');
 			iconWrap.removeClass('icon-check icon-lock icon-up icon-down');
 			let iconState = 'lock';
@@ -190,6 +191,15 @@
 				iconState = 'down';
 			}
 			iconWrap.addClass(`icon-${iconState}`);
+			if (labelEl.length) {
+				const map = {
+					registration: obaAuction.i18n?.step1_label || 'Registration',
+					pre_live: obaAuction.i18n?.step2_label || 'Countdown to Live',
+					live: obaAuction.i18n?.step3_label || 'Live Bidding',
+					ended: obaAuction.i18n?.step4_label || 'Auction Ended',
+				};
+				labelEl.text(map[step] || labelEl.text());
+			}
 		});
 	}
 
@@ -204,6 +214,20 @@
 				$(el).addClass('is-complete');
 			} else if (idx === cur) {
 				$(el).addClass('is-active');
+			}
+			const label = $(el).find('.label');
+			const desc = $(el).find('.desc');
+			const map = {
+				registration: { label: obaAuction.i18n?.step1_label || 'Registration', desc: obaAuction.i18n?.step1_desc || 'Join the lobby with credits.' },
+				pre_live: { label: obaAuction.i18n?.step2_label || 'Countdown to Live', desc: obaAuction.i18n?.step2_desc || 'Short pre-live timer.' },
+				live: { label: obaAuction.i18n?.step3_label || 'Live Bidding', desc: obaAuction.i18n?.step3_desc || 'Bid, reset timer, compete.' },
+				ended: { label: obaAuction.i18n?.step4_label || 'Auction Ended', desc: obaAuction.i18n?.step4_desc || 'Claim or view results.' },
+			};
+			if (label.length && map[step]) {
+				label.text(map[step].label);
+			}
+			if (desc.length && map[step]) {
+				desc.text(map[step].desc);
 			}
 		});
 	}

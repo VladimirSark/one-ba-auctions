@@ -15,8 +15,10 @@ $meta     = array(
 	'claim_price'      => get_post_meta( $product->get_id(), '_claim_price_credits', true ),
 );
 $settings = OBA_Settings::get_settings();
-$image    = $product->get_image( 'large' );
-$desc     = $product->get_short_description();
+$tr       = isset( $settings['translations'] ) ? $settings['translations'] : array();
+$get      = function( $key, $default ) use ( $tr ) {
+	return ! empty( $tr[ $key ] ) ? $tr[ $key ] : $default;
+};
 ?>
 
 <div class="oba-auction-wrap">
@@ -24,7 +26,7 @@ $desc     = $product->get_short_description();
 		<div class="oba-col-right">
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
-					<div class="oba-phase-title"><span>1.</span><span><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></span></div>
+					<div class="oba-phase-title"><span>1.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step1_label', __( 'Registration', 'one-ba-auctions' ) ) ); ?></span></div>
 					<span class="oba-phase-icon icon-lock" aria-hidden="true">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
@@ -35,13 +37,13 @@ $desc     = $product->get_short_description();
 				<div class="oba-phase-body">
 					<p><?php echo esc_html( sprintf( __( 'Registration fee: %s credits', 'one-ba-auctions' ), $meta['registration_fee'] ) ); ?></p>
 					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
-					<p class="oba-lobby-count"><?php esc_html_e( 'Lobby progress: 0%', 'one-ba-auctions' ); ?></p>
+					<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
 					<div class="oba-register-note">
 						<span class="oba-badge danger oba-not-registered"><?php esc_html_e( 'Not registered', 'one-ba-auctions' ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php esc_html_e( 'Registered', 'one-ba-auctions' ); ?></span>
 					</div>
 					<div class="oba-registered-note" style="display:none;">
-						<?php esc_html_e( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ); ?>
+						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
 					</div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
@@ -71,14 +73,14 @@ $desc     = $product->get_short_description();
 						</div>
 					<?php endif; ?>
 					<div class="oba-actions">
-						<button class="button button-primary oba-register"><?php esc_html_e( 'Register & Reserve Spot', 'one-ba-auctions' ); ?></button>
-					</div>
+						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
 				</div>
+			</div>
 			</div>
 
 			<div class="oba-card oba-phase-card is-collapsed" data-step="pre_live">
 				<div class="oba-phase-header">
-					<div class="oba-phase-title"><span>2.</span><span><?php esc_html_e( 'Countdown to Live', 'one-ba-auctions' ); ?></span></div>
+					<div class="oba-phase-title"><span>2.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step2_label', __( 'Countdown to Live', 'one-ba-auctions' ) ) ); ?></span></div>
 					<span class="oba-phase-icon icon-lock" aria-hidden="true">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
@@ -87,7 +89,7 @@ $desc     = $product->get_short_description();
 					</span>
 				</div>
 				<div class="oba-phase-body">
-					<p class="oba-badge info"><?php esc_html_e( 'Auction is about to go live', 'one-ba-auctions' ); ?></p>
+					<p class="oba-badge info"><?php echo esc_html( $get( 'prelive_hint', __( 'Auction is about to go live', 'one-ba-auctions' ) ) ); ?></p>
 					<div class="oba-timer-large oba-prelive-seconds">0s</div>
 					<div class="oba-bar oba-prelive-bar"><span style="width:0%"></span></div>
 				</div>
@@ -95,7 +97,7 @@ $desc     = $product->get_short_description();
 
 			<div class="oba-card oba-phase-card is-collapsed" data-step="live">
 				<div class="oba-phase-header">
-					<div class="oba-phase-title"><span>3.</span><span><?php esc_html_e( 'Live Bidding', 'one-ba-auctions' ); ?></span></div>
+					<div class="oba-phase-title"><span>3.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step3_label', __( 'Live Bidding', 'one-ba-auctions' ) ) ); ?></span></div>
 					<span class="oba-phase-icon icon-lock" aria-hidden="true">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
@@ -126,7 +128,7 @@ $desc     = $product->get_short_description();
 
 			<div class="oba-card oba-phase-card is-collapsed" data-step="ended">
 				<div class="oba-phase-header">
-					<div class="oba-phase-title"><span>4.</span><span><?php esc_html_e( 'Auction Ended', 'one-ba-auctions' ); ?></span></div>
+					<div class="oba-phase-title"><span>4.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step4_label', __( 'Auction Ended', 'one-ba-auctions' ) ) ); ?></span></div>
 					<span class="oba-phase-icon icon-lock" aria-hidden="true">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
@@ -137,15 +139,15 @@ $desc     = $product->get_short_description();
 				<div class="oba-phase-body">
 					<div class="oba-winner-claim" style="display:none;">
 						<div class="oba-outcome oba-outcome--win">
-							<p><?php esc_html_e( 'You won! Claim price:', 'one-ba-auctions' ); ?> <span class="oba-claim-amount"><?php echo esc_html( $meta['claim_price'] ); ?></span></p>
+							<p><?php echo esc_html( $get( 'winner_msg', __( 'You won! Claim price:', 'one-ba-auctions' ) ) ); ?> <span class="oba-claim-amount"><?php echo esc_html( $meta['claim_price'] ); ?></span></p>
 							<div class="oba-claim-status" style="display:none;"></div>
 							<button class="button button-primary oba-claim"><?php esc_html_e( 'Claim now', 'one-ba-auctions' ); ?></button>
 						</div>
 					</div>
 					<div class="oba-loser" style="display:none;">
 						<div class="oba-outcome oba-outcome--lose">
-							<p><?php esc_html_e( 'You did not win this auction.', 'one-ba-auctions' ); ?></p>
-							<p class="oba-refund-note"><?php esc_html_e( 'Your reserved credits have been refunded.', 'one-ba-auctions' ); ?></p>
+							<p><?php echo esc_html( $get( 'loser_msg', __( 'You did not win this auction.', 'one-ba-auctions' ) ) ); ?></p>
+							<p class="oba-refund-note"><?php echo esc_html( $get( 'refund_msg', __( 'Your reserved credits have been refunded.', 'one-ba-auctions' ) ) ); ?></p>
 						</div>
 					</div>
 				</div>
@@ -177,7 +179,7 @@ $desc     = $product->get_short_description();
 <div class="oba-credit-modal" style="display:none;">
 	<div class="oba-credit-modal__inner">
 		<button class="oba-credit-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'one-ba-auctions' ); ?>">&times;</button>
-		<h4><?php esc_html_e( 'Buy credits', 'one-ba-auctions' ); ?></h4>
+		<h4><?php echo esc_html( $get( 'buy_credits_title', __( 'Buy credits', 'one-ba-auctions' ) ) ); ?></h4>
 		<div class="oba-credit-options"></div>
 	</div>
 </div>

@@ -96,15 +96,7 @@
 .oba-step-pill.is-complete .badge {
 	border-color: #22c55e;
 	background: #ecfdf3;
-	color: #22c55e;
-}
-
-.oba-step-pill.is-complete .badge-number {
-	display: none;
-}
-
-.oba-step-pill.is-complete .badge-check {
-	display: inline-flex;
+	color: #166534;
 }
 
 .oba-step-pill:not(.is-active):not(.is-complete) .badge {

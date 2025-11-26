@@ -261,6 +261,13 @@
 - **Constraints/Assumptions:** Uses WordPress mail; sender name/email configurable in Settings; notifications go to registered participants; claim emails re-use winner template.
 - **How to test:** Reach required participants to trigger pre-live email; allow live start to send live email; end auction to send winner/loser emails; edit credits in admin and confirm credit update email; remove/ban participant and confirm status email.
 
+## 2025-11-21 — Frontend translations admin page
+- **Summary:** Added a Translations submenu to Custom Auctions allowing admins to override key frontend labels (steps, lobby progress, register CTA, bid button); values are localized to JS.
+- **Why:** Provide an easy way to translate/override UI text without editing code or .po files.
+- **Files/Classes:** `includes/class-settings.php`, `includes/class-admin.php`, `includes/class-frontend.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
+- **DB:** No schema change (stored in existing settings option).
+- **Constraints/Assumptions:** Only select labels are exposed; defaults still use translation functions if overrides are empty.
+- **How to test:** Go to Custom Auctions → Translations, set custom text for steps/lobby/register/bid, save, reload auction page to see updated labels.
 ## 2025-11-21 — Auction page redesign
 - **Summary:** Rebuilt single auction template with two-column layout (product left, phase cards right), top 4-step explainer bar, collapsible phase cards, refreshed styling, and floating bottom-right credits pill (global) with modal links.
 - **Why:** Improve clarity of the auction flow and separate product info from live controls while keeping credits accessible.

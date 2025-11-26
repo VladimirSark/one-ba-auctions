@@ -45,6 +45,7 @@
 - Added ended auction logging (winner, credits consumed/refunded, trigger, last bid) and a new “Ended Logs” admin page; claims are now logged with mode/order.
 - Email notifications added: configurable sender; pre-live/live start emails to participants; winner/loser end emails; claim emails; credit edit emails; participant status (removed/banned/restored) emails.
 - Full auction page redesign: two-column layout (product card + phase cards), 4-step explainer bar, collapsible phase cards, refreshed styling, and floating bottom-right credits pill (global) with modal buy links.
+- Added Translations submenu to override frontend labels (steps, lobby progress, register CTA, bid button) stored in settings and localized to JS.
 
 ### Fixed
 - Prevented nested class declaration fatal by moving `WC_Product_Auction` to its own file.
