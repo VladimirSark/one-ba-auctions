@@ -70,7 +70,8 @@
 		updatePhaseCards(status);
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
-		$('.oba-lobby-count').text(`Lobby progress: ${state.data.lobby_percent}%`);
+		const lobbyLabel = obaAuction.i18n?.lobby_progress || 'Lobby progress';
+		$('.oba-lobby-count').text(`${lobbyLabel}: ${state.data.lobby_percent}%`);
 
 		$('.oba-prelive-seconds').text(formatTime(state.data.pre_live_seconds_left));
 		updateBar('.oba-prelive-bar span', Number(state.data.pre_live_seconds_left), Number(state.data.pre_live_total));
@@ -82,7 +83,7 @@
 		$('.oba-user-cost').text(state.data.user_cost);
 
 		const regBtn = $('.oba-register');
-		const regText = obaAuction.i18n?.register || 'Register & Reserve Spot';
+		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
 		const fee = (state.data.registration_fee ?? state.data.registration_fee_credits ?? '').toString().trim();
 		const feeText = fee ? ` (${fee} cr)` : '';
 		regBtn.text(`${regText}${feeText}`);

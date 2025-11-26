@@ -66,17 +66,24 @@ class OBA_Frontend {
 						'pack_label'        => __( 'Pack', 'one-ba-auctions' ),
 						'login_required'    => __( 'Please log in to register.', 'one-ba-auctions' ),
 						'register'          => __( 'Register', 'one-ba-auctions' ),
+						'register_cta'      => __( 'Register & Reserve Spot', 'one-ba-auctions' ),
+						'lobby_progress'    => __( 'Lobby progress', 'one-ba-auctions' ),
+						'bid_button'        => __( 'Place bid', 'one-ba-auctions' ),
 						'step1'             => __( 'Step 1. Registration', 'one-ba-auctions' ),
 						'step2'             => __( 'Step 2. Pre-Live', 'one-ba-auctions' ),
 						'step3'             => __( 'Step 3. Live', 'one-ba-auctions' ),
 						'step4'             => __( 'Step 4. Ended', 'one-ba-auctions' ),
-						'step1_short'       => __( '1. Registration', 'one-ba-auctions' ),
-						'step2_short'       => __( '2. Time to Live', 'one-ba-auctions' ),
-						'step3_short'       => __( '3. Live', 'one-ba-auctions' ),
-						'step4_short'       => __( '4. End', 'one-ba-auctions' ),
-					),
-				)
-			);
+					'step1_short'       => __( '1. Registration', 'one-ba-auctions' ),
+					'step2_short'       => __( '2. Time to Live', 'one-ba-auctions' ),
+					'step3_short'       => __( '3. Live', 'one-ba-auctions' ),
+					'step4_short'       => __( '4. End', 'one-ba-auctions' ),
+					'step1_label'       => __( 'Registration', 'one-ba-auctions' ),
+					'step2_label'       => __( 'Countdown to Live', 'one-ba-auctions' ),
+					'step3_label'       => __( 'Live Bidding', 'one-ba-auctions' ),
+					'step4_label'       => __( 'Auction Ended', 'one-ba-auctions' ),
+				),
+			)
+		);
 	}
 
 	public function render_header_balance() {
