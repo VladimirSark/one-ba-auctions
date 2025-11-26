@@ -961,6 +961,8 @@ class OBA_Admin {
 			'registration_fee_label' => __( 'Registration fee label', 'one-ba-auctions' ),
 			'registered_badge' => __( 'Registered badge text', 'one-ba-auctions' ),
 			'not_registered_badge' => __( 'Not registered badge text', 'one-ba-auctions' ),
+			'credit_singular' => __( 'Credit (singular)', 'one-ba-auctions' ),
+			'credit_plural'   => __( 'Credits (plural)', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1013,6 +1015,8 @@ class OBA_Admin {
 				'registration_fee_label' => isset( $_POST['registration_fee_label'] ) ? $_POST['registration_fee_label'] : '',
 				'registered_badge' => isset( $_POST['registered_badge'] ) ? $_POST['registered_badge'] : '',
 				'not_registered_badge' => isset( $_POST['not_registered_badge'] ) ? $_POST['not_registered_badge'] : '',
+				'credit_singular' => isset( $_POST['credit_singular'] ) ? $_POST['credit_singular'] : '',
+				'credit_plural'   => isset( $_POST['credit_plural'] ) ? $_POST['credit_plural'] : '',
 			)
 		);
 

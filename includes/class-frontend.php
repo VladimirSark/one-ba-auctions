@@ -58,6 +58,8 @@ class OBA_Frontend {
 
 	private function build_i18n( $settings ) {
 		$t = isset( $settings['translations'] ) ? $settings['translations'] : array();
+		$credit_singular = ! empty( $t['credit_singular'] ) ? $t['credit_singular'] : __( 'credit', 'one-ba-auctions' );
+		$credit_plural   = ! empty( $t['credit_plural'] ) ? $t['credit_plural'] : __( 'credits', 'one-ba-auctions' );
 		return array(
 			'registered'        => __( 'Registered', 'one-ba-auctions' ),
 			'registration_fail' => __( 'Registration failed. Please try again.', 'one-ba-auctions' ),
@@ -98,6 +100,8 @@ class OBA_Frontend {
 			'refund_msg'        => ! empty( $t['refund_msg'] ) ? $t['refund_msg'] : __( 'Your reserved credits have been refunded.', 'one-ba-auctions' ),
 			'register_note'     => ! empty( $t['register_note'] ) ? $t['register_note'] : __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ),
 			'buy_credits_title' => ! empty( $t['buy_credits_title'] ) ? $t['buy_credits_title'] : __( 'Buy credits', 'one-ba-auctions' ),
+			'credit_singular'   => $credit_singular,
+			'credit_plural'     => $credit_plural,
 		);
 	}
 

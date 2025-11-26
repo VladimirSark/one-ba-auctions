@@ -85,7 +85,8 @@
 		const regBtn = $('.oba-register');
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
 		const fee = (state.data.registration_fee ?? state.data.registration_fee_credits ?? '').toString().trim();
-		const feeText = fee ? ` (${fee} cr)` : '';
+		const creditsLabel = state.data.credits_label || obaAuction.i18n?.credit_plural || 'credits';
+		const feeText = fee ? ` (${fee} ${creditsLabel})` : '';
 		regBtn.text(`${regText}${feeText}`);
 		if (state.data.user_registered) {
 			regBtn.addClass('oba-registered').prop('disabled', true);

@@ -83,6 +83,8 @@ class OBA_Settings {
 			'registration_fee_label' => '',
 			'registered_badge' => '',
 			'not_registered_badge' => '',
+			'credit_singular' => '',
+			'credit_plural'   => '',
 		);
 
 		$translations = array();

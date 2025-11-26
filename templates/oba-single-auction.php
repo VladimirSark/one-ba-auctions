@@ -35,7 +35,17 @@ $get      = function( $key, $default ) use ( $tr ) {
 					</span>
 				</div>
 				<div class="oba-phase-body">
-					<p><?php echo esc_html( sprintf( __( '%s: %s credits', 'one-ba-auctions' ), $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ), $meta['registration_fee'] ) ); ?></p>
+					<p>
+						<?php
+						/* translators: 1: label, 2: amount, 3: credits plural */
+						printf(
+							esc_html__( '%1$s: %2$s %3$s', 'one-ba-auctions' ),
+							esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ),
+							esc_html( $meta['registration_fee'] ),
+							esc_html( $get( 'credit_plural', __( 'credits', 'one-ba-auctions' ) ) )
+						);
+						?>
+					</p>
 					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
 					<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
 					<div class="oba-register-note">
