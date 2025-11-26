@@ -24,6 +24,7 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_edit_credits', array( $this, 'handle_edit_credits' ) );
 		add_action( 'admin_post_oba_save_settings', array( $this, 'handle_save_settings' ) );
 		add_action( 'admin_post_oba_save_translations', array( $this, 'handle_save_translations' ) );
+		add_action( 'admin_post_oba_save_emails', array( $this, 'handle_save_emails' ) );
 		add_action( 'admin_post_oba_run_expiry', array( $this, 'handle_run_expiry' ) );
 		add_action( 'admin_post_oba_remove_participant', array( $this, 'handle_remove_participant' ) );
 		add_action( 'admin_post_oba_export_participants', array( $this, 'handle_export_participants' ) );
@@ -55,6 +56,7 @@ class OBA_Admin {
 		add_submenu_page( 'oba-auctions', __( 'Audit Log', 'one-ba-auctions' ), __( 'Audit Log', 'one-ba-auctions' ), $cap, 'oba-audit', array( $this, 'render_audit_page' ) );
 		add_submenu_page( 'oba-auctions', __( 'Settings', 'one-ba-auctions' ), __( 'Settings', 'one-ba-auctions' ), $cap, 'oba-settings', array( $this, 'render_settings_page' ) );
 		add_submenu_page( 'oba-auctions', __( 'Translations', 'one-ba-auctions' ), __( 'Translations', 'one-ba-auctions' ), $cap, 'oba-translations', array( $this, 'render_translations_page' ) );
+		add_submenu_page( 'oba-auctions', __( 'Emails', 'one-ba-auctions' ), __( 'Emails', 'one-ba-auctions' ), $cap, 'oba-emails', array( $this, 'render_emails_page' ) );
 	}
 
 	private function get_status_filter() {
@@ -1056,6 +1058,70 @@ class OBA_Admin {
 		);
 
 		wp_redirect( admin_url( 'admin.php?page=oba-translations&updated=1' ) );
+		exit;
+	}
+
+	public function render_emails_page() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$settings = $this->settings;
+		$tpl      = isset( $settings['email_templates'] ) ? $settings['email_templates'] : array();
+		$fields   = array(
+			'pre_live'    => __( 'Pre-live (to registered participants)', 'one-ba-auctions' ),
+			'live'        => __( 'Live started (to registered participants)', 'one-ba-auctions' ),
+			'winner'      => __( 'Auction winner', 'one-ba-auctions' ),
+			'loser'       => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
+			'claim'       => __( 'Claim confirmation', 'one-ba-auctions' ),
+			'credits'     => __( 'Credits edited', 'one-ba-auctions' ),
+			'participant' => __( 'Participant status change', 'one-ba-auctions' ),
+		);
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></h1>
+			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {balance}, {status}.', 'one-ba-auctions' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'oba_save_emails' ); ?>
+				<input type="hidden" name="action" value="oba_save_emails" />
+				<table class="form-table">
+					<?php foreach ( $fields as $key => $label ) : ?>
+						<tr>
+							<th scope="row"><?php echo esc_html( $label ); ?></th>
+							<td>
+								<input type="text" name="email_templates[<?php echo esc_attr( $key ); ?>][subject]" value="<?php echo isset( $tpl[ $key ]['subject'] ) ? esc_attr( $tpl[ $key ]['subject'] ) : ''; ?>" placeholder="<?php esc_attr_e( 'Subject', 'one-ba-auctions' ); ?>" style="width:100%;max-width:520px;margin-bottom:6px;" />
+								<textarea name="email_templates[<?php echo esc_attr( $key ); ?>][body]" rows="4" style="width:100%;max-width:520px;" placeholder="<?php esc_attr_e( 'Body (HTML allowed)', 'one-ba-auctions' ); ?>"><?php echo isset( $tpl[ $key ]['body'] ) ? esc_textarea( $tpl[ $key ]['body'] ) : ''; ?></textarea>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+				<?php submit_button( __( 'Save Emails', 'one-ba-auctions' ) ); ?>
+			</form>
+		</div>
+		<?php
+	}
+
+	public function handle_save_emails() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+
+		check_admin_referer( 'oba_save_emails' );
+
+		$new = array();
+		if ( isset( $_POST['email_templates'] ) && is_array( $_POST['email_templates'] ) ) {
+			foreach ( $_POST['email_templates'] as $key => $tpl ) {
+				$new[ $key ] = array(
+					'subject' => isset( $tpl['subject'] ) ? sanitize_text_field( wp_unslash( $tpl['subject'] ) ) : '',
+					'body'    => isset( $tpl['body'] ) ? wp_kses_post( $tpl['body'] ) : '',
+				);
+			}
+		}
+
+		$settings                     = OBA_Settings::get_settings();
+		$settings['email_templates']  = $new;
+		update_option( OBA_Settings::OPTION_KEY, $settings );
+
+		wp_redirect( admin_url( 'admin.php?page=oba-emails&updated=1' ) );
 		exit;
 	}
 

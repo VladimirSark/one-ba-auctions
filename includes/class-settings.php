@@ -21,6 +21,7 @@ class OBA_Settings {
 			'email_from_name'         => get_bloginfo( 'name' ),
 			'email_from_address'      => get_option( 'admin_email' ),
 			'translations'            => array(),
+			'email_templates'         => array(),
 		);
 	}
 
@@ -53,6 +54,7 @@ class OBA_Settings {
 			'email_from_name'         => isset( $data['email_from_name'] ) ? sanitize_text_field( wp_unslash( $data['email_from_name'] ) ) : $defaults['email_from_name'],
 			'email_from_address'      => isset( $data['email_from_address'] ) ? sanitize_email( wp_unslash( $data['email_from_address'] ) ) : $defaults['email_from_address'],
 			'translations'            => isset( $data['translations'] ) && is_array( $data['translations'] ) ? array_map( 'sanitize_text_field', $data['translations'] ) : ( isset( $stored['translations'] ) ? $stored['translations'] : array() ),
+			'email_templates'         => isset( $data['email_templates'] ) && is_array( $data['email_templates'] ) ? self::sanitize_email_templates( $data['email_templates'] ) : ( isset( $stored['email_templates'] ) ? $stored['email_templates'] : array() ),
 		);
 
 		update_option( self::OPTION_KEY, $new );
@@ -115,5 +117,16 @@ class OBA_Settings {
 		update_option( self::OPTION_KEY, $settings );
 
 		return $settings;
+	}
+
+	private static function sanitize_email_templates( $templates ) {
+		$clean = array();
+		foreach ( (array) $templates as $key => $tpl ) {
+			$clean[ $key ] = array(
+				'subject' => isset( $tpl['subject'] ) ? sanitize_text_field( wp_unslash( $tpl['subject'] ) ) : '',
+				'body'    => isset( $tpl['body'] ) ? wp_kses_post( $tpl['body'] ) : '',
+			);
+		}
+		return $clean;
 	}
 }

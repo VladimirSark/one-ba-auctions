@@ -268,6 +268,14 @@
 - **DB:** No schema change (stored in existing settings option).
 - **Constraints/Assumptions:** Only select labels are exposed; defaults still use translation functions if overrides are empty.
 - **How to test:** Go to Custom Auctions → Translations, set custom text for steps/lobby/register/bid, save, reload auction page to see updated labels.
+
+## 2025-11-21 — Email templates admin page
+- **Summary:** Added an Emails submenu to view/edit outgoing email subjects/bodies (pre-live, live, winner, loser, claim confirmation, credits edit, participant status) with token support; templates applied via the mailer.
+- **Why:** Let admins customize customer emails without code changes.
+- **Files/Classes:** `includes/class-settings.php`, `includes/class-admin.php`, `includes/class-email.php`.
+- **DB:** No schema change (templates stored in settings).
+- **Constraints/Assumptions:** Supported tokens: `{user_name}`, `{auction_title}`, `{auction_link}`, `{claim_price}`, `{bid_cost}`, `{balance}`, `{status}`, `{seconds}`.
+- **How to test:** Update templates in Custom Auctions → Emails; trigger events (pre-live, live, end, claim, credits edit, participant status) and verify emails reflect custom subject/body.
 ## 2025-11-21 — Auction page redesign
 - **Summary:** Rebuilt single auction template with two-column layout (product left, phase cards right), top 4-step explainer bar, collapsible phase cards, refreshed styling, and floating bottom-right credits pill (global) with modal links.
 - **Why:** Improve clarity of the auction flow and separate product info from live controls while keeping credits accessible.

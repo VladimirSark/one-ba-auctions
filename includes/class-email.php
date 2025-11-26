@@ -11,6 +11,25 @@ class OBA_Email {
 		$this->settings = OBA_Settings::get_settings();
 	}
 
+	private function resolve_template( $key, $subject, $body, $tokens = array() ) {
+		$tpls = isset( $this->settings['email_templates'] ) ? $this->settings['email_templates'] : array();
+		if ( isset( $tpls[ $key ]['subject'] ) && $tpls[ $key ]['subject'] ) {
+			$subject = $tpls[ $key ]['subject'];
+		}
+		if ( isset( $tpls[ $key ]['body'] ) && $tpls[ $key ]['body'] ) {
+			$body = $tpls[ $key ]['body'];
+		}
+		if ( $tokens ) {
+			$replace = array();
+			foreach ( $tokens as $tk => $val ) {
+				$replace[ '{' . $tk . '}' ] = $val;
+			}
+			$subject = strtr( $subject, $replace );
+			$body    = strtr( $body, $replace );
+		}
+		return array( $subject, $body );
+	}
+
 	private function send( $user_id, $subject, $body, $cta_label = '', $cta_url = '' ) {
 		$user = get_user_by( 'id', $user_id );
 		if ( ! $user || ! $user->user_email ) {
@@ -52,52 +71,79 @@ class OBA_Email {
 	}
 
 	public function notify_prelive( $auction_id, $user_ids, $seconds ) {
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'pre_live',
+			__( '[Auction] Countdown to live: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" will go live soon.<br />Countdown: <strong>{seconds}s</strong>.<br />Get ready to bid as soon as it goes live.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
+				'seconds'       => (int) $seconds,
+			)
+		);
 		foreach ( $user_ids as $uid ) {
-			$subject = __( 'Auction pre-live countdown started', 'one-ba-auctions' );
-			$body    = sprintf(
-				__( 'The auction "%1$s" is moving to live soon. Countdown: %2$d seconds.', 'one-ba-auctions' ),
-				esc_html( $this->auction_title( $auction_id ) ),
-				(int) $seconds
-			);
-			$body   .= '<br />' . esc_html__( 'Get ready to bid as soon as it goes live.', 'one-ba-auctions' );
-			$this->send( $uid, $subject, $body, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+			$this->send( $uid, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 		}
 	}
 
 	public function notify_live( $auction_id, $user_ids, $meta ) {
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'live',
+			__( '[Auction] Live now: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" is now <strong>LIVE</strong>.<br />Bid cost: {bid_cost} credits. Claim price: {claim_price} credits.<br />Live timer: {live_timer}s (resets on each bid).<br /><a href="{auction_link}">Bid now</a>', 'one-ba-auctions' ),
+			array(
+				'auction_title' => $this->auction_title( $auction_id ),
+				'bid_cost'      => (float) $meta['bid_cost_credits'],
+				'claim_price'   => (float) $meta['claim_price_credits'],
+				'live_timer'    => (int) $meta['live_timer_seconds'],
+				'auction_link'  => $this->product_link( $auction_id ),
+			)
+		);
 		foreach ( $user_ids as $uid ) {
-			$subject = __( 'Auction is live', 'one-ba-auctions' );
-			$body    = sprintf(
-				__( 'The auction "%1$s" is now LIVE.', 'one-ba-auctions' ),
-				esc_html( $this->auction_title( $auction_id ) )
-			);
-			$body   .= '<br />' . sprintf( __( 'Bid cost: %s credits. Claim price: %s credits.', 'one-ba-auctions' ), (float) $meta['bid_cost_credits'], (float) $meta['claim_price_credits'] );
-			$body   .= '<br />' . sprintf( __( 'Live timer: %d seconds. Each bid resets the timer.', 'one-ba-auctions' ), (int) $meta['live_timer_seconds'] );
-			$this->send( $uid, $subject, $body, __( 'Bid now', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+			$this->send( $uid, $subject_tpl, $body_tpl, __( 'Bid now', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 		}
 	}
 
 	public function notify_end_winner( $auction_id, $winner_id, $details ) {
-		$subject = __( 'You won the auction!', 'one-ba-auctions' );
-		$body    = sprintf( __( 'Congratulations! You won "%s".', 'one-ba-auctions' ), esc_html( $this->auction_title( $auction_id ) ) );
-		$body   .= '<br />' . sprintf( __( 'Claim price: %s credits.', 'one-ba-auctions' ), isset( $details['claim_price'] ) ? (float) $details['claim_price'] : 0 );
-		$body   .= '<br />' . __( 'Click below to claim your prize.', 'one-ba-auctions' );
+		list( $subject, $body ) = $this->resolve_template(
+			'winner',
+			__( '[Auction] You won: {auction_title}', 'one-ba-auctions' ),
+			__( 'Congrats {user_name}!<br />You won "<strong>{auction_title}</strong>".<br />Claim price: <strong>{claim_price} credits</strong>.<br />Click below to claim your prize.', 'one-ba-auctions' ),
+			array(
+				'auction_title' => $this->auction_title( $auction_id ),
+				'claim_price'   => isset( $details['claim_price'] ) ? (float) $details['claim_price'] : 0,
+				'auction_link'  => $this->product_link( $auction_id ),
+			)
+		);
 		$this->send( $winner_id, $subject, $body, __( 'Claim now', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 	}
 
 	public function notify_end_losers( $auction_id, $loser_ids, $details ) {
+		list( $subject, $body ) = $this->resolve_template(
+			'loser',
+			__( '[Auction] Ended: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" has ended.<br />Your reserved credits have been refunded.<br />Thanks for participating!', 'one-ba-auctions' ),
+			array(
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
+			)
+		);
 		foreach ( $loser_ids as $uid ) {
-			$subject = __( 'Auction ended', 'one-ba-auctions' );
-			$body    = sprintf( __( 'The auction "%s" has ended.', 'one-ba-auctions' ), esc_html( $this->auction_title( $auction_id ) ) );
-			$body   .= '<br />' . __( 'Your reserved credits have been refunded.', 'one-ba-auctions' );
 			$this->send( $uid, $subject, $body, __( 'View auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 		}
 	}
 
 	public function notify_credits_edit( $user_id, $old, $new ) {
-		$delta   = $new - $old;
-		$subject = __( 'Your credits balance was updated', 'one-ba-auctions' );
-		$body    = sprintf( __( 'Your credits balance was changed by %1$s. New balance: %2$s credits.', 'one-ba-auctions' ), $delta, $new );
+		$delta = $new - $old;
+		list( $subject, $body ) = $this->resolve_template(
+			'credits',
+			__( '[Auction] Your credits were updated', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
+			array(
+				'delta'   => $delta,
+				'balance' => $new,
+			)
+		);
 		$this->send( $user_id, $subject, $body );
 	}
 
@@ -105,7 +151,6 @@ class OBA_Email {
 		if ( ! $user_id ) {
 			return;
 		}
-		$subject = __( 'Your auction participation was updated', 'one-ba-auctions' );
 		$status_label = $status;
 		if ( 'removed' === $status ) {
 			$status_label = __( 'removed', 'one-ba-auctions' );
@@ -114,10 +159,15 @@ class OBA_Email {
 		} elseif ( 'active' === $status ) {
 			$status_label = __( 'restored', 'one-ba-auctions' );
 		}
-		$body = sprintf(
-			__( 'Your status for auction "%1$s" has been set to %2$s.', 'one-ba-auctions' ),
-			esc_html( $this->auction_title( $auction_id ) ),
-			$status_label
+		list( $subject, $body ) = $this->resolve_template(
+			'participant',
+			__( '[Auction] Participation updated', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
+			array(
+				'auction_title' => $this->auction_title( $auction_id ),
+				'status'        => $status_label,
+				'auction_link'  => $this->product_link( $auction_id ),
+			)
 		);
 		$this->send( $user_id, $subject, $body, __( 'View auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 	}
