@@ -843,10 +843,7 @@ class OBA_Admin {
 				break;
 			case 'live':
 				update_post_meta( $auction_id, '_auction_status', 'live' );
-				$meta   = $this->repo->get_auction_meta( $auction_id );
-				$timer  = max( 1, (int) $meta['live_timer_seconds'] );
-				$expire = gmdate( 'Y-m-d H:i:s', time() + $timer );
-				update_post_meta( $auction_id, '_live_expires_at', $expire );
+				update_post_meta( $auction_id, '_live_expires_at', '' );
 				OBA_Audit_Log::log( 'start_live', array(), $auction_id );
 				break;
 			case 'force_end':
@@ -1171,10 +1168,7 @@ class OBA_Admin {
 
 			if ( 'oba_bulk_live' === $doaction ) {
 				update_post_meta( $post_id, '_auction_status', 'live' );
-				$meta   = $this->repo->get_auction_meta( $post_id );
-				$timer  = max( 1, (int) $meta['live_timer_seconds'] );
-				$expire = gmdate( 'Y-m-d H:i:s', time() + $timer );
-				update_post_meta( $post_id, '_live_expires_at', $expire );
+				update_post_meta( $post_id, '_live_expires_at', '' );
 				OBA_Audit_Log::log( 'bulk_start_live', array(), $post_id );
 			} elseif ( 'oba_bulk_force_end' === $doaction ) {
 				update_post_meta( $post_id, '_auction_status', 'live' );

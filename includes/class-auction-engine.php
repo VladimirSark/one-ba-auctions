@@ -87,10 +87,6 @@ class OBA_Auction_Engine {
 		$meta = $this->repo->get_auction_meta( $auction_id );
 
 		if ( $meta['auction_status'] !== 'pre_live' ) {
-			// If someone manually set status to live but timer missing, ensure timer exists.
-			if ( $meta['auction_status'] === 'live' && empty( $meta['live_expires_at'] ) ) {
-				$this->reset_live_timer( $auction_id, $meta );
-			}
 			return;
 		}
 
@@ -102,7 +98,7 @@ class OBA_Auction_Engine {
 
 		if ( time() >= $deadline ) {
 			update_post_meta( $auction_id, '_auction_status', 'live' );
-			$this->reset_live_timer( $auction_id, $meta );
+			update_post_meta( $auction_id, '_live_expires_at', '' );
 			$this->notify_live( $auction_id, $meta );
 		}
 	}

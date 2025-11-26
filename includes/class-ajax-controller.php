@@ -284,7 +284,7 @@ class OBA_Ajax_Controller {
 			'current_participants'      => $participant_count,
 			'pre_live_seconds_left'     => $this->calculate_seconds_left( $meta['pre_live_start'], $meta['prelive_timer_seconds'] ),
 			'pre_live_total'            => (int) $meta['prelive_timer_seconds'],
-			'live_seconds_left'         => $this->calculate_seconds_left( $meta['live_expires_at'], 0, true ),
+			'live_seconds_left'         => $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'], true ),
 			'live_total'                => (int) $meta['live_timer_seconds'],
 			'user_bids_count'           => $user_bids,
 			'user_cost'                 => $user_bids * (float) $meta['bid_cost_credits'],
@@ -307,7 +307,7 @@ class OBA_Ajax_Controller {
 
 	private function calculate_seconds_left( $start_time, $duration, $absolute = false ) {
 		if ( ! $start_time ) {
-			return 0;
+			return (int) $duration;
 		}
 
 		$start = strtotime( $start_time );
