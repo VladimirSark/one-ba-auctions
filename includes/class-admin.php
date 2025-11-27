@@ -1105,9 +1105,18 @@ class OBA_Admin {
 				<?php wp_nonce_field( 'oba_send_test_email' ); ?>
 				<input type="hidden" name="action" value="oba_send_test_email" />
 				<label>
-					<?php esc_html_e( 'Send a generic test to admin email.', 'one-ba-auctions' ); ?>
+					<?php esc_html_e( 'Send test emails (subjects/bodies) to admin email:', 'one-ba-auctions' ); ?>
 				</label>
-				<?php submit_button( __( 'Send Test', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
+				<div style="margin:6px 0;">
+					<label><input type="checkbox" name="templates[]" value="pre_live" checked /> <?php esc_html_e( 'Pre-live', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="live" checked /> <?php esc_html_e( 'Live', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="winner" checked /> <?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="loser" checked /> <?php esc_html_e( 'Loser', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="claim" checked /> <?php esc_html_e( 'Claim confirmation', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="credits" checked /> <?php esc_html_e( 'Credits edited', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label>
+				</div>
+				<?php submit_button( __( 'Send Selected Tests', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
 			</form>
 		</div>
 		<?php
@@ -1147,10 +1156,16 @@ class OBA_Admin {
 
 		$admin_email = get_option( 'admin_email' );
 		if ( class_exists( 'OBA_Email' ) && $admin_email ) {
-			$mailer  = new OBA_Email();
-			$subject = __( '[Auction] Test email', 'one-ba-auctions' );
-			$body    = __( 'This is a test email from Custom Auctions.', 'one-ba-auctions' );
-			$mailer->send_raw( $admin_email, $subject, $body );
+			$mailer = new OBA_Email();
+			$templates = isset( $_POST['templates'] ) && is_array( $_POST['templates'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['templates'] ) ) : array();
+			if ( empty( $templates ) ) {
+				$templates = array( 'pre_live', 'live', 'winner', 'loser', 'claim', 'credits', 'participant' );
+			}
+			foreach ( $templates as $tpl_key ) {
+				$subject = sprintf( __( '[Auction Test] %s', 'one-ba-auctions' ), $tpl_key );
+				$body    = sprintf( __( 'This is a test email for template: %s', 'one-ba-auctions' ), esc_html( $tpl_key ) );
+				$mailer->send_raw( $admin_email, $subject, $body );
+			}
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=oba-emails&test=1' ) );
