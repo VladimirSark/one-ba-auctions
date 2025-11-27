@@ -11,6 +11,21 @@ class OBA_Email {
 		$this->settings = OBA_Settings::get_settings();
 	}
 
+	public function send_raw( $email, $subject, $body ) {
+		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		$from_name  = $this->settings['email_from_name'];
+		$from_email = $this->settings['email_from_address'];
+		if ( $from_email ) {
+			$headers[] = 'From: ' . ( $from_name ? $from_name : get_bloginfo( 'name' ) ) . ' <' . $from_email . '>';
+		}
+		$html = '<div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+			<div style="background:#0f172a;color:#fff;padding:12px 16px;font-weight:700;">' . esc_html( get_bloginfo( 'name' ) ) . '</div>
+			<div style="padding:16px;color:#0f172a;line-height:1.6;font-size:14px;">' . wp_kses_post( $body ) . '</div>
+			<div style="padding:12px 16px;font-size:12px;color:#6b7280;background:#f8fafc;">' . esc_html( get_bloginfo( 'name' ) ) . '</div>
+		</div>';
+		return wp_mail( $email, $subject, $html, $headers );
+	}
+
 	private function resolve_template( $key, $subject, $body, $tokens = array() ) {
 		$tpls = isset( $this->settings['email_templates'] ) ? $this->settings['email_templates'] : array();
 		if ( isset( $tpls[ $key ]['subject'] ) && $tpls[ $key ]['subject'] ) {

@@ -25,6 +25,8 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_save_settings', array( $this, 'handle_save_settings' ) );
 		add_action( 'admin_post_oba_save_translations', array( $this, 'handle_save_translations' ) );
 		add_action( 'admin_post_oba_save_emails', array( $this, 'handle_save_emails' ) );
+		add_action( 'admin_post_oba_send_test_email', array( $this, 'handle_send_test_email' ) );
+		add_action( 'admin_post_nopriv_oba_send_test_email', array( $this, 'handle_send_test_email' ) );
 		add_action( 'admin_post_oba_run_expiry', array( $this, 'handle_run_expiry' ) );
 		add_action( 'admin_post_oba_remove_participant', array( $this, 'handle_remove_participant' ) );
 		add_action( 'admin_post_oba_export_participants', array( $this, 'handle_export_participants' ) );
@@ -1096,6 +1098,17 @@ class OBA_Admin {
 				</table>
 				<?php submit_button( __( 'Save Emails', 'one-ba-auctions' ) ); ?>
 			</form>
+
+			<hr />
+			<h2><?php esc_html_e( 'Send Test Email', 'one-ba-auctions' ); ?></h2>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top:12px;">
+				<?php wp_nonce_field( 'oba_send_test_email' ); ?>
+				<input type="hidden" name="action" value="oba_send_test_email" />
+				<label>
+					<?php esc_html_e( 'Send a generic test to admin email.', 'one-ba-auctions' ); ?>
+				</label>
+				<?php submit_button( __( 'Send Test', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
+			</form>
 		</div>
 		<?php
 	}
@@ -1122,6 +1135,25 @@ class OBA_Admin {
 		update_option( OBA_Settings::OPTION_KEY, $settings );
 
 		wp_redirect( admin_url( 'admin.php?page=oba-emails&updated=1' ) );
+		exit;
+	}
+
+	public function handle_send_test_email() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+
+		check_admin_referer( 'oba_send_test_email' );
+
+		$admin_email = get_option( 'admin_email' );
+		if ( class_exists( 'OBA_Email' ) && $admin_email ) {
+			$mailer  = new OBA_Email();
+			$subject = __( '[Auction] Test email', 'one-ba-auctions' );
+			$body    = __( 'This is a test email from Custom Auctions.', 'one-ba-auctions' );
+			$mailer->send_raw( $admin_email, $subject, $body );
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=oba-emails&test=1' ) );
 		exit;
 	}
 
