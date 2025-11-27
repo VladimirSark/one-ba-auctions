@@ -1161,11 +1161,7 @@ class OBA_Admin {
 			if ( empty( $templates ) ) {
 				$templates = array( 'pre_live', 'live', 'winner', 'loser', 'claim', 'credits', 'participant' );
 			}
-			foreach ( $templates as $tpl_key ) {
-				$subject = sprintf( __( '[Auction Test] %s', 'one-ba-auctions' ), $tpl_key );
-				$body    = sprintf( __( 'This is a test email for template: %s', 'one-ba-auctions' ), esc_html( $tpl_key ) );
-				$mailer->send_raw( $admin_email, $subject, $body );
-			}
+			$mailer->send_test_templates( $templates, $admin_email );
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=oba-emails&test=1' ) );

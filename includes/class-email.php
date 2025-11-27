@@ -85,6 +85,86 @@ class OBA_Email {
 		return get_the_title( $auction_id ) ?: sprintf( __( 'Auction #%d', 'one-ba-auctions' ), $auction_id );
 	}
 
+	public function send_test_templates( $keys, $email ) {
+		if ( empty( $keys ) || ! $email ) {
+			return;
+		}
+		$tokens_base = array(
+			'user_name'     => 'Admin',
+			'auction_title' => 'Test Auction',
+			'auction_link'  => home_url(),
+			'claim_price'   => 10,
+			'bid_cost'      => 1,
+			'live_timer'    => 10,
+			'seconds'       => 15,
+			'balance'       => 99,
+			'status'        => __( 'active', 'one-ba-auctions' ),
+		);
+		foreach ( $keys as $key ) {
+			$subject = __( '[Auction Test]', 'one-ba-auctions' );
+			$body    = __( 'This is a test email.', 'one-ba-auctions' );
+			switch ( $key ) {
+				case 'pre_live':
+					list( $subject, $body ) = $this->resolve_template(
+						'pre_live',
+						__( '[Auction] Countdown to live: {auction_title}', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" will go live soon.<br />Countdown: <strong>{seconds}s</strong>.<br />Get ready to bid as soon as it goes live.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+				case 'live':
+					list( $subject, $body ) = $this->resolve_template(
+						'live',
+						__( '[Auction] Live now: {auction_title}', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" is now <strong>LIVE</strong>.<br />Bid cost: {bid_cost} credits. Claim price: {claim_price} credits.<br />Live timer: {live_timer}s (resets on each bid).<br /><a href="{auction_link}">Bid now</a>', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+				case 'winner':
+					list( $subject, $body ) = $this->resolve_template(
+						'winner',
+						__( '[Auction] You won: {auction_title}', 'one-ba-auctions' ),
+						__( 'Congrats {user_name}!<br />You won "<strong>{auction_title}</strong>".<br />Claim price: <strong>{claim_price} credits</strong>.<br />Click below to claim your prize.', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+				case 'loser':
+					list( $subject, $body ) = $this->resolve_template(
+						'loser',
+						__( '[Auction] Ended: {auction_title}', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" has ended.<br />Your reserved credits have been refunded.<br />Thanks for participating!', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+				case 'claim':
+					list( $subject, $body ) = $this->resolve_template(
+						'claim',
+						__( '[Auction] Claim confirmation', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />Your claim for "<strong>{auction_title}</strong>" has started.<br />Order/claim price: {claim_price} credits.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+				case 'credits':
+					list( $subject, $body ) = $this->resolve_template(
+						'credits',
+						__( '[Auction] Your credits were updated', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
+						array_merge( $tokens_base, array( 'delta' => 5 ) )
+					);
+					break;
+				case 'participant':
+					list( $subject, $body ) = $this->resolve_template(
+						'participant',
+						__( '[Auction] Participation updated', 'one-ba-auctions' ),
+						__( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
+						$tokens_base
+					);
+					break;
+			}
+			$this->send_raw( $email, $subject, $body );
+		}
+	}
+
 	public function notify_prelive( $auction_id, $user_ids, $seconds ) {
 		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
 			'pre_live',
