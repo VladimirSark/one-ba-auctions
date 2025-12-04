@@ -984,6 +984,10 @@ class OBA_Admin {
 			'claim_cancel' => __( 'Claim cancel button', 'one-ba-auctions' ),
 			'claim_error' => __( 'Claim error message label', 'one-ba-auctions' ),
 			'credits_pill_label' => __( 'Credits pill label', 'one-ba-auctions' ),
+			'stage2_tip'       => __( 'Tooltip: Countdown lock', 'one-ba-auctions' ),
+			'stage3_tip'       => __( 'Tooltip: Live lock', 'one-ba-auctions' ),
+			'stage4_tip'       => __( 'Tooltip: Ended lock', 'one-ba-auctions' ),
+			'stage1_tip'       => __( 'Tooltip: Registration', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1058,6 +1062,10 @@ class OBA_Admin {
 				'claim_cancel' => isset( $_POST['claim_cancel'] ) ? $_POST['claim_cancel'] : '',
 				'claim_error' => isset( $_POST['claim_error'] ) ? $_POST['claim_error'] : '',
 				'credits_pill_label' => isset( $_POST['credits_pill_label'] ) ? $_POST['credits_pill_label'] : '',
+				'stage2_tip'       => isset( $_POST['stage2_tip'] ) ? $_POST['stage2_tip'] : '',
+				'stage3_tip'       => isset( $_POST['stage3_tip'] ) ? $_POST['stage3_tip'] : '',
+				'stage4_tip'       => isset( $_POST['stage4_tip'] ) ? $_POST['stage4_tip'] : '',
+				'stage1_tip'       => isset( $_POST['stage1_tip'] ) ? $_POST['stage1_tip'] : '',
 			)
 		);
 

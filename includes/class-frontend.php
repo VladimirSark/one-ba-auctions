@@ -122,6 +122,10 @@ class OBA_Frontend {
 			'claim_cancel' => ! empty( $t['claim_cancel'] ) ? $t['claim_cancel'] : __( 'Cancel', 'one-ba-auctions' ),
 			'claim_error' => ! empty( $t['claim_error'] ) ? $t['claim_error'] : __( 'Claim failed. Please try again.', 'one-ba-auctions' ),
 			'credits_pill_label' => ! empty( $t['credits_pill_label'] ) ? $t['credits_pill_label'] : __( 'Credits', 'one-ba-auctions' ),
+			'stage1_tip'       => ! empty( $t['stage1_tip'] ) ? $t['stage1_tip'] : '',
+			'stage2_tip'       => ! empty( $t['stage2_tip'] ) ? $t['stage2_tip'] : '',
+			'stage3_tip'       => ! empty( $t['stage3_tip'] ) ? $t['stage3_tip'] : '',
+			'stage4_tip'       => ! empty( $t['stage4_tip'] ) ? $t['stage4_tip'] : '',
 		);
 	}
 

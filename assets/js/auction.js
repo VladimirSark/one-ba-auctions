@@ -542,4 +542,26 @@
 			showToast(obaAuction.i18n?.link_copied || 'Link copied');
 		}
 	});
+
+	const tip = $('<div class="oba-tip"></div>').appendTo('body');
+	$(document).on('mouseenter', '.oba-phase-icon', function () {
+		const text = $(this).data('tip');
+		if (!text) return;
+		tip.text(text).show();
+		const offset = $(this).offset();
+		const width = $(this).outerWidth();
+		const tipWidth = tip.outerWidth();
+		tip.css({
+			top: offset.top - tip.outerHeight() - 6,
+			left: offset.left + (width / 2) - (tipWidth / 2),
+		});
+	});
+	$(document).on('mouseleave', '.oba-phase-icon', () => {
+		tip.hide();
+	});
+	$(document).on('click', '.oba-phase-icon', function (e) {
+		const text = $(this).data('tip');
+		if (!text) return;
+		e.preventDefault();
+	});
 })(jQuery);

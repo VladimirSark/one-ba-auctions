@@ -19,6 +19,12 @@ $tr       = isset( $settings['translations'] ) ? $settings['translations'] : arr
 $get      = function( $key, $default ) use ( $tr ) {
 	return ! empty( $tr[ $key ] ) ? $tr[ $key ] : $default;
 };
+$stage_tips = array(
+	'registration' => isset( $tr['stage1_tip'] ) ? $tr['stage1_tip'] : '',
+	'pre_live' => isset( $tr['stage2_tip'] ) ? $tr['stage2_tip'] : '',
+	'live'     => isset( $tr['stage3_tip'] ) ? $tr['stage3_tip'] : '',
+	'ended'    => isset( $tr['stage4_tip'] ) ? $tr['stage4_tip'] : '',
+);
 ?>
 
 <div class="oba-auction-wrap">
@@ -27,7 +33,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>1.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step1_label', __( 'Registration', 'one-ba-auctions' ) ) ); ?></span></div>
-					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+					<span class="oba-phase-icon icon-lock" aria-hidden="true" data-tip="<?php echo esc_attr( $stage_tips['registration'] ); ?>">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
 						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
@@ -97,7 +103,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 			<div class="oba-card oba-phase-card is-collapsed" data-step="pre_live">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>2.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step2_label', __( 'Countdown to Live', 'one-ba-auctions' ) ) ); ?></span></div>
-					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+					<span class="oba-phase-icon icon-lock" aria-hidden="true" data-tip="<?php echo esc_attr( $stage_tips['pre_live'] ); ?>">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
 						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
@@ -114,7 +120,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 			<div class="oba-card oba-phase-card is-collapsed" data-step="live">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>3.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step3_label', __( 'Live Bidding', 'one-ba-auctions' ) ) ); ?></span></div>
-					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+					<span class="oba-phase-icon icon-lock" aria-hidden="true" data-tip="<?php echo esc_attr( $stage_tips['live'] ); ?>">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
 						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>
@@ -156,7 +162,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 			<div class="oba-card oba-phase-card is-collapsed" data-step="ended">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>4.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step4_label', __( 'Auction Ended', 'one-ba-auctions' ) ) ); ?></span></div>
-					<span class="oba-phase-icon icon-lock" aria-hidden="true">
+					<span class="oba-phase-icon icon-lock" aria-hidden="true" data-tip="<?php echo esc_attr( $stage_tips['ended'] ); ?>">
 						<span class="icon icon-check"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'check-circle' ) ); ?></span>
 						<span class="icon icon-lock"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'lock' ) ); ?></span>
 						<span class="icon icon-up"><?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'chevron-up' ) ); ?></span>

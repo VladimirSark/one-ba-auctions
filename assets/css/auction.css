@@ -168,6 +168,24 @@
 .oba-phase-icon.icon-check .icon-check { display: inline-flex; color: #22c55e; }
 .oba-phase-icon.icon-up .icon-up { display: inline-flex; color: #3b82f6; }
 .oba-phase-icon.icon-down .icon-down { display: inline-flex; color: #0f172a; }
+.oba-phase-header .oba-phase-icon {
+	display: inline-flex;
+}
+
+.oba-tip {
+	position: absolute;
+	background: #0f172a;
+	color: #fff;
+	padding: 8px 10px;
+	border-radius: 8px;
+	font-size: 12px;
+	line-height: 1.4;
+	box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+	transform: translate(-50%, -8px);
+	white-space: nowrap;
+	z-index: 140000;
+	display: none;
+}
 
 .oba-phase-body {
 	margin-top: 14px;
