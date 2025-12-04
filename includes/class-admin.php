@@ -983,6 +983,7 @@ class OBA_Admin {
 			'claim_continue' => __( 'Claim continue button', 'one-ba-auctions' ),
 			'claim_cancel' => __( 'Claim cancel button', 'one-ba-auctions' ),
 			'claim_error' => __( 'Claim error message label', 'one-ba-auctions' ),
+			'credits_pill_label' => __( 'Credits pill label', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1056,6 +1057,7 @@ class OBA_Admin {
 				'claim_continue' => isset( $_POST['claim_continue'] ) ? $_POST['claim_continue'] : '',
 				'claim_cancel' => isset( $_POST['claim_cancel'] ) ? $_POST['claim_cancel'] : '',
 				'claim_error' => isset( $_POST['claim_error'] ) ? $_POST['claim_error'] : '',
+				'credits_pill_label' => isset( $_POST['credits_pill_label'] ) ? $_POST['credits_pill_label'] : '',
 			)
 		);
 

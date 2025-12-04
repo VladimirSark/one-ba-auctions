@@ -121,6 +121,7 @@ class OBA_Frontend {
 			'claim_continue' => ! empty( $t['claim_continue'] ) ? $t['claim_continue'] : __( 'Continue', 'one-ba-auctions' ),
 			'claim_cancel' => ! empty( $t['claim_cancel'] ) ? $t['claim_cancel'] : __( 'Cancel', 'one-ba-auctions' ),
 			'claim_error' => ! empty( $t['claim_error'] ) ? $t['claim_error'] : __( 'Claim failed. Please try again.', 'one-ba-auctions' ),
+			'credits_pill_label' => ! empty( $t['credits_pill_label'] ) ? $t['credits_pill_label'] : __( 'Credits', 'one-ba-auctions' ),
 		);
 	}
 
@@ -143,6 +144,10 @@ class OBA_Frontend {
 			}
 		}
 
+		$translations    = isset( $settings['translations'] ) ? $settings['translations'] : array();
+		$pill_label      = ! empty( $translations['credits_pill_label'] ) ? $translations['credits_pill_label'] : __( 'Credits', 'one-ba-auctions' );
+		$buy_title       = ! empty( $translations['buy_credits_title'] ) ? $translations['buy_credits_title'] : __( 'Buy credits', 'one-ba-auctions' );
+
 		$credits_service = new OBA_Credits_Service();
 		$balance         = $credits_service->get_balance( get_current_user_id() );
 		$is_low          = $balance < 10;
@@ -159,10 +164,10 @@ class OBA_Frontend {
 		}
 
 		$low_class = $is_low ? ' low' : '';
-		echo '<div class="oba-credit-pill' . esc_attr( $low_class ) . '" data-balance="' . esc_attr( $balance ) . '"><span class="oba-credit-balance">Credits: ' . esc_html( $balance ) . '</span><span class="oba-credit-links">' . $html_links . '</span></div>';
+		echo '<div class="oba-credit-pill' . esc_attr( $low_class ) . '" data-balance="' . esc_attr( $balance ) . '"><span class="oba-credit-balance">' . esc_html( $pill_label ) . ': ' . esc_html( $balance ) . '</span><span class="oba-credit-links">' . $html_links . '</span></div>';
 
 		if ( $render_modal ) {
-			echo '<div class="oba-credit-overlay" style="display:none;"></div><div class="oba-credit-modal" style="display:none;"><div class="oba-credit-modal__inner"><button class="oba-credit-close" type="button" aria-label="' . esc_attr__( 'Close', 'one-ba-auctions' ) . '">&times;</button><h4>' . esc_html__( 'Buy credits', 'one-ba-auctions' ) . '</h4><div class="oba-credit-options"></div></div></div>';
+			echo '<div class="oba-credit-overlay" style="display:none;"></div><div class="oba-credit-modal" style="display:none;"><div class="oba-credit-modal__inner"><button class="oba-credit-close" type="button" aria-label="' . esc_attr__( 'Close', 'one-ba-auctions' ) . '">&times;</button><h4>' . esc_html( $buy_title ) . '</h4><div class="oba-credit-options"></div></div></div>';
 		}
 
 		// Ensure styling is present on non-auction pages where main stylesheet may not enqueue.
@@ -170,8 +175,36 @@ class OBA_Frontend {
 		.oba-credit-pill{position:fixed;right:16px;bottom:16px;background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;font-weight:700;z-index:120005;box-shadow:0 10px 24px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;}
 		.oba-credit-pill.low{background:#b91c1c;}
 		.oba-credit-pill .oba-credit-links{display:none;}
+		.oba-credit-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:120000;display:none;}
+		.oba-credit-modal{position:fixed;left:50%;top:120px;transform:translateX(-50%);background:#fff;border-radius:10px;box-shadow:0 20px 40px rgba(0,0,0,0.25);z-index:120001;min-width:260px;max-width:90%;max-height:calc(100vh - 200px);overflow:auto;padding:16px;display:none;}
+		.oba-credit-options a{display:inline-block;padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 4px 10px rgba(0,0,0,0.12);}
 		@media(max-width:480px){.oba-credit-pill{right:10px;bottom:10px;padding:8px 12px;font-size:12px;}}
 		</style>';
+
+		// Minimal JS to open modal on non-auction pages.
+		echo '<script>
+		(function(){
+			var pill=document.querySelector(".oba-credit-pill");
+			var overlay=document.querySelector(".oba-credit-overlay");
+			var modal=document.querySelector(".oba-credit-modal");
+			var close=document.querySelector(".oba-credit-close");
+			if(!pill){return;}
+			var opts=document.querySelector(".oba-credit-options");
+			if(opts){opts.innerHTML="";';
+		foreach ( $links as $idx => $url ) {
+			if ( empty( $url ) ) {
+				continue;
+			}
+			$label = ! empty( $labels[ $idx ] ) ? $labels[ $idx ] : sprintf( __( 'Pack %d', 'one-ba-auctions' ), $idx + 1 );
+			echo 'opts.insertAdjacentHTML("beforeend","<a href=\'' . esc_url( $url ) . '\' target=\'_blank\' rel=\'noopener\'>' . esc_html( $label ) . '</a>");';
+		}
+		echo '}
+			function open(){ if(overlay) overlay.style.display="block"; if(modal) modal.style.display="block"; }
+			function closeModal(){ if(overlay) overlay.style.display="none"; if(modal) modal.style.display="none"; }
+			pill.addEventListener("click",function(e){ if(e.target.closest("a")) return; open();});
+			if(overlay){ overlay.addEventListener("click",closeModal); }
+			if(close){ close.addEventListener("click",function(e){e.preventDefault(); closeModal();}); }
+		})();</script>';
 	}
 
 	public function shortcode_balance() {

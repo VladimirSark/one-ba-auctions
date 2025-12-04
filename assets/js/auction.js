@@ -481,7 +481,8 @@
 			balance = parseFloat(pill.data('balance') || 0);
 		}
 		pill.attr('data-balance', balance);
-		pill.find('.oba-credit-balance').text(`Credits: ${balance}`);
+		const label = obaAuction.i18n?.credits_pill_label || 'Credits';
+		pill.find('.oba-credit-balance').text(`${label}: ${balance}`);
 		if (balance < 10) {
 			pill.addClass('low');
 		} else {

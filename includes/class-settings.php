@@ -106,6 +106,7 @@ class OBA_Settings {
 			'claim_continue' => '',
 			'claim_cancel' => '',
 			'claim_error' => '',
+			'credits_pill_label' => '',
 		);
 
 		$translations = array();
