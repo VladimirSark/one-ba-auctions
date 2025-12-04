@@ -52,9 +52,6 @@ $get      = function( $key, $default ) use ( $tr ) {
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
 					</div>
-					<div class="oba-registered-note" style="display:none;">
-						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
-					</div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
 							<?php
@@ -84,8 +81,17 @@ $get      = function( $key, $default ) use ( $tr ) {
 					<?php endif; ?>
 					<div class="oba-actions">
 						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
+					</div>
+					<div class="oba-registered-note" style="display:none;margin-top:8px;">
+						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
+						<div class="oba-share-buttons">
+							<a class="oba-share-btn oba-share-fb" href="#" data-network="facebook"><?php esc_html_e( 'Share on Facebook', 'one-ba-auctions' ); ?></a>
+							<a class="oba-share-btn oba-share-instagram" href="#" data-network="instagram"><?php esc_html_e( 'Share on Instagram', 'one-ba-auctions' ); ?></a>
+							<a class="oba-share-btn oba-share-x" href="#" data-network="x"><?php esc_html_e( 'Share on X', 'one-ba-auctions' ); ?></a>
+							<a class="oba-share-btn oba-share-copy" href="#" data-network="copy"><?php esc_html_e( 'Copy link', 'one-ba-auctions' ); ?></a>
+						</div>
+					</div>
 				</div>
-			</div>
 			</div>
 
 			<div class="oba-card oba-phase-card is-collapsed" data-step="pre_live">

@@ -518,4 +518,28 @@
 		e.preventDefault();
 		closeCreditModal();
 	});
+
+	$(document).on('click', '.oba-share-btn', function (e) {
+		e.preventDefault();
+		const network = $(this).data('network');
+		const url = window.location.href;
+		if (network === 'facebook') {
+			window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener');
+		} else if (network === 'instagram') {
+			window.open(`https://www.instagram.com/?url=${encodeURIComponent(url)}`, '_blank', 'noopener');
+		} else if (network === 'x') {
+			window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`, '_blank', 'noopener');
+		} else if (network === 'copy') {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(url);
+			} else {
+				const temp = $('<input>');
+				$('body').append(temp);
+				temp.val(url).select();
+				document.execCommand('copy');
+				temp.remove();
+			}
+			showToast(obaAuction.i18n?.link_copied || 'Link copied');
+		}
+	});
 })(jQuery);

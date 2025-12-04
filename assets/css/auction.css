@@ -321,6 +321,31 @@
 	display: none;
 }
 
+.oba-share-buttons {
+	display: flex;
+	gap: 8px;
+	margin-top: 6px;
+	flex-wrap: wrap;
+}
+
+.oba-share-buttons .oba-share-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 8px 10px;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	color: #0f172a;
+	background: #fff;
+	cursor: pointer;
+}
+
+.oba-share-buttons .oba-share-btn:hover {
+	background: #f1f5f9;
+}
 .oba-toast.oba-error {
 	background: #b91c1c;
 }
