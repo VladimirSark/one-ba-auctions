@@ -491,10 +491,14 @@ class OBA_Admin {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'User Credits', 'one-ba-auctions' ); ?></h1>
-			<table class="widefat fixed striped">
+			<div style="overflow-x:auto;">
+			<table class="widefat fixed striped" style="min-width: 1100px; table-layout: auto;">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'User ID', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Username', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Name', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Email', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Balance', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Updated', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Edit', 'one-ba-auctions' ); ?></th>
@@ -504,12 +508,21 @@ class OBA_Admin {
 				<tbody>
 					<?php if ( $credits ) : ?>
 						<?php foreach ( $credits as $row ) : ?>
+							<?php
+							$user      = get_userdata( (int) $row['user_id'] );
+							$username  = $user ? $user->user_login : __( 'Unknown', 'one-ba-auctions' );
+							$full_name = $user ? trim( $user->first_name . ' ' . $user->last_name ) : '';
+							$email     = $user ? $user->user_email : '';
+							?>
 							<tr>
 								<td><?php echo esc_html( $row['user_id'] ); ?></td>
+								<td><?php echo esc_html( $username ); ?></td>
+								<td><?php echo esc_html( $full_name ); ?></td>
+								<td><?php echo esc_html( $email ); ?></td>
 								<td><?php echo esc_html( $row['credits_balance'] ); ?></td>
 								<td><?php echo esc_html( $row['updated_at'] ); ?></td>
 								<td>
-									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex; gap:6px; align-items:center;">
+									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
 										<input type="hidden" name="action" value="oba_edit_credits" />
 										<input type="hidden" name="user_id" value="<?php echo esc_attr( $row['user_id'] ); ?>" />
 										<?php wp_nonce_field( 'oba_edit_credits_' . $row['user_id'] ); ?>
@@ -521,10 +534,11 @@ class OBA_Admin {
 							</tr>
 						<?php endforeach; ?>
 					<?php else : ?>
-						<tr><td colspan="5"><?php esc_html_e( 'No credit records yet.', 'one-ba-auctions' ); ?></td></tr>
+						<tr><td colspan="8"><?php esc_html_e( 'No credit records yet.', 'one-ba-auctions' ); ?></td></tr>
 					<?php endif; ?>
 				</tbody>
 			</table>
+			</div>
 		</div>
 		<?php
 	}
