@@ -111,6 +111,8 @@ class OBA_Settings {
 			'stage3_tip'       => '',
 			'stage4_tip'       => '',
 			'stage1_tip'       => '',
+			'login_prompt'     => '',
+			'login_button'     => '',
 		);
 
 		$translations = array();

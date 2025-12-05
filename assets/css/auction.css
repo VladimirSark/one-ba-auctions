@@ -520,6 +520,26 @@
 	margin-top: 8px;
 }
 
+.oba-login-cta {
+	margin-top: 10px;
+	padding: 12px;
+	border: 1px solid #e5e7eb;
+	background: #fff7ed;
+	border-radius: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+.oba-login-cta__text {
+	font-size: 13px;
+	color: #7c2d12;
+	font-weight: 600;
+}
+.oba-login-cta .button {
+	margin-left: auto;
+}
+
 .oba-last-refreshed {
 	display: none;
 }

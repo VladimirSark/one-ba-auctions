@@ -498,12 +498,23 @@
 	}
 
 	function showLoginHint() {
-		const hint = $('.oba-login-hint');
-		if (!hint.length) return;
-		if (obaAuction.login_url) {
-			hint.find('a').attr('href', obaAuction.login_url);
+		const cta = $('.oba-login-cta');
+		if (cta.length) {
+			if (obaAuction.login_url) {
+				cta.attr('data-login-url', obaAuction.login_url);
+				cta.find('a').attr('href', obaAuction.login_url);
+			}
+			cta.show();
+			$('html, body').animate({ scrollTop: cta.offset().top - 40 }, 250);
+			return;
 		}
-		hint.show();
+		const hint = $('.oba-login-hint');
+		if (hint.length) {
+			if (obaAuction.login_url) {
+				hint.find('a').attr('href', obaAuction.login_url);
+			}
+			hint.show();
+		}
 	}
 
 	$(document).on('click', '.oba-credit-pill', (e) => {
