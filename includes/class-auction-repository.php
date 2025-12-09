@@ -7,12 +7,14 @@ class OBA_Auction_Repository {
 
 	public function get_auction_meta( $auction_id ) {
 		$meta = array(
-			'registration_fee_credits' => (float) get_post_meta( $auction_id, '_registration_fee_credits', true ),
-			'bid_cost_credits'         => (float) get_post_meta( $auction_id, '_bid_cost_credits', true ),
+			'registration_fee_credits' => 0.0,
+			'bid_cost_credits'         => 0.0,
 			'required_participants'    => (int) get_post_meta( $auction_id, '_required_participants', true ),
 			'live_timer_seconds'       => (int) get_post_meta( $auction_id, '_live_timer_seconds', true ),
 			'prelive_timer_seconds'    => (int) get_post_meta( $auction_id, '_prelive_timer_seconds', true ),
-			'claim_price_credits'      => (float) get_post_meta( $auction_id, '_claim_price_credits', true ),
+			'claim_price_credits'      => 0.0,
+			'bid_product_id'           => (int) get_post_meta( $auction_id, '_bid_product_id', true ),
+			'registration_points'      => (float) get_post_meta( $auction_id, '_registration_points', true ),
 			'auction_status'           => get_post_meta( $auction_id, '_auction_status', true ) ?: 'registration',
 			'pre_live_start'           => get_post_meta( $auction_id, '_pre_live_start', true ),
 			'live_expires_at'          => get_post_meta( $auction_id, '_live_expires_at', true ),
@@ -58,7 +60,7 @@ class OBA_Auction_Repository {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT user_id, credits_reserved, created_at FROM {$table} WHERE auction_id = %d ORDER BY sequence_number DESC LIMIT %d",
+				"SELECT user_id, credits_reserved, created_at, auction_id FROM {$table} WHERE auction_id = %d ORDER BY sequence_number DESC LIMIT %d",
 				$auction_id,
 				$limit
 			),
@@ -132,5 +134,31 @@ class OBA_Auction_Repository {
 		$rows = $wpdb->get_col( $query );
 
 		return array_map( 'intval', $rows ?: array() );
+	}
+
+	public function get_total_bid_count( $auction_id ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'auction_bids';
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table} WHERE auction_id = %d",
+				$auction_id
+			)
+		);
+	}
+
+	public function get_pending_registrations_for_user( $auction_id, $user_id ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'auction_participants';
+
+		return (bool) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT 1 FROM {$table} WHERE auction_id = %d AND user_id = %d AND status = %s",
+				$auction_id,
+				$user_id,
+				'pending'
+			)
+		);
 	}
 }

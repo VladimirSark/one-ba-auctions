@@ -85,6 +85,51 @@ class OBA_Email {
 		return get_the_title( $auction_id ) ?: sprintf( __( 'Auction #%d', 'one-ba-auctions' ), $auction_id );
 	}
 
+	public function notify_registration_pending( $user_id, $data ) {
+		$auction_id = isset( $data['auction_id'] ) ? (int) $data['auction_id'] : 0;
+		$order_id   = isset( $data['order_id'] ) ? (int) $data['order_id'] : 0;
+		list( $subject, $body ) = $this->resolve_template(
+			'registration_pending',
+			__( '[Auction] Registration pending', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is pending approval/payment.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'     => $this->get_user_name( $user_id ),
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
+				'order_id'      => $order_id,
+			)
+		);
+		$this->send( $user_id, $subject, $body, __( 'View auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+	}
+
+	public function notify_registration_approved( $user_id, $data ) {
+		$auction_id = isset( $data['auction_id'] ) ? (int) $data['auction_id'] : 0;
+		$order_id   = isset( $data['order_id'] ) ? (int) $data['order_id'] : 0;
+		list( $subject, $body ) = $this->resolve_template(
+			'registration_approved',
+			__( '[Auction] Registration approved', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is now active.<br />Order: #{order_id}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'     => $this->get_user_name( $user_id ),
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
+				'order_id'      => $order_id,
+			)
+		);
+		$this->send( $user_id, $subject, $body, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+	}
+
+	private function get_user_name( $user_id ) {
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return __( 'Customer', 'one-ba-auctions' );
+		}
+		if ( $user->first_name ) {
+			return $user->first_name;
+		}
+		return $user->display_name ? $user->display_name : $user->user_login;
+	}
+
 	public function send_test_templates( $keys, $email ) {
 		if ( empty( $keys ) || ! $email ) {
 			return;
@@ -136,19 +181,35 @@ class OBA_Email {
 						$tokens_base
 					);
 					break;
-				case 'claim':
-					list( $subject, $body ) = $this->resolve_template(
-						'claim',
-						__( '[Auction] Claim confirmation', 'one-ba-auctions' ),
-						__( 'Hi {user_name},<br />Your claim for "<strong>{auction_title}</strong>" has started.<br />Order/claim price: {claim_price} credits.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
-						$tokens_base
-					);
-					break;
-				case 'credits':
-					list( $subject, $body ) = $this->resolve_template(
-						'credits',
-						__( '[Auction] Your credits were updated', 'one-ba-auctions' ),
-						__( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
+			case 'claim':
+				list( $subject, $body ) = $this->resolve_template(
+					'claim',
+					__( '[Auction] Claim confirmation', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your claim for "<strong>{auction_title}</strong>" has started.<br />Order/claim price: {claim_price} credits.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'registration_pending':
+				list( $subject, $body ) = $this->resolve_template(
+					'registration_pending',
+					__( '[Auction] Registration pending', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is pending approval/payment.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'registration_approved':
+				list( $subject, $body ) = $this->resolve_template(
+					'registration_approved',
+					__( '[Auction] Registration approved', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is now active.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'credits':
+				list( $subject, $body ) = $this->resolve_template(
+					'credits',
+					__( '[Auction] Your credits were updated', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
 						array_merge( $tokens_base, array( 'delta' => 5 ) )
 					);
 					break;

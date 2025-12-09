@@ -50,31 +50,11 @@ class OBA_Product_Type {
 	public function render_fields() {
 		echo '<div id="oba_auction_product_data" class="panel woocommerce_options_panel">';
 
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_registration_fee_credits',
-				'label'       => __( 'Registration fee (credits)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'desc_tip'    => true,
-				'description' => __( 'Credits required to register.', 'one-ba-auctions' ),
-				'custom_attributes' => array(
-					'step' => '0.01',
-					'min'  => '0',
-				),
-			)
-		);
-
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_bid_cost_credits',
-				'label'       => __( 'Bid cost (credits)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '0.01',
-					'min'  => '0',
-				),
-			)
-		);
+		$bid_products = $this->get_products_by_meta( '_is_bid_product' );
+		$settings     = OBA_Settings::get_settings();
+		$current_id   = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$current_pts  = $current_id ? (float) get_post_meta( $current_id, '_registration_points', true ) : 0;
+		$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
 
 		woocommerce_wp_text_input(
 			array(
@@ -112,18 +92,6 @@ class OBA_Product_Type {
 			)
 		);
 
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_claim_price_credits',
-				'label'       => __( 'Claim price (credits)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '0.01',
-					'min'  => '0',
-				),
-			)
-		);
-
 		woocommerce_wp_select(
 			array(
 				'id'      => '_auction_status',
@@ -137,18 +105,74 @@ class OBA_Product_Type {
 			)
 		);
 
+		woocommerce_wp_select(
+			array(
+				'id'          => '_bid_product_id',
+				'label'       => __( 'Bid fee product', 'one-ba-auctions' ),
+				'options'     => $bid_products,
+				'desc_tip'    => true,
+				'description' => __( 'Product representing cost per bid.', 'one-ba-auctions' ),
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'          => '_registration_points',
+				'label'       => __( 'Registration points required', 'one-ba-auctions' ),
+				'type'        => 'number',
+				'custom_attributes' => array(
+					'step' => '1',
+					'min'  => '0',
+				),
+				'description' => __( 'Points deducted from user on registration (no WC order).', 'one-ba-auctions' ),
+				'desc_tip'    => true,
+			)
+		);
+		?>
+		<p>
+			<strong><?php esc_html_e( 'Registration value (approx.):', 'one-ba-auctions' ); ?></strong>
+			<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( $current_pts * $points_rate ) ); ?></span>
+			<br><span class="description"><?php esc_html_e( 'Uses the Points value from settings to estimate money value.', 'one-ba-auctions' ); ?></span>
+		</p>
+		<script>
+			jQuery(function($){
+				const rate = <?php echo wp_json_encode( $points_rate ); ?>;
+				const participants = parseFloat($('#_required_participants').val() || 0);
+				function calc() {
+					const pts = parseFloat($('#_registration_points').val() || 0);
+					const val = pts * rate * (participants || 1);
+					$('#oba_reg_points_value').text(obaFormatPrice(val));
+				}
+				function obaFormatPrice(val){
+					if (typeof wcSettings !== 'undefined' && wcSettings.currency) {
+						const c = wcSettings.currency;
+						const formatter = new Intl.NumberFormat(c.thousands_sep ? navigator.language : undefined, {
+							style: 'currency',
+							currency: c.currency_code || c.code || 'USD',
+							minimumFractionDigits: c.currency_minor_unit || 2,
+							maximumFractionDigits: c.currency_minor_unit || 2
+						});
+						try { return formatter.format(val); } catch(e) {}
+					}
+					return val.toFixed(2);
+				}
+				$('#_registration_points').on('input', calc);
+				$('#_required_participants').on('input', calc);
+				calc();
+			});
+		</script>
+		<?php
+
 		echo '</div>';
 	}
 
 	public function save_fields( $product_id ) {
 		$fields = array(
-			'_registration_fee_credits',
-			'_bid_cost_credits',
 			'_required_participants',
 			'_live_timer_seconds',
 			'_prelive_timer_seconds',
-			'_claim_price_credits',
 			'_auction_status',
+			'_bid_product_id',
+			'_registration_points',
 		);
 
 		foreach ( $fields as $field ) {
@@ -163,6 +187,29 @@ class OBA_Product_Type {
 				update_post_meta( $product_id, $field, $value );
 			}
 		}
+	}
+
+	private function get_products_by_meta( $meta_key ) {
+		$options = array( '' => __( '— Select —', 'one-ba-auctions' ) );
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => 200,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					array(
+						'key'   => $meta_key,
+						'value' => 'yes',
+					),
+				),
+			)
+		);
+		if ( $q->have_posts() ) {
+			foreach ( $q->posts as $id ) {
+				$options[ $id ] = get_the_title( $id ) . ' (#' . $id . ')';
+			}
+		}
+		return $options;
 	}
 
 	public function render_frontend_wrapper() {

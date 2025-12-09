@@ -6,10 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class OBA_Auction_Engine {
 
 	private $credits;
+	private $points;
 	private $repo;
 
 	public function __construct() {
 		$this->credits = new OBA_Credits_Service();
+		$this->points  = new OBA_Points_Service();
 		$this->repo    = new OBA_Auction_Repository();
 	}
 
@@ -36,33 +38,17 @@ class OBA_Auction_Engine {
 			return true;
 		}
 
-		$registration_fee = (float) $meta['registration_fee_credits'];
-		$balance          = $this->credits->get_balance( $user_id );
-
-		if ( $balance < $registration_fee ) {
-			return new WP_Error( 'insufficient_credits', __( 'Not enough credits to register.', 'one-ba-auctions' ) );
+		if ( ! $this->user_has_membership( $user_id ) ) {
+			return new WP_Error( 'membership_required', __( 'Membership required to register.', 'one-ba-auctions' ) );
 		}
 
-		global $wpdb;
-
-		$this->credits->subtract_credits( $user_id, $registration_fee );
-		if ( class_exists( 'OBA_Ledger' ) ) {
-			OBA_Ledger::record( $user_id, - $registration_fee, $this->credits->get_balance( $user_id ), 'registration_fee', $auction_id );
+		$required_points = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+		if ( $required_points > 0 ) {
+			$deduct = $this->points->deduct_points( $user_id, $required_points );
+			if ( is_wp_error( $deduct ) ) {
+				return $deduct;
+			}
 		}
-
-		$table = $wpdb->prefix . 'auction_participants';
-		$wpdb->insert(
-			$table,
-			array(
-				'auction_id'              => $auction_id,
-				'user_id'                 => $user_id,
-				'registration_fee_credits'=> $registration_fee,
-				'status'                  => 'active',
-			),
-			array( '%d', '%d', '%f', '%s' )
-		);
-
-		$this->maybe_start_pre_live( $auction_id );
 
 		return true;
 	}
@@ -81,6 +67,41 @@ class OBA_Auction_Engine {
 			update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
 			$this->notify_pre_live( $auction_id, $meta );
 		}
+	}
+
+
+	public function get_bid_fee_amount( $meta ) {
+		if ( empty( $meta['bid_product_id'] ) ) {
+			return 0;
+		}
+		$product = wc_get_product( $meta['bid_product_id'] );
+		if ( $product && '' !== $product->get_price() ) {
+			return (float) $product->get_price();
+		}
+		return 0;
+	}
+
+	public function enroll_participant( $auction_id, $user_id, $fee = 0 ) {
+		global $wpdb;
+		if ( $this->repo->is_user_registered( $auction_id, $user_id ) ) {
+			return;
+		}
+		$table = $wpdb->prefix . 'auction_participants';
+		$wpdb->insert(
+			$table,
+			array(
+				'auction_id'              => $auction_id,
+				'user_id'                 => $user_id,
+				'registration_fee_credits'=> $fee,
+				'status'                  => 'active',
+			),
+			array( '%d', '%d', '%f', '%s' )
+		);
+		$this->maybe_start_pre_live( $auction_id );
+	}
+
+	public function user_has_membership( $user_id ) {
+		return (bool) get_user_meta( $user_id, '_oba_has_membership', true );
 	}
 
 	public function maybe_move_to_live( $auction_id ) {
@@ -119,19 +140,9 @@ class OBA_Auction_Engine {
 			return new WP_Error( 'already_leading', __( 'You are already the leading bidder.', 'one-ba-auctions' ) );
 		}
 
-		$bid_cost = (float) $meta['bid_cost_credits'];
-		$balance  = $this->credits->get_balance( $user_id );
-
-		if ( $balance < $bid_cost ) {
-			return new WP_Error( 'insufficient_credits', __( 'Not enough credits to bid.', 'one-ba-auctions' ) );
-		}
+		$bid_cost = $this->get_bid_fee_amount( $meta );
 
 		global $wpdb;
-
-		$this->credits->subtract_credits( $user_id, $bid_cost );
-		if ( class_exists( 'OBA_Ledger' ) ) {
-			OBA_Ledger::record( $user_id, - $bid_cost, $this->credits->get_balance( $user_id ), 'bid', $auction_id );
-		}
 
 		$table          = $wpdb->prefix . 'auction_bids';
 		$sequence       = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(MAX(sequence_number),0) FROM {$table} WHERE auction_id = %d", $auction_id ) ) + 1;

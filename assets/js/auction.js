@@ -1,5 +1,6 @@
 (function ($) {
 	const state = { data: null };
+	let membershipPrompt = false;
 
 	const statusLabels = {
 		registration: obaAuction.i18n?.step1_short || '1. Registration',
@@ -65,9 +66,12 @@
 		if (!state.data) return;
 
 		const status = state.data.status;
+		const unlocked = !!state.data.registration_unlocked;
+		const pointsBalance = Number(state.data.user_points_balance || 0);
 
 		updateStepBar(status);
 		updatePhaseCards(status);
+		applyMembershipLocks(status);
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
 		const lobbyLabel = obaAuction.i18n?.lobby_progress || 'Lobby progress';
@@ -80,26 +84,29 @@
 		updateBar('.oba-live-bar span', Number(state.data.live_seconds_left), Number(state.data.live_total));
 
 		$('.oba-user-bids').text(state.data.user_bids_count);
-		$('.oba-user-cost').text(state.data.user_cost);
-
+		const userCost = (state.data.user_cost_plain || state.data.user_cost_formatted || state.data.user_cost || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+		$('.oba-user-cost').text(userCost);
 		const regBtn = $('.oba-register');
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
-		const fee = (state.data.registration_fee ?? state.data.registration_fee_credits ?? '').toString().trim();
-		const creditsLabel = state.data.credits_label || obaAuction.i18n?.credit_plural || 'credits';
-		const feeText = fee ? ` (${fee} ${creditsLabel})` : '';
-		regBtn.text(`${regText}${feeText}`);
-		if (state.data.user_registered) {
+		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
+		regBtn.text(`${regText}${fee ? ` (${fee} pts)` : ''}`);
+		if (!unlocked) {
+			regBtn.prop('disabled', true);
+			showAlert(obaAuction.i18n?.membership_required || 'Membership required to register.');
+		} else if (state.data.user_registered) {
 			regBtn.addClass('oba-registered').prop('disabled', true);
 			$('.oba-terms').hide();
 			$('.oba-registered-note').show();
 			$('.oba-not-registered').hide();
-			$('.oba-registered').show();
+			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').show();
+			$('.oba-pending-banner').hide();
 		} else {
 			regBtn.removeClass('oba-registered').prop('disabled', false);
 			$('.oba-terms').show();
 			$('.oba-registered-note').hide();
 			$('.oba-not-registered').show();
 			$('.oba-registered').hide();
+			$('.oba-pending-banner').hide();
 		}
 
 		const bidBtn = $('.oba-bid');
@@ -114,12 +121,12 @@
 		historyList.empty();
 		(state.data.history || []).slice(0, 5).forEach((row) => {
 			const time = formatTimeStamp(row.time);
-			historyList.append(`<li><span>${row.name}</span><span>${row.cost} cr</span><span>${time}</span></li>`);
+			const totalText = (row.total_bids_value_formatted || row.total_bids_value || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			historyList.append(`<li><span>${row.name}</span><span>${time}</span><span class="oba-history-value">${totalText}</span></li>`);
 		});
 
 		if (state.data.error_message) {
 			showAlert(state.data.error_message);
-			showToast(state.data.error_message, true);
 		} else {
 			clearAlert();
 		}
@@ -140,16 +147,31 @@
 
 		if (state.data.current_user_is_winner) {
 			$('.oba-winner-claim').show();
-			$('.oba-claim-amount').text(state.data.claim_amount);
+			const claimText = (state.data.claim_amount || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			$('.oba-claim-amount').text(claimText);
+			const stats = state.data.winner_stats || {};
+			$('.oba-win-bids-count').text(stats.bid_count || 0);
+			const valueText = (stats.bid_value_plain || stats.bid_value_fmt || stats.bid_value || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			$('.oba-win-bids-value').text(valueText || '0');
+			if (state.data.claim_pending) {
+				$('.oba-claim').prop('disabled', true).text(obaAuction.i18n?.registration_pending || 'Pending approval');
+				$('.oba-claim-status').text(obaAuction.i18n?.registration_pending || 'Pending approval').show();
+			} else {
+				$('.oba-claim').prop('disabled', false).text(obaAuction.i18n?.claim_button || 'Claim now');
+				$('.oba-claim-status').hide();
+			}
 			$('.oba-loser').hide();
 		} else {
 			$('.oba-winner-claim').hide();
 			if (status === 'ended') {
 				$('.oba-loser').show();
+				$('.oba-lose-bids-count').text(state.data.user_bids_count || 0);
+				const loseValue = (state.data.user_cost_plain || state.data.user_cost_formatted || state.data.user_cost || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+				$('.oba-lose-bids-value').text(loseValue || '0');
 			}
 		}
 
-		updateCreditPill(state.data.user_credits_balance);
+		updateCreditPill(pointsBalance, state.data.membership_active);
 	}
 
 	function updatePhaseCards(status) {
@@ -219,7 +241,7 @@
 			const label = $(el).find('.label');
 			const desc = $(el).find('.desc');
 			const map = {
-				registration: { label: obaAuction.i18n?.step1_label || 'Registration', desc: obaAuction.i18n?.step1_desc || 'Join the lobby with credits.' },
+				registration: { label: obaAuction.i18n?.step1_label || 'Registration', desc: obaAuction.i18n?.step1_desc || 'Join the lobby with points.' },
 				pre_live: { label: obaAuction.i18n?.step2_label || 'Countdown to Live', desc: obaAuction.i18n?.step2_desc || 'Short pre-live timer.' },
 				live: { label: obaAuction.i18n?.step3_label || 'Live Bidding', desc: obaAuction.i18n?.step3_desc || 'Bid, reset timer, compete.' },
 				ended: { label: obaAuction.i18n?.step4_label || 'Auction Ended', desc: obaAuction.i18n?.step4_desc || 'Claim or view results.' },
@@ -242,6 +264,44 @@
 		$(selector).css('width', `${percent}%`);
 	}
 
+	function buildMembershipButtons(container) {
+		const links = obaAuction.membership_links || [];
+		const labels = obaAuction.membership_labels || [];
+		container.empty();
+		for (let i = 0; i < 3; i++) {
+			const urlRaw = (links[i] || obaAuction.login_url || '#').toString().trim();
+			const labelRaw = (labels[i] || '').toString().trim();
+			const btnLabel = labelRaw || `Membership ${i + 1}`;
+			container.append(`<a href="${urlRaw}" target="_blank" rel="noopener">${btnLabel}</a>`);
+		}
+		if (!container.children().length) {
+			container.append('<p style="margin:0;">' + (obaAuction.i18n?.membership_required || 'Membership required to register.') + '</p>');
+		}
+	}
+
+	function applyMembershipLocks(status) {
+		const hasMembership = !!state.data.membership_active;
+		const unlocked = !!state.data.registration_unlocked;
+		const layoutOverlay = $('.oba-membership-overlay');
+		const pointsOverlay = $('.oba-points-overlay');
+		pointsOverlay.hide();
+		if (!unlocked) {
+			buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
+			layoutOverlay.css('display', 'flex');
+			$('.oba-phase-card').addClass('is-collapsed');
+		} else {
+			layoutOverlay.hide();
+		}
+
+		// If user is unlocked/registered but points are too low to register (balance < fee), show prompt to top-up.
+		const balance = Number(state.data.user_points_balance || 0);
+		const fee = Number(state.data.registration_fee_plain || state.data.registration_fee || 0);
+		if (unlocked && fee && balance < fee) {
+			buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
+			pointsOverlay.css('display', 'flex');
+		}
+	}
+
 	function register() {
 		if (obaAuction.terms_text && !$('.oba-terms-checkbox').is(':checked')) {
 			$('.oba-terms').addClass('oba-terms-error');
@@ -259,6 +319,17 @@
 			},
 			(response) => {
 				if (response && response.success) {
+					if (response.data && response.data.redirect_url) {
+						window.location = response.data.redirect_url;
+						return;
+					}
+					if (response.data && response.data.cart_url) {
+						window.location = response.data.cart_url;
+						return;
+					}
+					if (response.data && response.data.state) {
+						state.data = response.data.state;
+					}
 					state.data = response.data;
 					clearAlert();
 					showToast(obaAuction.i18n?.registration_success_custom || obaAuction.i18n?.registered || 'Registered');
@@ -317,12 +388,11 @@
 		if (!state.data || state.data.status !== 'ended' || !state.data.current_user_is_winner) {
 			return;
 		}
-		openClaimModal();
+		submitClaim();
 	}
 
 	function openClaimModal() {
-		$('.oba-modal-overlay').show();
-		$('.oba-claim-modal').show();
+		// Deprecated: direct checkout flow now.
 	}
 
 	function closeClaimModal() {
@@ -340,25 +410,29 @@
 	}
 
 	function submitClaim() {
-		const method = $('input[name="oba-claim-method"]:checked').val() || 'credits';
 		$.post(
 			obaAuction.ajax_url,
 			{
 				action: 'auction_claim_prize',
 				auction_id: obaAuction.auction_id,
 				nonce: obaAuction.nonce,
-				payment_method: method,
 			},
 			(response) => {
 				if (response && response.success && response.data.redirect_url) {
 					showToast(obaAuction.i18n?.claim_started_custom || obaAuction.i18n?.claim_started || 'Claim started');
-					setTimeout(() => {
-						window.location = response.data.redirect_url;
-					}, 200);
+					window.location = response.data.redirect_url;
+					return;
+				}
+				if (response && response.data && response.data.cart_url) {
+					window.location = response.data.cart_url;
+					return;
+				}
+				if (response && response.data && response.data.redirect_url) {
+					window.location = response.data.redirect_url;
 					return;
 				}
 				if (response && response.message) {
-					$('.oba-claim-error').text(response.message).show();
+					showAlert(response.message);
 					showToast(response.message, true);
 				} else {
 					showToast(obaAuction.i18n?.claim_failed_custom || obaAuction.i18n?.claim_failed || 'Claim failed. Please try again.', true);
@@ -456,13 +530,13 @@
 		if (!modal.length || !overlay.length) return;
 		const container = modal.find('.oba-credit-options');
 		container.empty();
-		const links = (obaAuction.pack_links || []).filter(Boolean);
-		const labels = obaAuction.pack_labels || [];
+		const links = [];
+		const labels = [];
 		if (!links.length) {
 			container.append(`<p>${obaAuction.i18n?.buy_credits || 'Buy credits'}</p>`);
 		} else {
 			links.forEach((url, idx) => {
-				const label = labels[idx] || `Pack ${idx + 1}`;
+				const label = labels[idx] || `Plan ${idx + 1}`;
 				container.append(`<a href="${url}" target="_blank" rel="noopener">${label}</a>`);
 			});
 		}
@@ -474,19 +548,19 @@
 		$('.oba-credit-overlay, .oba-credit-modal').hide();
 	}
 
-	function updateCreditPill(balance) {
-		const pill = $('.oba-credit-pill');
-		if (!pill.length) return;
-		if (typeof balance === 'undefined' || balance === null) {
-			balance = parseFloat(pill.data('balance') || 0);
+	function updateCreditPill(balance, membershipActive = true) {
+		const pts = $('.oba-user-points');
+		if (pts.length) {
+			pts.text(balance);
 		}
-		pill.attr('data-balance', balance);
-		const label = obaAuction.i18n?.credits_pill_label || 'Credits';
-		pill.find('.oba-credit-balance').text(`${label}: ${balance}`);
-		if (balance < 10) {
-			pill.addClass('low');
-		} else {
-			pill.removeClass('low');
+		const pill = $('.oba-credit-amount');
+		if (pill.length) {
+			if (!membershipActive) {
+				pill.closest('.oba-credit-pill').hide();
+			} else {
+				pill.closest('.oba-credit-pill').show();
+			}
+			pill.text(balance);
 		}
 	}
 
@@ -516,6 +590,8 @@
 			hint.show();
 		}
 	}
+
+	function showMembershipLinks() {}
 
 	$(document).on('click', '.oba-credit-pill', (e) => {
 		if ($(e.target).is('a') || $(e.target).closest('a').length) {

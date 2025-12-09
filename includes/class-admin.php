@@ -19,6 +19,7 @@ class OBA_Admin {
 
 	public function hooks() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
+		add_action( 'admin_head', array( $this, 'hide_detail_submenu' ) );
 		add_action( 'admin_post_oba_set_status', array( $this, 'handle_set_status' ) );
 		add_action( 'admin_post_oba_recalc_winner', array( $this, 'handle_recalc_winner' ) );
 		add_action( 'admin_post_oba_edit_credits', array( $this, 'handle_edit_credits' ) );
@@ -28,8 +29,11 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_send_test_email', array( $this, 'handle_send_test_email' ) );
 		add_action( 'admin_post_nopriv_oba_send_test_email', array( $this, 'handle_send_test_email' ) );
 		add_action( 'admin_post_oba_run_expiry', array( $this, 'handle_run_expiry' ) );
+		add_action( 'admin_post_oba_manual_winner', array( $this, 'handle_manual_winner' ) );
 		add_action( 'admin_post_oba_remove_participant', array( $this, 'handle_remove_participant' ) );
+		add_action( 'admin_post_oba_approve_registration', array( $this, 'handle_approve_registration' ) );
 		add_action( 'admin_post_oba_export_participants', array( $this, 'handle_export_participants' ) );
+		add_action( 'admin_post_oba_save_membership', array( $this, 'handle_save_membership' ) );
 		add_filter( 'bulk_actions-edit-product', array( $this, 'register_bulk_actions' ) );
 		add_filter( 'handle_bulk_actions-edit-product', array( $this, 'handle_bulk_actions' ), 10, 3 );
 
@@ -40,25 +44,61 @@ class OBA_Admin {
 
 	public function register_menu() {
 		$cap = 'manage_woocommerce';
+		// New simplified menu container for future UX re-organization.
 		add_menu_page(
-			__( 'Custom Auctions', 'one-ba-auctions' ),
-			__( 'Custom Auctions', 'one-ba-auctions' ),
+			__( '1BA Auctions', 'one-ba-auctions' ),
+			__( '1BA Auctions', 'one-ba-auctions' ),
 			$cap,
-			'oba-auctions',
-			array( $this, 'render_auctions_page' ),
-			'dashicons-hammer',
-			56
+			'oba-1ba-auctions',
+			array( $this, 'render_1ba_placeholder_page' ),
+			'dashicons-awards',
+			57
 		);
+		add_submenu_page(
+			'oba-1ba-auctions',
+			__( 'All Auctions', 'one-ba-auctions' ),
+			__( 'All Auctions', 'one-ba-auctions' ),
+			$cap,
+			'oba-1ba-auctions',
+			array( $this, 'render_1ba_auctions_all' )
+		);
+		add_submenu_page(
+			'oba-1ba-auctions',
+			__( 'Audit Log', 'one-ba-auctions' ),
+			__( 'Audit Log', 'one-ba-auctions' ),
+			$cap,
+			'oba-1ba-audit',
+			array( $this, 'render_audit_page' )
+		);
+		add_submenu_page(
+			'oba-1ba-auctions',
+			__( 'Settings', 'one-ba-auctions' ),
+			__( 'Settings', 'one-ba-auctions' ),
+			$cap,
+			'oba-1ba-settings',
+			array( $this, 'render_settings_page' )
+		);
+		add_submenu_page(
+			'oba-1ba-auctions',
+			__( 'Memberships', 'one-ba-auctions' ),
+			__( 'Memberships', 'one-ba-auctions' ),
+			$cap,
+			'oba-1ba-memberships',
+			array( $this, 'render_memberships_page' )
+		);
+		// Hidden detail page for single auction view.
+		add_submenu_page(
+			'oba-1ba-auctions',
+			__( 'Auction Detail', 'one-ba-auctions' ),
+			__( 'Auction Detail', 'one-ba-auctions' ),
+			$cap,
+			'oba-1ba-auction',
+			array( $this, 'render_1ba_auction_detail' )
+		);
+	}
 
-		add_submenu_page( 'oba-auctions', __( 'Auctions', 'one-ba-auctions' ), __( 'Auctions', 'one-ba-auctions' ), $cap, 'oba-auctions', array( $this, 'render_auctions_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Winners', 'one-ba-auctions' ), __( 'Winners', 'one-ba-auctions' ), $cap, 'oba-winners', array( $this, 'render_winners_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Ended Logs', 'one-ba-auctions' ), __( 'Ended Logs', 'one-ba-auctions' ), $cap, 'oba-ended-logs', array( $this, 'render_ended_logs_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'User Credits', 'one-ba-auctions' ), __( 'User Credits', 'one-ba-auctions' ), $cap, 'oba-credits', array( $this, 'render_credits_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Participants', 'one-ba-auctions' ), __( 'Participants', 'one-ba-auctions' ), $cap, 'oba-participants', array( $this, 'render_participants_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Audit Log', 'one-ba-auctions' ), __( 'Audit Log', 'one-ba-auctions' ), $cap, 'oba-audit', array( $this, 'render_audit_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Settings', 'one-ba-auctions' ), __( 'Settings', 'one-ba-auctions' ), $cap, 'oba-settings', array( $this, 'render_settings_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Translations', 'one-ba-auctions' ), __( 'Translations', 'one-ba-auctions' ), $cap, 'oba-translations', array( $this, 'render_translations_page' ) );
-		add_submenu_page( 'oba-auctions', __( 'Emails', 'one-ba-auctions' ), __( 'Emails', 'one-ba-auctions' ), $cap, 'oba-emails', array( $this, 'render_emails_page' ) );
+	public function hide_detail_submenu() {
+		echo '<style>#toplevel_page_oba-1ba-auctions .wp-submenu a[href="admin.php?page=oba-1ba-auction"]{display:none!important;}</style>';
 	}
 
 	private function get_status_filter() {
@@ -121,7 +161,7 @@ class OBA_Admin {
 			<h2 class="nav-tab-wrapper">
 				<?php foreach ( $filter_links as $key => $label ) : ?>
 					<?php $count = isset( $status_counts[ $key ] ) ? (int) $status_counts[ $key ] : 0; ?>
-					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-auctions', 'status' => $key ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo $status === $key ? 'nav-tab-active' : ''; ?>">
+					<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-auctions', 'status' => $key ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo $status === $key ? 'nav-tab-active' : ''; ?>">
 						<?php echo esc_html( $label ); ?> (<?php echo esc_html( $count ); ?>)
 					</a>
 				<?php endforeach; ?>
@@ -591,6 +631,7 @@ class OBA_Admin {
 		);
 		$status_counts = array(
 			'active'  => 0,
+			'pending' => 0,
 			'removed' => 0,
 			'banned'  => 0,
 		);
@@ -615,8 +656,9 @@ class OBA_Admin {
 				<strong><?php esc_html_e( 'Counts:', 'one-ba-auctions' ); ?></strong>
 				<?php
 				printf(
-					'%s | %s | %s',
+					'%s | %s | %s | %s',
 					sprintf( esc_html__( 'Active: %d', 'one-ba-auctions' ), $status_counts['active'] ),
+					sprintf( esc_html__( 'Pending: %d', 'one-ba-auctions' ), isset( $status_counts['pending'] ) ? $status_counts['pending'] : 0 ),
 					sprintf( esc_html__( 'Removed: %d', 'one-ba-auctions' ), $status_counts['removed'] ),
 					sprintf( esc_html__( 'Banned: %d', 'one-ba-auctions' ), $status_counts['banned'] )
 				);
@@ -628,6 +670,7 @@ class OBA_Admin {
 				<select name="p_status">
 					<option value=""><?php esc_html_e( 'All statuses', 'one-ba-auctions' ); ?></option>
 					<option value="active" <?php selected( $status_filter, 'active' ); ?>><?php esc_html_e( 'Active', 'one-ba-auctions' ); ?></option>
+					<option value="pending" <?php selected( $status_filter, 'pending' ); ?>><?php esc_html_e( 'Pending', 'one-ba-auctions' ); ?></option>
 					<option value="removed" <?php selected( $status_filter, 'removed' ); ?>><?php esc_html_e( 'Removed', 'one-ba-auctions' ); ?></option>
 					<option value="banned" <?php selected( $status_filter, 'banned' ); ?>><?php esc_html_e( 'Banned', 'one-ba-auctions' ); ?></option>
 				</select>
@@ -659,6 +702,52 @@ class OBA_Admin {
 				<a class="button button-secondary" href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-participants', 'auction_id' => $auction_id, 'p_status' => 'removed' ), admin_url( 'admin.php' ) ) ); ?>"><?php esc_html_e( 'View removed', 'one-ba-auctions' ); ?></a>
 				<button class="button" name="status" value="active" onclick="this.form.user_id.value='';"><?php esc_html_e( 'Restore all removed', 'one-ba-auctions' ); ?></button>
 			</form>
+
+			<?php
+			$pending_orders = $this->get_pending_registrations( $auction_id );
+			if ( $pending_orders ) :
+				?>
+				<h2><?php esc_html_e( 'Pending registrations', 'one-ba-auctions' ); ?></h2>
+				<table class="widefat fixed striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Order', 'one-ba-auctions' ); ?></th>
+							<th><?php esc_html_e( 'User', 'one-ba-auctions' ); ?></th>
+							<th><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></th>
+							<th><?php esc_html_e( 'Total', 'one-ba-auctions' ); ?></th>
+							<th><?php esc_html_e( 'Action', 'one-ba-auctions' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $pending_orders as $order ) : ?>
+							<?php
+							$user = $order->get_user();
+							$approve_url = wp_nonce_url(
+								add_query_arg(
+									array(
+										'action'   => 'oba_approve_registration',
+										'order_id' => $order->get_id(),
+										'auction_id' => $auction_id,
+									),
+									admin_url( 'admin-post.php' )
+								),
+								'oba_approve_registration'
+							);
+							?>
+							<tr>
+								<td><a href="<?php echo esc_url( $order->get_edit_order_url() ); ?>">#<?php echo esc_html( $order->get_id() ); ?></a></td>
+								<td><?php echo esc_html( $user ? $user->user_login : __( 'Guest', 'one-ba-auctions' ) ); ?></td>
+								<td><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></td>
+								<td><?php echo wp_kses_post( $order->get_formatted_order_total() ); ?></td>
+								<td><a class="button" href="<?php echo esc_url( $approve_url ); ?>"><?php esc_html_e( 'Approve (complete order)', 'one-ba-auctions' ); ?></a></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+				<?php
+			endif;
+			?>
+
 			<table class="widefat fixed striped">
 				<thead>
 					<tr>
@@ -666,6 +755,7 @@ class OBA_Admin {
 						<th><?php esc_html_e( 'Registered at', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Fee', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Order', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Actions', 'one-ba-auctions' ); ?></th>
 					</tr>
 				</thead>
@@ -678,6 +768,7 @@ class OBA_Admin {
 								<td><?php echo esc_html( $row['registered_at'] ); ?></td>
 								<td><?php echo esc_html( $row['registration_fee_credits'] ); ?></td>
 								<td><?php echo esc_html( $row['status'] ); ?></td>
+								<td><?php echo isset( $row['order_id'] ) && $row['order_id'] ? esc_html( $row['order_id'] ) : '-'; ?></td>
 								<td>
 									<?php
 									$remove_url = wp_nonce_url(
@@ -747,14 +838,34 @@ class OBA_Admin {
 			return;
 		}
 		$settings = $this->settings;
+		$active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
+
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Auction Settings', 'one-ba-auctions' ); ?></h1>
+			<h2 class="nav-tab-wrapper">
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'emails' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'emails' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'translations' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></a>
+			</h2>
+		<?php
+		if ( 'emails' === $active_tab ) {
+			$this->render_emails_page();
+			echo '</div>';
+			return;
+		}
+		if ( 'translations' === $active_tab ) {
+			$this->render_translations_page();
+			echo '</div>';
+			return;
+		}
+		?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_settings' ); ?>
 				<input type="hidden" name="action" value="oba_save_settings" />
 
 				<table class="form-table">
+					<?php if ( 'general' === $active_tab ) : ?>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Default pre-live timer (seconds)', 'one-ba-auctions' ); ?></th>
 						<td><input type="number" name="default_prelive_seconds" min="1" value="<?php echo esc_attr( $settings['default_prelive_seconds'] ); ?>" /></td>
@@ -768,19 +879,17 @@ class OBA_Admin {
 						<td><input type="number" name="poll_interval_ms" min="500" step="100" value="<?php echo esc_attr( $settings['poll_interval_ms'] ); ?>" /></td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Point value', 'one-ba-auctions' ); ?></th>
+						<td>
+							<input type="text" name="points_value" value="<?php echo esc_attr( $settings['points_value'] ); ?>" placeholder="<?php esc_attr_e( '1.00', 'one-ba-auctions' ); ?>" />
+							<p class="description"><?php esc_html_e( 'How much one point is worth in your store currency (for cost/profit calculations).', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Terms & Conditions text', 'one-ba-auctions' ); ?></th>
 						<td>
 							<textarea name="terms_text" rows="4" cols="50"><?php echo esc_textarea( $settings['terms_text'] ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'Shown in registration step and required to register when not empty.', 'one-ba-auctions' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Show credits balance in header', 'one-ba-auctions' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="show_header_balance" value="1" <?php checked( $settings['show_header_balance'], true ); ?> />
-								<?php esc_html_e( 'Display a floating credits pill for logged-in users.', 'one-ba-auctions' ); ?>
-							</label>
 						</td>
 					</tr>
 					<tr>
@@ -791,16 +900,16 @@ class OBA_Admin {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Quick credit pack links (shown in live auctions)', 'one-ba-auctions' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Membership links', 'one-ba-auctions' ); ?></th>
 						<td>
-							<input type="url" name="credit_pack_link_1" value="<?php echo esc_attr( $settings['credit_pack_links'][0] ); ?>" placeholder="https://example.com/credits-pack-1" style="width:100%;max-width:420px;margin-bottom:4px;" />
-							<input type="url" name="credit_pack_link_2" value="<?php echo esc_attr( $settings['credit_pack_links'][1] ); ?>" placeholder="https://example.com/credits-pack-2" style="width:100%;max-width:420px;margin-bottom:4px;" />
-							<input type="url" name="credit_pack_link_3" value="<?php echo esc_attr( $settings['credit_pack_links'][2] ); ?>" placeholder="https://example.com/credits-pack-3" style="width:100%;max-width:420px;" />
-							<p class="description"><?php esc_html_e( 'Optional labels for quick packs (defaults to Pack 1/2/3 if empty).', 'one-ba-auctions' ); ?></p>
-							<input type="text" name="credit_pack_label_1" value="<?php echo esc_attr( $settings['credit_pack_labels'][0] ); ?>" placeholder="<?php esc_attr_e( 'Label for pack 1, e.g. +10', 'one-ba-auctions' ); ?>" style="width:100%;max-width:420px;margin-bottom:4px;" />
-							<input type="text" name="credit_pack_label_2" value="<?php echo esc_attr( $settings['credit_pack_labels'][1] ); ?>" placeholder="<?php esc_attr_e( 'Label for pack 2, e.g. +25', 'one-ba-auctions' ); ?>" style="width:100%;max-width:420px;margin-bottom:4px;" />
-							<input type="text" name="credit_pack_label_3" value="<?php echo esc_attr( $settings['credit_pack_labels'][2] ); ?>" placeholder="<?php esc_attr_e( 'Label for pack 3, e.g. +50', 'one-ba-auctions' ); ?>" style="width:100%;max-width:420px;" />
-							<p class="description"><?php esc_html_e( 'Appears in live auctions so users can quickly buy credits when low.', 'one-ba-auctions' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Shown when membership is required. Provide up to three links and optional labels.', 'one-ba-auctions' ); ?></p>
+							<?php for ( $i = 0; $i < 3; $i++ ) : ?>
+								<div style="margin-bottom:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+									<label style="width:60px;"><?php printf( esc_html__( 'Link %d', 'one-ba-auctions' ), $i + 1 ); ?></label>
+									<input type="url" name="membership_links[<?php echo esc_attr( $i ); ?>]" value="<?php echo esc_attr( $settings['membership_links'][ $i ] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'https://example.com/membership', 'one-ba-auctions' ); ?>" style="width:260px;" />
+									<input type="text" name="membership_labels[<?php echo esc_attr( $i ); ?>]" value="<?php echo esc_attr( $settings['membership_labels'][ $i ] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'Button label (optional)', 'one-ba-auctions' ); ?>" style="width:200px;" />
+								</div>
+							<?php endfor; ?>
 						</td>
 					</tr>
 					<tr>
@@ -820,6 +929,7 @@ class OBA_Admin {
 							<p class="description"><?php esc_html_e( 'Shown when clicking the status pill on the auction page. Use HTML to outline steps.', 'one-ba-auctions' ); ?></p>
 						</td>
 					</tr>
+					<?php else : ?>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Email sender name', 'one-ba-auctions' ); ?></th>
 						<td>
@@ -832,6 +942,23 @@ class OBA_Admin {
 							<input type="email" name="email_from_address" value="<?php echo esc_attr( $settings['email_from_address'] ); ?>" style="width:100%;max-width:320px;" />
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Edit email templates', 'one-ba-auctions' ); ?></th>
+						<td>
+							<p class="description"><?php esc_html_e( 'Use the Emails page to edit subjects and bodies for pre-live, live, winner, loser, claim confirmation, credits edited, and participant status notifications.', 'one-ba-auctions' ); ?></p>
+							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-emails' ) ); ?>"><?php esc_html_e( 'Open Emails', 'one-ba-auctions' ); ?></a>
+						</td>
+					</tr>
+					<?php endif; ?>
+					<?php if ( 'translations' === $active_tab ) : ?>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></th>
+						<td>
+							<p class="description"><?php esc_html_e( 'Manage all frontend translations from the Translations page.', 'one-ba-auctions' ); ?></p>
+							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-translations' ) ); ?>"><?php esc_html_e( 'Open Translations', 'one-ba-auctions' ); ?></a>
+						</td>
+					</tr>
+					<?php endif; ?>
 				</table>
 				<?php submit_button( __( 'Save Settings', 'one-ba-auctions' ) ); ?>
 			</form>
@@ -850,7 +977,7 @@ class OBA_Admin {
 		check_admin_referer( "oba_set_status_{$auction_id}" );
 
 		if ( ! $auction_id ) {
-			wp_redirect( admin_url( 'admin.php?page=oba-auctions' ) );
+			wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions' ) );
 			exit;
 		}
 
@@ -871,7 +998,7 @@ class OBA_Admin {
 				break;
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=oba-auctions' ) );
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions' ) );
 		exit;
 	}
 
@@ -889,7 +1016,7 @@ class OBA_Admin {
 			OBA_Audit_Log::log( 'recalc_winner', array(), $auction_id );
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=oba-auctions' ) );
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions' ) );
 		exit;
 	}
 
@@ -935,17 +1062,14 @@ class OBA_Admin {
 				'poll_interval_ms'        => isset( $_POST['poll_interval_ms'] ) ? wp_unslash( $_POST['poll_interval_ms'] ) : null,
 				'terms_text'              => isset( $_POST['terms_text'] ) ? wp_unslash( $_POST['terms_text'] ) : null,
 				'show_header_balance'     => isset( $_POST['show_header_balance'] ),
-				'credit_pack_link_1'      => isset( $_POST['credit_pack_link_1'] ) ? wp_unslash( $_POST['credit_pack_link_1'] ) : '',
-				'credit_pack_link_2'      => isset( $_POST['credit_pack_link_2'] ) ? wp_unslash( $_POST['credit_pack_link_2'] ) : '',
-				'credit_pack_link_3'      => isset( $_POST['credit_pack_link_3'] ) ? wp_unslash( $_POST['credit_pack_link_3'] ) : '',
-				'credit_pack_label_1'     => isset( $_POST['credit_pack_label_1'] ) ? wp_unslash( $_POST['credit_pack_label_1'] ) : '',
-				'credit_pack_label_2'     => isset( $_POST['credit_pack_label_2'] ) ? wp_unslash( $_POST['credit_pack_label_2'] ) : '',
-				'credit_pack_label_3'     => isset( $_POST['credit_pack_label_3'] ) ? wp_unslash( $_POST['credit_pack_label_3'] ) : '',
 				'login_link'              => isset( $_POST['login_link'] ) ? wp_unslash( $_POST['login_link'] ) : '',
+				'membership_links'        => isset( $_POST['membership_links'] ) ? (array) wp_unslash( $_POST['membership_links'] ) : array(),
+				'membership_labels'       => isset( $_POST['membership_labels'] ) ? (array) wp_unslash( $_POST['membership_labels'] ) : array(),
+				'points_value'            => isset( $_POST['points_value'] ) ? wp_unslash( $_POST['points_value'] ) : null,
 			)
 		);
 
-		wp_redirect( admin_url( 'admin.php?page=oba-settings&updated=1' ) );
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-settings&updated=1' ) );
 		exit;
 	}
 
@@ -972,12 +1096,9 @@ class OBA_Admin {
 			'loser_msg'      => __( 'Loser message', 'one-ba-auctions' ),
 			'refund_msg'     => __( 'Refund note', 'one-ba-auctions' ),
 			'register_note'  => __( 'Registered note', 'one-ba-auctions' ),
-			'buy_credits_title' => __( 'Buy credits title', 'one-ba-auctions' ),
 			'registration_fee_label' => __( 'Registration fee label', 'one-ba-auctions' ),
 			'registered_badge' => __( 'Registered badge text', 'one-ba-auctions' ),
 			'not_registered_badge' => __( 'Not registered badge text', 'one-ba-auctions' ),
-			'credit_singular' => __( 'Credit (singular)', 'one-ba-auctions' ),
-			'credit_plural'   => __( 'Credits (plural)', 'one-ba-auctions' ),
 			'bid_cost_label'  => __( 'Bid cost label', 'one-ba-auctions' ),
 			'your_bids_label' => __( 'Your bids label', 'one-ba-auctions' ),
 			'your_cost_label' => __( 'Your cost label', 'one-ba-auctions' ),
@@ -994,16 +1115,16 @@ class OBA_Admin {
 			'login_prompt'     => __( 'Login prompt message', 'one-ba-auctions' ),
 			'login_button'     => __( 'Login/Register button text', 'one-ba-auctions' ),
 			'claim_modal_title' => __( 'Claim modal title', 'one-ba-auctions' ),
-			'claim_option_credits' => __( 'Claim option: credits', 'one-ba-auctions' ),
 			'claim_option_gateway' => __( 'Claim option: gateway', 'one-ba-auctions' ),
 			'claim_continue' => __( 'Claim continue button', 'one-ba-auctions' ),
 			'claim_cancel' => __( 'Claim cancel button', 'one-ba-auctions' ),
 			'claim_error' => __( 'Claim error message label', 'one-ba-auctions' ),
-			'credits_pill_label' => __( 'Credits pill label', 'one-ba-auctions' ),
 			'stage2_tip'       => __( 'Tooltip: Countdown lock', 'one-ba-auctions' ),
 			'stage3_tip'       => __( 'Tooltip: Live lock', 'one-ba-auctions' ),
 			'stage4_tip'       => __( 'Tooltip: Ended lock', 'one-ba-auctions' ),
 			'stage1_tip'       => __( 'Tooltip: Registration', 'one-ba-auctions' ),
+			'membership_required_title' => __( 'Membership required title', 'one-ba-auctions' ),
+			'points_low_title'          => __( 'Low points title', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1084,6 +1205,8 @@ class OBA_Admin {
 				'stage3_tip'       => isset( $_POST['stage3_tip'] ) ? $_POST['stage3_tip'] : '',
 				'stage4_tip'       => isset( $_POST['stage4_tip'] ) ? $_POST['stage4_tip'] : '',
 				'stage1_tip'       => isset( $_POST['stage1_tip'] ) ? $_POST['stage1_tip'] : '',
+				'membership_required_title' => isset( $_POST['membership_required_title'] ) ? $_POST['membership_required_title'] : '',
+				'points_low_title' => isset( $_POST['points_low_title'] ) ? $_POST['points_low_title'] : '',
 			)
 		);
 
@@ -1103,7 +1226,6 @@ class OBA_Admin {
 			'winner'      => __( 'Auction winner', 'one-ba-auctions' ),
 			'loser'       => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
 			'claim'       => __( 'Claim confirmation', 'one-ba-auctions' ),
-			'credits'     => __( 'Credits edited', 'one-ba-auctions' ),
 			'participant' => __( 'Participant status change', 'one-ba-auctions' ),
 		);
 		?>
@@ -1141,7 +1263,6 @@ class OBA_Admin {
 					<label><input type="checkbox" name="templates[]" value="winner" checked /> <?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="loser" checked /> <?php esc_html_e( 'Loser', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="claim" checked /> <?php esc_html_e( 'Claim confirmation', 'one-ba-auctions' ); ?></label><br />
-					<label><input type="checkbox" name="templates[]" value="credits" checked /> <?php esc_html_e( 'Credits edited', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label>
 				</div>
 				<?php submit_button( __( 'Send Selected Tests', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
@@ -1166,7 +1287,6 @@ class OBA_Admin {
 				);
 			}
 		}
-
 		$settings                     = OBA_Settings::get_settings();
 		$settings['email_templates']  = $new;
 		update_option( OBA_Settings::OPTION_KEY, $settings );
@@ -1187,13 +1307,458 @@ class OBA_Admin {
 			$mailer = new OBA_Email();
 			$templates = isset( $_POST['templates'] ) && is_array( $_POST['templates'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['templates'] ) ) : array();
 			if ( empty( $templates ) ) {
-				$templates = array( 'pre_live', 'live', 'winner', 'loser', 'claim', 'credits', 'participant' );
+				$templates = array( 'pre_live', 'live', 'winner', 'loser', 'claim', 'participant' );
 			}
 			$mailer->send_test_templates( $templates, $admin_email );
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=oba-emails&test=1' ) );
 		exit;
+	}
+
+	public function handle_save_membership() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+		$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+		check_admin_referer( 'oba_save_membership_' . $user_id );
+		if ( $user_id ) {
+			$points_service = new OBA_Points_Service();
+			$points         = isset( $_POST['points_balance'] ) ? (float) wc_clean( wp_unslash( $_POST['points_balance'] ) ) : 0;
+			$has_membership = isset( $_POST['has_membership'] ) ? 1 : 0;
+			$points_service->set_balance( $user_id, $points );
+			update_user_meta( $user_id, '_oba_has_membership', $has_membership );
+		}
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-memberships&updated=1' ) );
+		exit;
+	}
+
+	public function handle_manual_winner() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+		$auction_id     = isset( $_POST['auction_id'] ) ? absint( $_POST['auction_id'] ) : 0;
+		$winner_user_id = isset( $_POST['winner_user_id'] ) ? absint( $_POST['winner_user_id'] ) : 0;
+		check_admin_referer( 'oba_manual_winner_' . $auction_id );
+
+		if ( ! $auction_id || ! $winner_user_id ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&error=1' ) );
+			exit;
+		}
+
+		if ( $this->repo->get_winner_row( $auction_id ) ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&winner=exists' ) );
+			exit;
+		}
+
+		$meta        = $this->repo->get_auction_meta( $auction_id );
+		$totals      = $this->repo->get_bid_totals_by_user( $auction_id );
+		$winner_rows = array_filter(
+			$totals,
+			function ( $row ) use ( $winner_user_id ) {
+				return (int) $row['user_id'] === $winner_user_id;
+			}
+		);
+		$winner_row = array_shift( $winner_rows );
+		$total_bids = $winner_row ? (int) $winner_row['total_bids'] : 0;
+		$bid_fee    = $this->engine->get_bid_fee_amount( $meta );
+		$total_cost = $total_bids * $bid_fee;
+
+		global $wpdb;
+		$winners_table = $wpdb->prefix . 'auction_winners';
+		$wpdb->insert(
+			$winners_table,
+			array(
+				'auction_id'             => $auction_id,
+				'winner_user_id'         => $winner_user_id,
+				'total_bids'             => $total_bids,
+				'total_credits_consumed' => $total_cost,
+				'claim_price_credits'    => $total_cost,
+				'wc_order_id'            => null,
+			),
+			array( '%d', '%d', '%d', '%f', '%f', '%d' )
+		);
+
+		update_post_meta( $auction_id, '_auction_status', 'ended' );
+		OBA_Audit_Log::log(
+			'manual_winner',
+			array(
+				'winner_user_id' => $winner_user_id,
+				'total_bids'     => $total_bids,
+				'total_cost'     => $total_cost,
+			),
+			$auction_id
+		);
+
+		wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&winner=set' ) );
+		exit;
+	}
+
+	public function render_1ba_placeholder_page() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( '1BA Auctions', 'one-ba-auctions' ); ?></h1>
+			<p><?php esc_html_e( 'This area will host the streamlined 1BA Auctions admin. Sub-menus and tools will be added here soon.', 'one-ba-auctions' ); ?></p>
+		</div>
+		<?php
+	}
+
+	public function render_1ba_auctions_all() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$status_filter = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+		$allowed_statuses = array( '', 'registration', 'pre_live', 'live', 'ended' );
+		if ( ! in_array( $status_filter, $allowed_statuses, true ) ) {
+			$status_filter = '';
+		}
+		$query = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => 500,
+				'post_status'    => array( 'publish', 'draft', 'pending' ),
+				'fields'         => 'ids',
+			)
+		);
+		$rows = array();
+		foreach ( $query->posts as $pid ) {
+			$product = wc_get_product( $pid );
+			if ( ! $product || 'auction' !== $product->get_type() ) {
+				continue;
+			}
+			$status = strtolower( (string) get_post_meta( $pid, '_auction_status', true ) );
+			$status = in_array( $status, array( 'registration', 'pre_live', 'live', 'ended' ), true ) ? $status : 'registration';
+			if ( $status_filter && $status !== $status_filter ) {
+				continue;
+			}
+			$rows[] = array(
+				'id'           => $pid,
+				'title'        => $product->get_name(),
+				'status'       => $status,
+				'participants' => $this->repo->get_participant_count( $pid ) . ' / ' . (int) get_post_meta( $pid, '_required_participants', true ),
+				'created'      => get_the_date( '', $pid ),
+			);
+		}
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'All Auctions', 'one-ba-auctions' ); ?></h1>
+			<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="margin-bottom:12px;">
+				<input type="hidden" name="page" value="oba-1ba-auctions" />
+				<select name="status">
+					<option value=""><?php esc_html_e( 'All statuses', 'one-ba-auctions' ); ?></option>
+					<option value="registration" <?php selected( $status_filter, 'registration' ); ?>><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></option>
+					<option value="pre_live" <?php selected( $status_filter, 'pre_live' ); ?>><?php esc_html_e( 'Waiting to go live', 'one-ba-auctions' ); ?></option>
+					<option value="live" <?php selected( $status_filter, 'live' ); ?>><?php esc_html_e( 'Live', 'one-ba-auctions' ); ?></option>
+					<option value="ended" <?php selected( $status_filter, 'ended' ); ?>><?php esc_html_e( 'Ended', 'one-ba-auctions' ); ?></option>
+				</select>
+				<button class="button"><?php esc_html_e( 'Filter', 'one-ba-auctions' ); ?></button>
+			</form>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'ID', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Title', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Participants', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Date created', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $rows ) ) : ?>
+						<tr><td colspan="5"><?php esc_html_e( 'No auctions found.', 'one-ba-auctions' ); ?></td></tr>
+					<?php else : ?>
+						<?php foreach ( $rows as $row ) : ?>
+							<tr>
+								<td><?php echo esc_html( $row['id'] ); ?></td>
+								<td><a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-auction', 'auction_id' => $row['id'] ), admin_url( 'admin.php' ) ) ); ?>"><?php echo esc_html( $row['title'] ); ?></a></td>
+								<td><?php echo esc_html( ucfirst( $row['status'] ) ); ?></td>
+								<td><?php echo esc_html( $row['participants'] ); ?></td>
+								<td><?php echo esc_html( $row['created'] ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	public function render_1ba_auctions_upcoming() {
+		$_GET['status'] = 'registration';
+		$this->render_auctions_page();
+	}
+
+	public function render_1ba_auctions_waiting() {
+		$_GET['status'] = 'pre_live';
+		$this->render_auctions_page();
+	}
+
+	public function render_1ba_auctions_live() {
+		$_GET['status'] = 'live';
+		$this->render_auctions_page();
+	}
+
+	public function render_1ba_auctions_ended() {
+		$_GET['status'] = 'ended';
+		$this->render_auctions_page();
+	}
+
+	public function render_1ba_auction_detail() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$auction_id = isset( $_GET['auction_id'] ) ? absint( $_GET['auction_id'] ) : 0;
+		if ( ! $auction_id ) {
+			echo '<div class="wrap"><h1>' . esc_html__( 'Auction not found', 'one-ba-auctions' ) . '</h1></div>';
+			return;
+		}
+
+		$product = wc_get_product( $auction_id );
+		if ( ! $product || 'auction' !== $product->get_type() ) {
+			echo '<div class="wrap"><h1>' . esc_html__( 'Auction not found', 'one-ba-auctions' ) . '</h1></div>';
+			return;
+		}
+
+		global $wpdb;
+		$meta      = $this->repo->get_auction_meta( $auction_id );
+		$reg_points= isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+		$reg_fee   = $meta['registration_product_id'] ? wc_get_product( $meta['registration_product_id'] ) : null;
+		$bid_fee   = $meta['bid_product_id'] ? wc_get_product( $meta['bid_product_id'] ) : null;
+		$reg_price = ( $reg_fee && '' !== $reg_fee->get_price() ) ? (float) $reg_fee->get_price() : 0;
+		$bid_price = ( $bid_fee && '' !== $bid_fee->get_price() ) ? (float) $bid_fee->get_price() : 0;
+		$points_value = isset( $this->settings['points_value'] ) ? (float) $this->settings['points_value'] : 1;
+
+		$participants_table = $wpdb->prefix . 'auction_participants';
+		$participants_raw   = $wpdb->get_results(
+			$wpdb->prepare( "SELECT user_id, status, registered_at FROM {$participants_table} WHERE auction_id = %d ORDER BY registered_at DESC", $auction_id ),
+			ARRAY_A
+		);
+		$participants = array();
+		foreach ( $participants_raw as $row ) {
+			$user = get_userdata( (int) $row['user_id'] );
+			$participants[] = array(
+				'user_id'       => (int) $row['user_id'],
+				'status'        => $row['status'],
+				'registered_at' => $row['registered_at'],
+				'name'          => $user ? $user->display_name : '',
+				'email'         => $user ? $user->user_email : '',
+			);
+		}
+
+		$bid_rows   = $this->repo->get_last_bids( $auction_id, 50 );
+		$total_bids = $this->repo->get_total_bid_count( $auction_id );
+
+		$total_reg_points = $reg_points * count( $participants );
+		$total_reg_fees = $reg_price * count( $participants );
+		$total_bid_fees = $bid_price * $total_bids;
+
+		$status            = $meta['auction_status'] ?: 'registration';
+		$edit_link         = get_edit_post_link( $auction_id );
+		$participants_link = admin_url( 'admin.php?page=oba-participants&auction_id=' . $auction_id );
+		$winner_row        = $this->repo->get_winner_row( $auction_id );
+		$winner_user       = $winner_row ? get_userdata( (int) $winner_row['winner_user_id'] ) : null;
+		$claimed_order_id  = $winner_row && ! empty( $winner_row['wc_order_id'] ) ? (int) $winner_row['wc_order_id'] : 0;
+		$claimed_status    = '';
+		$claimed           = false;
+
+		// Check explicit order on winner row first.
+		if ( $claimed_order_id && function_exists( 'wc_get_order' ) ) {
+			$order = wc_get_order( $claimed_order_id );
+			if ( $order ) {
+				$claimed_status = $order->get_status();
+				$claimed        = ( 'completed' === $claimed_status );
+			}
+		}
+
+		// Fallback: find any completed order tagged with this auction claim.
+		if ( ! $claimed && $winner_row && function_exists( 'wc_get_orders' ) ) {
+			$orders = wc_get_orders(
+				array(
+					'status'   => array( 'completed' ),
+					'limit'    => 10,
+					'customer' => (int) $winner_row['winner_user_id'],
+				)
+			);
+			foreach ( $orders as $order ) {
+				foreach ( $order->get_items() as $item ) {
+					$aid_meta = (int) $item->get_meta( '_oba_claim_auction_id', true );
+					$aid_order= (int) $order->get_meta( '_oba_auction_id', true );
+					if ( $aid_meta === (int) $auction_id || $aid_order === (int) $auction_id ) {
+						$claimed_order_id = $order->get_id();
+						$claimed_status   = $order->get_status();
+						$claimed          = true;
+						if ( empty( $winner_row['wc_order_id'] ) ) {
+							global $wpdb;
+							$table = $wpdb->prefix . 'auction_winners';
+							$wpdb->update(
+								$table,
+								array( 'wc_order_id' => $claimed_order_id ),
+								array( 'id' => (int) $winner_row['id'] ),
+								array( '%d' ),
+								array( '%d' )
+							);
+							$winner_row['wc_order_id'] = $claimed_order_id;
+						}
+						break 2;
+					}
+				}
+			}
+		}
+		$ended_at          = get_post_meta( $auction_id, '_live_expires_at', true );
+		?>
+		<div class="wrap">
+			<h1><?php echo esc_html( $product->get_name() ); ?> (<?php echo esc_html( '#' . $auction_id ); ?>)</h1>
+			<table class="widefat fixed striped" style="max-width:720px;margin-bottom:16px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Claimed', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Auction end time', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><?php echo esc_html( ucfirst( $status ) ); ?></td>
+						<td>
+							<?php
+							if ( $winner_row ) {
+								echo esc_html( $winner_row['winner_user_id'] );
+								if ( $winner_user && $winner_user->display_name ) {
+									echo ' (' . esc_html( $winner_user->display_name ) . ')';
+								}
+							} else {
+								esc_html_e( '—', 'one-ba-auctions' );
+							}
+							?>
+						</td>
+						<td>
+							<?php
+							if ( $winner_row ) {
+								if ( $claimed ) {
+									$link = $claimed_order_id ? '<a href="' . esc_url( admin_url( 'post.php?post=' . $claimed_order_id . '&action=edit' ) ) . '">#' . esc_html( $claimed_order_id ) . '</a>' : '';
+									echo esc_html__( 'Yes', 'one-ba-auctions' ) . ' ' . $link;
+									if ( $claimed_status ) {
+										echo ' — ' . esc_html( ucfirst( $claimed_status ) );
+									}
+								} else {
+									echo esc_html__( 'No', 'one-ba-auctions' );
+								}
+							} else {
+								esc_html_e( '—', 'one-ba-auctions' );
+							}
+							?>
+						</td>
+						<td><?php echo $ended_at ? esc_html( $ended_at ) : esc_html__( '—', 'one-ba-auctions' ); ?></td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				<a class="button" href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Edit auction product', 'one-ba-auctions' ); ?></a>
+			</p>
+
+			<h2><?php esc_html_e( 'Actions', 'one-ba-auctions' ); ?></h2>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
+				<input type="hidden" name="action" value="oba_set_status" />
+				<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
+				<input type="hidden" name="status" value="pre_live" />
+				<?php wp_nonce_field( "oba_set_status_{$auction_id}" ); ?>
+				<button class="button"><?php esc_html_e( 'Start pre-live', 'one-ba-auctions' ); ?></button>
+			</form>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
+				<input type="hidden" name="action" value="oba_set_status" />
+				<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
+				<input type="hidden" name="status" value="live" />
+				<?php wp_nonce_field( "oba_set_status_{$auction_id}" ); ?>
+				<button class="button"><?php esc_html_e( 'Start live', 'one-ba-auctions' ); ?></button>
+			</form>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
+				<input type="hidden" name="action" value="oba_manual_winner" />
+				<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
+				<?php wp_nonce_field( 'oba_manual_winner_' . $auction_id ); ?>
+				<input type="number" name="winner_user_id" placeholder="<?php esc_attr_e( 'User ID', 'one-ba-auctions' ); ?>" />
+				<button class="button"><?php esc_html_e( 'Set manual winner', 'one-ba-auctions' ); ?></button>
+			</form>
+
+			<h2><?php esc_html_e( 'Totals', 'one-ba-auctions' ); ?></h2>
+			<ul>
+				<li><?php esc_html_e( 'Participants', 'one-ba-auctions' ); ?>: <?php echo esc_html( count( $participants ) ); ?> / <?php echo esc_html( isset( $meta['required_participants'] ) ? (int) $meta['required_participants'] : 0 ); ?></li>
+				<li><?php esc_html_e( 'Registration points each', 'one-ba-auctions' ); ?>: <?php echo esc_html( $reg_points ); ?></li>
+				<li><?php esc_html_e( 'Registration points total', 'one-ba-auctions' ); ?>: <?php echo esc_html( $total_reg_points ); ?></li>
+				<li><?php esc_html_e( 'Registration value (approx.)', 'one-ba-auctions' ); ?>: <?php echo wp_kses_post( wc_price( $total_reg_points * $points_value ) ); ?></li>
+				<li><?php esc_html_e( 'Bid fee each', 'one-ba-auctions' ); ?>: <?php echo $bid_price ? wp_kses_post( wc_price( $bid_price ) ) : esc_html__( 'n/a', 'one-ba-auctions' ); ?></li>
+				<li><?php esc_html_e( 'Total bids placed', 'one-ba-auctions' ); ?>: <?php echo esc_html( $total_bids ); ?></li>
+				<li><?php esc_html_e( 'Total bid fees (approx.)', 'one-ba-auctions' ); ?>: <?php echo $bid_price ? wp_kses_post( wc_price( $total_bid_fees ) ) : esc_html__( 'n/a', 'one-ba-auctions' ); ?></li>
+			</ul>
+
+			<h2><?php esc_html_e( 'Users registering log', 'one-ba-auctions' ); ?></h2>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'User ID', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Name', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Email', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Registered at', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Actions', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $participants ) ) : ?>
+						<tr><td colspan="6"><?php esc_html_e( 'No participants yet.', 'one-ba-auctions' ); ?></td></tr>
+					<?php else : ?>
+						<?php foreach ( $participants as $row ) : ?>
+							<tr>
+								<td><?php echo esc_html( $row['user_id'] ); ?></td>
+								<td><?php echo esc_html( $row['name'] ); ?></td>
+								<td><?php echo esc_html( $row['email'] ); ?></td>
+								<td><?php echo esc_html( $row['status'] ); ?></td>
+								<td><?php echo esc_html( $row['registered_at'] ); ?></td>
+								<td>
+									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;">
+										<input type="hidden" name="action" value="oba_remove_participant" />
+										<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
+										<input type="hidden" name="user_id" value="<?php echo esc_attr( $row['user_id'] ); ?>" />
+										<input type="hidden" name="status" value="removed" />
+										<?php wp_nonce_field( "oba_remove_participant_{$auction_id}" ); ?>
+										<button class="button button-small" type="submit"><?php esc_html_e( 'Remove', 'one-ba-auctions' ); ?></button>
+									</form>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+			</table>
+
+			<h2><?php esc_html_e( 'Live bids log (last 50)', 'one-ba-auctions' ); ?></h2>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'User ID', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Amount', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Time', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $bid_rows ) ) : ?>
+						<tr><td colspan="3"><?php esc_html_e( 'No bids yet.', 'one-ba-auctions' ); ?></td></tr>
+					<?php else : ?>
+						<?php foreach ( $bid_rows as $row ) : ?>
+							<tr>
+								<td><?php echo esc_html( $row['user_id'] ); ?></td>
+								<td><?php echo esc_html( $bid_price ? wp_strip_all_tags( wc_price( $bid_price ) ) : $row['credits_reserved'] ); ?></td>
+								<td><?php echo esc_html( $row['created_at'] ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
 	}
 
 	public function handle_remove_participant() {
@@ -1217,7 +1782,7 @@ class OBA_Admin {
 		}
 
 		if ( ! $auction_id ) {
-			wp_redirect( admin_url( 'admin.php?page=oba-auctions' ) );
+			wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions' ) );
 			exit;
 		}
 
@@ -1261,6 +1826,24 @@ class OBA_Admin {
 		exit;
 	}
 
+	public function handle_approve_registration() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
+		}
+		check_admin_referer( 'oba_approve_registration' );
+
+		$order_id   = isset( $_GET['order_id'] ) ? absint( $_GET['order_id'] ) : 0;
+		$redirect   = isset( $_GET['auction_id'] ) ? add_query_arg( array( 'page' => 'oba-participants', 'auction_id' => absint( $_GET['auction_id'] ) ), admin_url( 'admin.php' ) ) : admin_url( 'admin.php?page=oba-participants' );
+		if ( $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
+				$order->update_status( 'completed' );
+			}
+		}
+		wp_redirect( $redirect );
+		exit;
+	}
+
 	public function handle_run_expiry() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
@@ -1272,7 +1855,7 @@ class OBA_Admin {
 		$plugin->check_expired_auctions();
 		OBA_Audit_Log::log( 'run_expiry' );
 
-		wp_redirect( admin_url( 'admin.php?page=oba-auctions&expiry_run=1' ) );
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions&expiry_run=1' ) );
 		exit;
 	}
 
@@ -1353,6 +1936,126 @@ class OBA_Admin {
 		}
 
 		return add_query_arg( 'oba_bulk_done', count( $post_ids ), $redirect_to );
+	}
+
+	public function render_memberships_page() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$points_service = new OBA_Points_Service();
+		global $wpdb;
+
+		$flagged_users = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = %s AND meta_value = %s LIMIT 200",
+				'_oba_has_membership',
+				'1'
+			)
+		);
+
+		$points_rows = $wpdb->get_results(
+			"SELECT user_id FROM {$wpdb->prefix}auction_user_points ORDER BY updated_at DESC LIMIT 200",
+			ARRAY_A
+		);
+
+		$user_ids = array_unique(
+			array_merge(
+				(array) $flagged_users,
+				array_map(
+					function ( $row ) {
+						return (int) $row['user_id'];
+					},
+					(array) $points_rows
+				)
+			)
+		);
+
+		sort( $user_ids );
+
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Memberships', 'one-ba-auctions' ); ?></h1>
+			<p><?php esc_html_e( 'Manage membership flag and points balance for users. Points are required to register for auctions.', 'one-ba-auctions' ); ?></p>
+			<table class="widefat fixed striped" style="min-width: 900px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'User', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Email', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Membership active', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Points balance', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Update', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( ! empty( $user_ids ) ) : ?>
+						<?php foreach ( $user_ids as $uid ) : ?>
+							<?php $user = get_userdata( $uid ); ?>
+							<?php if ( ! $user ) { continue; } ?>
+							<?php
+							$membership_active = get_user_meta( $uid, '_oba_has_membership', true ) ? 1 : 0;
+							$balance           = $points_service->get_balance( $uid );
+							?>
+							<tr>
+								<td><?php echo esc_html( $user->user_login . ' (#' . $user->ID . ')' ); ?></td>
+								<td><?php echo esc_html( $user->user_email ); ?></td>
+								<td>
+									<span class="aba-membership-pill" style="padding:4px 10px;border-radius:12px;display:inline-block;<?php echo $membership_active ? 'background:#dcfce7;color:#166534;' : 'background:#fee2e2;color:#991b1b;'; ?>">
+										<?php echo $membership_active ? esc_html__( 'Active', 'one-ba-auctions' ) : esc_html__( 'Inactive', 'one-ba-auctions' ); ?>
+									</span>
+								</td>
+								<td><?php echo esc_html( $balance ); ?></td>
+								<td>
+									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+										<?php wp_nonce_field( 'oba_save_membership_' . $uid ); ?>
+										<input type="hidden" name="action" value="oba_save_membership" />
+										<input type="hidden" name="user_id" value="<?php echo esc_attr( $uid ); ?>" />
+										<label style="display:flex;align-items:center;gap:6px;">
+											<input type="checkbox" name="has_membership" value="1" <?php checked( $membership_active, 1 ); ?> />
+											<span><?php esc_html_e( 'Membership active', 'one-ba-auctions' ); ?></span>
+										</label>
+										<label style="display:flex;align-items:center;gap:6px;">
+											<span><?php esc_html_e( 'Points', 'one-ba-auctions' ); ?></span>
+											<input type="number" name="points_balance" value="<?php echo esc_attr( $balance ); ?>" step="1" min="0" />
+										</label>
+										<button class="button button-primary"><?php esc_html_e( 'Save', 'one-ba-auctions' ); ?></button>
+									</form>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					<?php else : ?>
+						<tr><td colspan="5"><?php esc_html_e( 'No memberships yet. Users will appear here after they gain points or membership.', 'one-ba-auctions' ); ?></td></tr>
+					<?php endif; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	private function get_pending_registrations( $auction_id ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return array();
+		}
+		$orders = wc_get_orders(
+			array(
+				'limit'         => 50,
+				'status'        => array( 'pending', 'on-hold', 'processing' ),
+				'meta_key'      => '_oba_is_registration_order',
+				'meta_value'    => 'yes',
+				'customer'      => '',
+			)
+		);
+		$filtered = array();
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$aid = (int) $item->get_meta( '_oba_registration_auction_id', true );
+				if ( $aid === (int) $auction_id ) {
+					$filtered[] = $order;
+					break;
+				}
+			}
+		}
+		return $filtered;
 	}
 
 	private function register_cli() {

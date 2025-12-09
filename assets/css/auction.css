@@ -2,6 +2,7 @@
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 16px;
+	position: relative;
 }
 
 .oba-explainer-wrap {
@@ -138,6 +139,8 @@
 
 .oba-phase-card {
 	margin-bottom: 12px;
+	position: relative;
+	overflow: hidden;
 }
 
 .oba-phase-header {
@@ -193,6 +196,19 @@
 
 .oba-phase-card.is-collapsed .oba-phase-body {
 	display: none;
+}
+
+.oba-lock-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(255,255,255,0.85);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 12px;
+	font-weight: 700;
+	color: #991b1b;
+	z-index: 10;
 }
 
 .oba-bar {
@@ -253,9 +269,21 @@
 	margin: 10px 0;
 }
 
+.oba-history-head {
+	display: grid;
+	grid-template-columns: 1fr 0.7fr 0.8fr;
+	gap: 8px;
+	font-size: 12px;
+	font-weight: 700;
+	color: #475569;
+	margin-top: 12px;
+	margin-bottom: 4px;
+	padding: 0 4px;
+}
+
 .oba-history li {
 	display: grid;
-	grid-template-columns: 1fr auto auto;
+	grid-template-columns: 1fr 0.7fr 0.8fr;
 	gap: 8px;
 	padding: 8px 10px;
 	border: 1px solid #e5e7eb;
@@ -282,6 +310,38 @@
 .oba-legend .oba-card {
 	padding: 12px;
 }
+
+.oba-membership-links {
+	margin-top: 10px;
+	padding: 12px;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	background: #f8fafc;
+}
+.oba-membership-links .oba-membership-message {
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+.oba-membership-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.oba-membership-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 14px;
+	border-radius: 10px;
+	border: none;
+	color: #fff;
+	text-decoration: none;
+	font-weight: 700;
+}
+.oba-membership-btn-silver { background: #94a3b8; }
+.oba-membership-btn-bronze { background: #b45309; }
+.oba-membership-btn-gold { background: #d97706; }
+.oba-membership-btn-dark { background: #0f172a; }
 
 .oba-outcome {
 	border: 1px solid transparent;
@@ -465,38 +525,124 @@
 	margin-bottom: 8px;
 }
 
+
+.oba-terms {
+	margin: 10px 0;
+}
+
+.oba-pill-row {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-bottom: 12px;
+	flex-wrap: wrap;
+}
+
 .oba-credit-pill {
-	position: fixed;
-	right: 16px;
-	bottom: 16px;
-	background: #0f172a;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #111827;
 	color: #fff;
 	padding: 10px 14px;
 	border-radius: 999px;
 	font-weight: 700;
-	box-shadow: 0 10px 24px rgba(0,0,0,0.25);
-	display: flex;
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+.oba-credit-label {
+	opacity: 0.85;
+	font-weight: 600;
+}
+
+.oba-credit-amount {
+	font-weight: 700;
+}
+
+.oba-credit-floating {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: 9999;
+}
+
+.oba-membership-overlay {
+	position: absolute;
+	inset: 0;
+	display: none;
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(6px);
+	z-index: 10000;
 	align-items: center;
-	gap: 8px;
-	cursor: pointer;
-	z-index: 120005;
-	white-space: nowrap;
+	justify-content: center;
+	text-align: center;
+	padding: 20px;
+	min-height: 100%;
+	pointer-events: auto;
 }
 
-.oba-credit-pill.low {
-	background: #b91c1c;
-}
-
-.oba-credit-pill .oba-credit-links {
+.oba-points-overlay {
+	position: absolute;
+	inset: 0;
 	display: none;
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(6px);
+	z-index: 9999;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 20px;
+	min-height: 100%;
+	pointer-events: auto;
 }
 
-.oba-credit-pill--inline {
+.oba-lock-overlay {
+	position: absolute;
+	inset: 0;
 	display: none;
+	background: rgba(255, 255, 255, 0.8);
+	backdrop-filter: blur(4px);
+	z-index: 5;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 20px;
 }
 
-.oba-terms {
-	margin: 10px 0;
+.oba-lock-overlay__inner {
+	background: rgba(255, 255, 255, 0.95);
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 14px 16px;
+	box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.oba-lock-title {
+	font-weight: 700;
+	margin-bottom: 12px;
+	color: #111827;
+}
+
+.oba-membership-links a {
+	display: inline-block;
+	margin: 4px;
+	padding: 10px 14px;
+	border-radius: 10px;
+	border: 1px solid #111827;
+	background: #111827;
+	color: #fff;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.oba-membership-links a:nth-child(2) { background: #2563eb; border-color: #2563eb; }
+.oba-membership-links a:nth-child(3) { background: #16a34a; border-color: #16a34a; }
+
+.oba-membership-links {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
 }
 
 .oba-terms a {
@@ -518,6 +664,20 @@
 
 .oba-register-note {
 	margin-top: 8px;
+}
+.oba-points-row {
+	margin: 6px 0;
+	font-weight: 600;
+}
+
+.oba-pending-banner {
+	margin-bottom: 10px;
+	padding: 10px 12px;
+	background: #fef9c3;
+	border: 1px solid #f59e0b;
+	color: #92400e;
+	border-radius: 10px;
+	font-weight: 600;
 }
 
 .oba-login-cta {

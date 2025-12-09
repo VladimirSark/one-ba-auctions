@@ -7,7 +7,7 @@ class OBA_Frontend {
 
 	public function hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-		add_action( 'wp_body_open', array( $this, 'render_header_balance' ) );
+		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 	}
 
@@ -48,12 +48,12 @@ class OBA_Frontend {
 				'auction_id'   => $product->get_id(),
 				'poll_interval'=> (int) $settings['poll_interval_ms'],
 				'terms_text'   => wp_kses_post( $settings['terms_text'] ),
-				'pack_links'   => $settings['credit_pack_links'],
-				'pack_labels'  => $settings['credit_pack_labels'],
-				'login_url'    => $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ),
-				'i18n'         => $this->build_i18n( $settings ),
-				)
-			);
+			'membership_links' => $settings['membership_links'],
+			'membership_labels'=> $settings['membership_labels'],
+			'login_url'    => $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ),
+			'i18n'         => $this->build_i18n( $settings ),
+			)
+		);
 	}
 
 	private function build_i18n( $settings ) {
@@ -77,6 +77,8 @@ class OBA_Frontend {
 			'login_required'    => __( 'Please log in to register.', 'one-ba-auctions' ),
 			'register'          => __( 'Register', 'one-ba-auctions' ),
 			'register_cta'      => ! empty( $t['register_cta'] ) ? $t['register_cta'] : __( 'Register & Reserve Spot', 'one-ba-auctions' ),
+			'membership_required' => ! empty( $t['membership_required'] ) ? $t['membership_required'] : __( 'A membership plan is required to register.', 'one-ba-auctions' ),
+			'membership_cta'      => ! empty( $t['membership_cta'] ) ? $t['membership_cta'] : __( 'Get membership', 'one-ba-auctions' ),
 			'lobby_progress'    => ! empty( $t['lobby_progress'] ) ? $t['lobby_progress'] : __( 'Lobby progress', 'one-ba-auctions' ),
 			'bid_button'        => ! empty( $t['bid_button'] ) ? $t['bid_button'] : __( 'Place bid', 'one-ba-auctions' ),
 			'step1'             => __( 'Step 1. Registration', 'one-ba-auctions' ),
@@ -91,7 +93,7 @@ class OBA_Frontend {
 			'step2_label'       => ! empty( $t['step2_label'] ) ? $t['step2_label'] : __( 'Countdown to Live', 'one-ba-auctions' ),
 			'step3_label'       => ! empty( $t['step3_label'] ) ? $t['step3_label'] : __( 'Live Bidding', 'one-ba-auctions' ),
 			'step4_label'       => ! empty( $t['step4_label'] ) ? $t['step4_label'] : __( 'Auction Ended', 'one-ba-auctions' ),
-			'step1_desc'        => ! empty( $t['step1_desc'] ) ? $t['step1_desc'] : __( 'Join the lobby with credits.', 'one-ba-auctions' ),
+			'step1_desc'        => ! empty( $t['step1_desc'] ) ? $t['step1_desc'] : __( 'Join the lobby with points.', 'one-ba-auctions' ),
 			'step2_desc'        => ! empty( $t['step2_desc'] ) ? $t['step2_desc'] : __( 'Short pre-live timer.', 'one-ba-auctions' ),
 			'step3_desc'        => ! empty( $t['step3_desc'] ) ? $t['step3_desc'] : __( 'Bid, reset timer, compete.', 'one-ba-auctions' ),
 			'step4_desc'        => ! empty( $t['step4_desc'] ) ? $t['step4_desc'] : __( 'Claim or view results.', 'one-ba-auctions' ),
@@ -100,9 +102,6 @@ class OBA_Frontend {
 			'loser_msg'         => ! empty( $t['loser_msg'] ) ? $t['loser_msg'] : __( 'You did not win this auction.', 'one-ba-auctions' ),
 			'refund_msg'        => ! empty( $t['refund_msg'] ) ? $t['refund_msg'] : __( 'Your reserved credits have been refunded.', 'one-ba-auctions' ),
 			'register_note'     => ! empty( $t['register_note'] ) ? $t['register_note'] : __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ),
-			'buy_credits_title' => ! empty( $t['buy_credits_title'] ) ? $t['buy_credits_title'] : __( 'Buy credits', 'one-ba-auctions' ),
-			'credit_singular'   => $credit_singular,
-			'credit_plural'     => $credit_plural,
 			'bid_cost_label'    => ! empty( $t['bid_cost_label'] ) ? $t['bid_cost_label'] : __( 'Bid cost', 'one-ba-auctions' ),
 			'your_bids_label'   => ! empty( $t['your_bids_label'] ) ? $t['your_bids_label'] : __( 'Your bids', 'one-ba-auctions' ),
 			'your_cost_label'   => ! empty( $t['your_cost_label'] ) ? $t['your_cost_label'] : __( 'Your cost', 'one-ba-auctions' ),
@@ -115,100 +114,45 @@ class OBA_Frontend {
 			'claim_failed_custom' => ! empty( $t['notify_claim_failed'] ) ? $t['notify_claim_failed'] : '',
 			'cannot_bid_custom' => ! empty( $t['notify_cannot_bid'] ) ? $t['notify_cannot_bid'] : '',
 			'login_required_custom' => ! empty( $t['notify_login_required'] ) ? $t['notify_login_required'] : '',
-			'claim_modal_title' => ! empty( $t['claim_modal_title'] ) ? $t['claim_modal_title'] : __( 'Choose how to claim', 'one-ba-auctions' ),
-			'claim_option_credits' => ! empty( $t['claim_option_credits'] ) ? $t['claim_option_credits'] : __( 'Pay with credits', 'one-ba-auctions' ),
-			'claim_option_gateway' => ! empty( $t['claim_option_gateway'] ) ? $t['claim_option_gateway'] : __( 'Pay via checkout', 'one-ba-auctions' ),
-			'claim_continue' => ! empty( $t['claim_continue'] ) ? $t['claim_continue'] : __( 'Continue', 'one-ba-auctions' ),
-			'claim_cancel' => ! empty( $t['claim_cancel'] ) ? $t['claim_cancel'] : __( 'Cancel', 'one-ba-auctions' ),
-			'claim_error' => ! empty( $t['claim_error'] ) ? $t['claim_error'] : __( 'Claim failed. Please try again.', 'one-ba-auctions' ),
-			'credits_pill_label' => ! empty( $t['credits_pill_label'] ) ? $t['credits_pill_label'] : __( 'Credits', 'one-ba-auctions' ),
+			'claim_modal_title' => '',
+			'claim_option_gateway' => '',
+			'claim_continue' => '',
+			'claim_cancel' => '',
+			'claim_error' => '',
 			'stage1_tip'       => ! empty( $t['stage1_tip'] ) ? $t['stage1_tip'] : '',
 			'stage2_tip'       => ! empty( $t['stage2_tip'] ) ? $t['stage2_tip'] : '',
 			'stage3_tip'       => ! empty( $t['stage3_tip'] ) ? $t['stage3_tip'] : '',
 			'stage4_tip'       => ! empty( $t['stage4_tip'] ) ? $t['stage4_tip'] : '',
+			'membership_required_title' => ! empty( $t['membership_required_title'] ) ? $t['membership_required_title'] : '',
+			'points_low_title' => ! empty( $t['points_low_title'] ) ? $t['points_low_title'] : '',
 		);
 	}
 
-	public function render_header_balance() {
-		$settings = OBA_Settings::get_settings();
-
-		if ( ! $settings['show_header_balance'] ) {
-			return;
-		}
-
+	public function render_points_pill() {
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
 
-		$render_modal = true;
-		if ( is_product() ) {
-			global $product;
-			if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
-				$render_modal = false; // Template includes its own credit modal.
-			}
+		$has_membership = get_user_meta( get_current_user_id(), '_oba_has_membership', true );
+		if ( ! $has_membership ) {
+			return;
 		}
 
-		$translations    = isset( $settings['translations'] ) ? $settings['translations'] : array();
-		$pill_label      = ! empty( $translations['credits_pill_label'] ) ? $translations['credits_pill_label'] : __( 'Credits', 'one-ba-auctions' );
-		$buy_title       = ! empty( $translations['buy_credits_title'] ) ? $translations['buy_credits_title'] : __( 'Buy credits', 'one-ba-auctions' );
-
-		$credits_service = new OBA_Credits_Service();
-		$balance         = $credits_service->get_balance( get_current_user_id() );
-		$is_low          = $balance < 10;
-
-		$links  = $settings['credit_pack_links'];
-		$labels = $settings['credit_pack_labels'];
-		$html_links = '';
-		foreach ( $links as $idx => $url ) {
-			if ( empty( $url ) ) {
-				continue;
-			}
-			$label = ! empty( $labels[ $idx ] ) ? $labels[ $idx ] : sprintf( __( 'Pack %d', 'one-ba-auctions' ), $idx + 1 );
-			$html_links .= '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( $label ) . '</a>';
-		}
-
-		$low_class = $is_low ? ' low' : '';
-		echo '<div class="oba-credit-pill' . esc_attr( $low_class ) . '" data-balance="' . esc_attr( $balance ) . '"><span class="oba-credit-balance">' . esc_html( $pill_label ) . ': ' . esc_html( $balance ) . '</span><span class="oba-credit-links">' . $html_links . '</span></div>';
-
-		if ( $render_modal ) {
-			echo '<div class="oba-credit-overlay" style="display:none;"></div><div class="oba-credit-modal" style="display:none;"><div class="oba-credit-modal__inner"><button class="oba-credit-close" type="button" aria-label="' . esc_attr__( 'Close', 'one-ba-auctions' ) . '">&times;</button><h4>' . esc_html( $buy_title ) . '</h4><div class="oba-credit-options"></div></div></div>';
-		}
-
-		// Ensure styling is present on non-auction pages where main stylesheet may not enqueue.
-		echo '<style>
-		.oba-credit-pill{position:fixed;right:16px;bottom:16px;background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;font-weight:700;z-index:120005;box-shadow:0 10px 24px rgba(0,0,0,0.25);display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;}
-		.oba-credit-pill.low{background:#b91c1c;}
-		.oba-credit-pill .oba-credit-links{display:none;}
-		.oba-credit-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:120000;display:none;}
-		.oba-credit-modal{position:fixed;left:50%;top:120px;transform:translateX(-50%);background:#fff;border-radius:10px;box-shadow:0 20px 40px rgba(0,0,0,0.25);z-index:120001;min-width:260px;max-width:90%;max-height:calc(100vh - 200px);overflow:auto;padding:16px;display:none;}
-		.oba-credit-options a{display:inline-block;padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:600;box-shadow:0 4px 10px rgba(0,0,0,0.12);}
-		@media(max-width:480px){.oba-credit-pill{right:10px;bottom:10px;padding:8px 12px;font-size:12px;}}
-		</style>';
-
-		// Minimal JS to open modal on non-auction pages.
-		echo '<script>
-		(function(){
-			var pill=document.querySelector(".oba-credit-pill");
-			var overlay=document.querySelector(".oba-credit-overlay");
-			var modal=document.querySelector(".oba-credit-modal");
-			var close=document.querySelector(".oba-credit-close");
-			if(!pill){return;}
-			var opts=document.querySelector(".oba-credit-options");
-			if(opts){opts.innerHTML="";';
-		foreach ( $links as $idx => $url ) {
-			if ( empty( $url ) ) {
-				continue;
-			}
-			$label = ! empty( $labels[ $idx ] ) ? $labels[ $idx ] : sprintf( __( 'Pack %d', 'one-ba-auctions' ), $idx + 1 );
-			echo 'opts.insertAdjacentHTML("beforeend","<a href=\'' . esc_url( $url ) . '\' target=\'_blank\' rel=\'noopener\'>' . esc_html( $label ) . '</a>");';
-		}
-		echo '}
-			function open(){ if(overlay) overlay.style.display="block"; if(modal) modal.style.display="block"; }
-			function closeModal(){ if(overlay) overlay.style.display="none"; if(modal) modal.style.display="none"; }
-			pill.addEventListener("click",function(e){ if(e.target.closest("a")) return; open();});
-			if(overlay){ overlay.addEventListener("click",closeModal); }
-			if(close){ close.addEventListener("click",function(e){e.preventDefault(); closeModal();}); }
-		})();</script>';
+		$points_service = new OBA_Points_Service();
+		$balance        = $points_service->get_balance( get_current_user_id() );
+		?>
+		<div class="oba-credit-pill oba-credit-floating" aria-live="polite">
+			<span class="oba-credit-label"><?php esc_html_e( 'Points', 'one-ba-auctions' ); ?></span>
+			<span class="oba-credit-amount"><?php echo esc_html( $balance ); ?></span>
+		</div>
+		<style>
+			/* Minimal styles for floating pill on non-auction pages */
+			.oba-credit-pill{display:inline-flex;align-items:center;gap:8px;background:#111827;color:#fff;padding:10px 14px;border-radius:999px;font-weight:700;box-shadow:0 8px 20px rgba(15,23,42,0.18);}
+			.oba-credit-label{opacity:.85;font-weight:600;}
+			.oba-credit-floating{position:fixed;right:16px;bottom:16px;z-index:9999;}
+			@media(max-width:640px){.oba-credit-pill{padding:8px 12px;font-size:12px;}}
+		</style>
+		<?php
 	}
 
 	public function shortcode_balance() {

@@ -78,6 +78,9 @@ class OBA_Ajax_Controller {
 			);
 		}
 
+		$meta    = $this->repo->get_auction_meta( $auction_id );
+
+		$this->engine->enroll_participant( $auction_id, $user_id, 0 );
 		$state                    = $this->serialize_state( $auction_id );
 		$state['success_message'] = __( 'Registered for auction.', 'one-ba-auctions' );
 		wp_send_json_success( $state );
@@ -124,7 +127,6 @@ class OBA_Ajax_Controller {
 		$this->validate_nonce();
 		$auction_id = $this->get_request_auction_id();
 		$user_id    = get_current_user_id();
-		$method     = isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : 'credits';
 
 		if ( ! $user_id ) {
 			wp_send_json_error(
@@ -166,74 +168,20 @@ class OBA_Ajax_Controller {
 		}
 
 		$claim_price = (float) $winner_row['claim_price_credits'];
+		$bid_count   = $this->repo->get_user_bids( $auction_id, $user_id );
+		$meta        = $this->repo->get_auction_meta( $auction_id );
+		$bid_fee     = $this->get_bid_fee_amount( $meta );
 
-		if ( 'credits' === $method ) {
-			$balance = $this->credits->get_balance( $user_id );
-
-			if ( $balance < $claim_price ) {
-				wp_send_json(
-					array(
-						'success' => false,
-						'code'    => 'INSUFFICIENT_CREDITS',
-						'message' => __( 'Not enough credits to claim.', 'one-ba-auctions' ),
-					)
-				);
-			}
-
-			$this->credits->subtract_credits( $user_id, $claim_price );
-			if ( class_exists( 'OBA_Ledger' ) ) {
-				OBA_Ledger::record( $user_id, - $claim_price, $this->credits->get_balance( $user_id ), 'claim', $auction_id );
-			}
-
-			$order = $this->create_order( $auction_id, $user_id, 0, 'auction_credits', __( 'Auction credits', 'one-ba-auctions' ) );
-			$order->update_meta_data( '_oba_paid_with_credits', $claim_price );
-			$order->add_order_note( __( 'Paid with auction credits.', 'one-ba-auctions' ) );
-			$order->payment_complete( 'auction_credits' );
-
-			$this->store_winner_order( $winner_row['id'], $order->get_id() );
-			OBA_Audit_Log::log(
-				'auction_claim',
+		$added = $this->add_claim_to_cart( $auction_id, $claim_price, $winner_row['id'], $meta['bid_product_id'], $bid_count, $bid_fee );
+		if ( ! $added ) {
+			wp_send_json_error(
 				array(
-					'mode'        => 'credits',
-					'wc_order_id' => $order->get_id(),
-					'claim_price' => $claim_price,
-					'winner_id'   => $user_id,
-				),
-				$auction_id
-			);
-			if ( class_exists( 'OBA_Email' ) ) {
-				$mailer = new OBA_Email();
-				$mailer->notify_end_winner(
-					$auction_id,
-					$user_id,
-					array(
-						'claim_price' => $claim_price,
-					)
-				);
-			}
-
-			wp_send_json_success(
-				array(
-					'mode'         => 'credits',
-					'wc_order_id'  => $order->get_id(),
-					'redirect_url' => $order->get_view_order_url(),
+					'code'    => 'add_to_cart_failed',
+					'message' => __( 'Could not prepare checkout for this claim. Please try again.', 'one-ba-auctions' ),
 				)
 			);
 		}
 
-		$order = $this->create_order( $auction_id, $user_id, $claim_price, 'auction_gateway', __( 'Auction gateway', 'one-ba-auctions' ) );
-
-		$this->store_winner_order( $winner_row['id'], $order->get_id() );
-		OBA_Audit_Log::log(
-			'auction_claim',
-			array(
-				'mode'        => 'gateway',
-				'wc_order_id' => $order->get_id(),
-				'claim_price' => $claim_price,
-				'winner_id'   => $user_id,
-			),
-			$auction_id
-		);
 		if ( class_exists( 'OBA_Email' ) ) {
 			$mailer = new OBA_Email();
 			$mailer->notify_end_winner(
@@ -247,9 +195,9 @@ class OBA_Ajax_Controller {
 
 		wp_send_json_success(
 			array(
-				'mode'         => 'gateway',
-				'wc_order_id'  => $order->get_id(),
-				'redirect_url' => $order->get_checkout_payment_url(),
+				'mode'         => 'checkout',
+				'redirect_url' => wc_get_checkout_url(),
+				'cart_url'     => wc_get_cart_url(),
 			)
 		);
 	}
@@ -258,6 +206,8 @@ class OBA_Ajax_Controller {
 		$meta               = $this->repo->get_auction_meta( $auction_id );
 		$user_id            = get_current_user_id();
 		$is_registered      = $user_id ? $this->repo->is_user_registered( $auction_id, $user_id ) : false;
+		$registration_pending = false;
+		$claim_pending      = false;
 		$participant_count  = $this->repo->get_participant_count( $auction_id );
 		$user_bids          = $user_id ? $this->repo->get_user_bids( $auction_id, $user_id ) : 0;
 		$history            = $this->repo->get_last_bids( $auction_id );
@@ -267,6 +217,10 @@ class OBA_Ajax_Controller {
 		$winner_row         = $this->repo->get_winner_row( $auction_id );
 		$user_is_winning    = $user_id && $current_winner && $current_winner === $user_id;
 		$auction_ended      = 'ended' === $meta['auction_status'];
+		$total_bids_all     = $this->repo->get_total_bid_count( $auction_id );
+		$bid_fee_amount     = $this->get_bid_fee_amount( $meta );
+		$user_bid_total     = $user_bids * $bid_fee_amount;
+		$registration_pending = $user_id ? $this->has_pending_registration_order( $auction_id, $user_id ) : false;
 
 		if ( $winner_row ) {
 			$current_winner  = (int) $winner_row['winner_user_id'];
@@ -277,9 +231,13 @@ class OBA_Ajax_Controller {
 			'status'                    => $meta['auction_status'],
 			'lobby_percent'             => $this->engine->calculate_lobby_percent( $auction_id ),
 			'user_registered'           => $is_registered,
-			'registration_fee'          => $meta['registration_fee_credits'],
-			'bid_cost'                  => $meta['bid_cost_credits'],
-			'claim_price'               => $meta['claim_price_credits'],
+			'registration_fee'          => $meta['registration_points'],
+			'registration_fee_formatted'=> $meta['registration_points'],
+			'registration_fee_plain'    => $meta['registration_points'],
+			'bid_cost'                  => $this->get_bid_fee_amount( $meta ),
+			'bid_cost_formatted'        => $this->get_bid_fee_formatted( $meta ),
+			'bid_cost_plain'            => $this->get_bid_fee_plain( $meta ),
+			'claim_price'               => 0,
 			'required_participants'     => (int) $meta['required_participants'],
 			'current_participants'      => $participant_count,
 			'pre_live_seconds_left'     => $this->calculate_seconds_left( $meta['pre_live_start'], $meta['prelive_timer_seconds'] ),
@@ -287,22 +245,110 @@ class OBA_Ajax_Controller {
 			'live_seconds_left'         => $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'], true ),
 			'live_total'                => (int) $meta['live_timer_seconds'],
 			'user_bids_count'           => $user_bids,
-			'user_cost'                 => $user_bids * (float) $meta['bid_cost_credits'],
+			'user_cost'                 => $user_bid_total,
+			'user_cost_formatted'       => $user_bids ? wc_price( $user_bid_total ) : '',
+			'user_cost_plain'           => $user_bids ? wp_strip_all_tags( wc_price( $user_bid_total ) ) : '',
 			'user_is_winning'           => $user_is_winning,
 			'last_bidder_name'          => $anon_name,
 			'history'                   => $this->map_history( $history ),
 			'current_user_is_winner'    => $user_is_winning && $auction_ended,
-			'claim_amount'              => $meta['claim_price_credits'],
+			'claim_amount'              => ( $user_is_winning && $auction_ended ) ? ( $user_bids ? wp_strip_all_tags( wc_price( $user_bid_total ) ) : '' ) : '',
+			'winner_stats'              => array(
+				'bid_count'      => $user_bids,
+				'bid_value'      => $user_bids * $bid_fee_amount,
+				'bid_value_fmt'  => $user_bids ? wc_price( $user_bids * $bid_fee_amount ) : '',
+				'bid_value_plain'=> $user_bids ? wp_strip_all_tags( wc_price( $user_bids * $bid_fee_amount ) ) : '',
+			),
 			'can_bid'                   => 'live' === $meta['auction_status'] && ! ( $user_id && $current_winner && $current_winner === $user_id ),
-			'has_enough_credits'        => $user_id ? $this->credits->get_balance( $user_id ) >= (float) $meta['bid_cost_credits'] : false,
-			'has_enough_credits_to_claim' => $user_id ? $this->credits->get_balance( $user_id ) >= (float) $meta['claim_price_credits'] : false,
+			'has_enough_credits'        => true,
+			'has_enough_credits_to_claim' => true,
 			'wc_order_id'               => $winner_row ? (int) $winner_row['wc_order_id'] : null,
 			'is_admin'                  => current_user_can( 'manage_woocommerce' ),
 			'error_message'             => '',
-			'user_credits_balance'      => $user_id ? $this->credits->get_balance( $user_id ) : 0,
+			'user_points_balance'       => $user_id ? ( new OBA_Points_Service() )->get_balance( $user_id ) : 0,
+			'membership_active'         => $user_id ? $this->engine->user_has_membership( $user_id ) : false,
+			'registration_unlocked'     => $is_registered || ( $user_id ? $this->engine->user_has_membership( $user_id ) : false ),
 			'live_expires_at'           => $meta['live_expires_at'],
 			'success_message'           => '',
+			'total_bids_all'            => $total_bids_all,
+			'total_bids_value'          => $total_bids_all * $bid_fee_amount,
+			'total_bids_value_formatted'=> $total_bids_all ? wc_price( $total_bids_all * $bid_fee_amount ) : '',
+			'total_bids_value_plain'    => $total_bids_all ? wp_strip_all_tags( wc_price( $total_bids_all * $bid_fee_amount ) ) : '',
+			'registration_pending'      => $registration_pending,
+			'claim_pending'             => $claim_pending,
 		);
+	}
+
+	private function get_user_bid_value( $auction_id, $user_id, $formatted = false ) {
+		$count = $this->repo->get_user_bids( $auction_id, $user_id );
+		$meta  = $this->repo->get_auction_meta( $auction_id );
+		$fee   = $this->get_bid_fee_amount( $meta );
+		$total = $count * $fee;
+		if ( $formatted ) {
+			return $total ? wc_price( $total ) : '';
+		}
+		return $total;
+	}
+
+	private function has_pending_registration_order( $auction_id, $user_id ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return false;
+		}
+		$orders = wc_get_orders(
+			array(
+				'status'     => array( 'pending', 'on-hold', 'processing' ),
+				'customer'   => $user_id,
+				'meta_key'   => '_oba_is_registration_order',
+				'meta_value' => 'yes',
+				'limit'      => 20,
+			)
+		);
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$aid = (int) $item->get_meta( '_oba_registration_auction_id', true );
+				if ( $aid === (int) $auction_id ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private function has_pending_claim_order( $auction_id, $user_id ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return false;
+		}
+		$orders = wc_get_orders(
+			array(
+				'status'     => array( 'pending', 'on-hold', 'processing' ),
+				'customer'   => $user_id,
+				'meta_key'   => '_oba_claim_auction_id',
+				'meta_value' => $auction_id,
+				'limit'      => 10,
+			)
+		);
+		return ! empty( $orders );
+	}
+
+	private function get_bid_fee_amount( $meta ) {
+		if ( empty( $meta['bid_product_id'] ) ) {
+			return 0;
+		}
+		$product = wc_get_product( $meta['bid_product_id'] );
+		if ( $product && '' !== $product->get_price() ) {
+			return (float) $product->get_price();
+		}
+		return 0;
+	}
+
+	private function get_bid_fee_formatted( $meta ) {
+		$amount = $this->get_bid_fee_amount( $meta );
+		return $amount ? wc_price( $amount ) : '';
+	}
+
+	private function get_bid_fee_plain( $meta ) {
+		$formatted = $this->get_bid_fee_formatted( $meta );
+		return $formatted ? wp_strip_all_tags( $formatted ) : '';
 	}
 
 	private function calculate_seconds_left( $start_time, $duration, $absolute = false ) {
@@ -321,10 +367,12 @@ class OBA_Ajax_Controller {
 		$history = array();
 
 		foreach ( $rows as $row ) {
+			$cost = (float) $row['credits_reserved'];
 			$history[] = array(
 				'time' => $row['created_at'],
 				'name' => $this->mask_user_name( $row['user_id'] ),
-				'cost' => (float) $row['credits_reserved'],
+				'total_bids_value' => $this->get_user_bid_value( $row['auction_id'], $row['user_id'] ),
+				'total_bids_value_formatted' => $this->get_user_bid_value( $row['auction_id'], $row['user_id'], true ),
 			);
 		}
 
@@ -355,7 +403,7 @@ class OBA_Ajax_Controller {
 		);
 	}
 
-	private function create_order( $auction_id, $user_id, $line_price, $payment_method, $payment_title ) {
+	private function create_order( $auction_id, $user_id, $line_price, $payment_method, $payment_title, $addresses = null ) {
 		$order = wc_create_order(
 			array(
 				'customer_id' => $user_id,
@@ -372,38 +420,171 @@ class OBA_Ajax_Controller {
 			$order->add_item( $item );
 		}
 
-		$order->set_payment_method( $payment_method );
-		$order->set_payment_method_title( $payment_title );
-		$order->calculate_totals( true );
+		if ( $payment_method ) {
+			$order->set_payment_method( $payment_method );
+		}
+		if ( $payment_title ) {
+			$order->set_payment_method_title( $payment_title );
+		}
+		$order->update_meta_data( '_oba_auction_id', $auction_id );
+		$order->update_meta_data( '_oba_is_claim', 'yes' );
 
-		$this->hydrate_user_addresses( $order, $user_id );
+		if ( is_array( $addresses ) ) {
+			if ( ! empty( $addresses['billing'] ) ) {
+				$order->set_address( $addresses['billing'], 'billing' );
+			}
+			if ( ! empty( $addresses['shipping'] ) ) {
+				$order->set_address( $addresses['shipping'], 'shipping' );
+			} elseif ( ! empty( $addresses['billing'] ) ) {
+				$order->set_address( $addresses['billing'], 'shipping' );
+			}
+		} else {
+			$this->hydrate_user_addresses( $order, $user_id );
+		}
+
+		$order->calculate_totals( true );
 
 		$order->save();
 
 		return $order;
 	}
 
-	private function hydrate_user_addresses( WC_Order $order, $user_id ) {
-		$fields = array(
-			'billing_first_name',
-			'billing_last_name',
-			'billing_email',
-			'billing_phone',
-			'billing_address_1',
-			'billing_address_2',
-			'billing_city',
-			'billing_state',
-			'billing_postcode',
-			'billing_country',
-			'shipping_first_name',
-			'shipping_last_name',
-			'shipping_address_1',
-			'shipping_address_2',
-			'shipping_city',
-			'shipping_state',
-			'shipping_postcode',
-			'shipping_country',
+	private function add_claim_to_cart( $auction_id, $claim_price, $winner_row_id, $bid_product_id = 0, $bid_qty = 0, $bid_price = 0 ) {
+		if ( ! function_exists( 'WC' ) ) {
+			return false;
+		}
+		if ( ! WC()->cart && function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+		}
+		if ( ! WC()->cart ) {
+			return false;
+		}
+
+		WC()->cart->empty_cart();
+
+		$allow_ids = array_filter( array( (int) $bid_product_id ) );
+		$allow = function( $purchasable, $product ) use ( $allow_ids ) {
+			if ( $product && in_array( (int) $product->get_id(), $allow_ids, true ) ) {
+				return true;
+			}
+			return $purchasable;
+		};
+		add_filter( 'woocommerce_is_purchasable', $allow, 10, 2 );
+
+		$added = false;
+		$order_meta = array(
+			'oba_is_claim'          => true,
+			'oba_claim_price'       => $claim_price,
+			'oba_claim_auction_id'  => $auction_id,
+			'oba_winner_row_id'     => $winner_row_id,
 		);
+
+		if ( $bid_product_id && $bid_qty > 0 ) {
+			$added_key = WC()->cart->add_to_cart(
+				$bid_product_id,
+				max( 1, (int) $bid_qty ),
+				0,
+				array(),
+				array(
+					'oba_is_claim'           => true,
+					'oba_is_bid_fee'         => true,
+					'oba_bid_fee_auction'    => $auction_id,
+					'oba_bid_fee_total'      => $bid_price * $bid_qty,
+					'oba_claim_price'        => $claim_price,
+					'oba_claim_auction_id'   => $auction_id,
+					'oba_winner_row_id'      => $winner_row_id,
+				)
+			);
+			if ( $added_key && isset( WC()->cart->cart_contents[ $added_key ]['data'] ) && WC()->cart->cart_contents[ $added_key ]['data'] instanceof WC_Product ) {
+				WC()->cart->cart_contents[ $added_key ]['data']->set_price( $bid_price );
+			}
+			$added = (bool) $added_key;
+		}
+
+		remove_filter( 'woocommerce_is_purchasable', $allow, 10 );
+
+		return (bool) $added;
+	}
+
+	private function add_registration_to_cart( $product_id, $auction_id, $plan_id ) {
+		if ( ! function_exists( 'WC' ) ) {
+			return false;
+		}
+		if ( ! WC()->cart && function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+		}
+		if ( ! WC()->cart ) {
+			return false;
+		}
+
+		$allow = function( $purchasable, $product ) use ( $product_id ) {
+			if ( $product && (int) $product->get_id() === (int) $product_id ) {
+				return true;
+			}
+			return $purchasable;
+		};
+		add_filter( 'woocommerce_is_purchasable', $allow, 10, 2 );
+
+		WC()->cart->add_to_cart(
+			$product_id,
+			1,
+			0,
+			array(),
+			array(
+				'oba_is_registration' => true,
+				'oba_registration_auction_id' => $auction_id,
+				'oba_registration_user_id' => get_current_user_id(),
+			)
+		);
+
+		remove_filter( 'woocommerce_is_purchasable', $allow, 10 );
+
+		return true;
+	}
+
+	private function hydrate_user_addresses( WC_Order $order, $user_id ) {
+		$billing  = $this->get_address_from_user_meta( $user_id, 'billing' );
+		$shipping = $this->get_address_from_user_meta( $user_id, 'shipping' );
+
+		if ( empty( $billing ) || empty( $shipping ) ) {
+			$last_order = $this->get_last_customer_order( $user_id );
+			if ( $last_order ) {
+				if ( empty( $billing ) ) {
+					$billing = $last_order->get_address( 'billing' );
+				}
+				if ( empty( $shipping ) ) {
+					$shipping = $last_order->get_address( 'shipping' );
+				}
+			}
+		}
+
+		if ( ! empty( $billing ) ) {
+			$order->set_address( $billing, 'billing' );
+		}
+		if ( ! empty( $shipping ) ) {
+			$order->set_address( $shipping, 'shipping' );
+		} elseif ( ! empty( $billing ) ) {
+			// Fallback: use billing for shipping if shipping is missing.
+			$order->set_address( $billing, 'shipping' );
+		}
+	}
+
+	private function get_address_from_user_meta( $user_id, $type = 'billing' ) {
+		$fields = array(
+			"{$type}_first_name",
+			"{$type}_last_name",
+			"{$type}_company",
+			"{$type}_address_1",
+			"{$type}_address_2",
+			"{$type}_city",
+			"{$type}_state",
+			"{$type}_postcode",
+			"{$type}_country",
+		);
+		if ( 'billing' === $type ) {
+			$fields[] = 'billing_email';
+			$fields[] = 'billing_phone';
+		}
 
 		$data = array();
 		foreach ( $fields as $field ) {
@@ -412,12 +593,126 @@ class OBA_Ajax_Controller {
 				$data[ $field ] = $value;
 			}
 		}
+		if ( 'billing' === $type && empty( $data['billing_email'] ) ) {
+			$user = get_userdata( $user_id );
+			if ( $user && $user->user_email ) {
+				$data['billing_email'] = $user->user_email;
+			}
+		}
+		return $data;
+	}
 
-		if ( isset( $data['billing_first_name'] ) ) {
-			$order->set_address( $data, 'billing' );
+	private function prepare_user_addresses( $user_id ) {
+		$billing  = $this->get_address_from_user_meta( $user_id, 'billing' );
+		$shipping = $this->get_address_from_user_meta( $user_id, 'shipping' );
+
+		if ( empty( $billing ) || empty( $shipping ) ) {
+			$last_order = $this->get_last_customer_order( $user_id );
+			if ( $last_order ) {
+				if ( empty( $billing ) ) {
+					$billing = $this->normalize_address_keys( $last_order->get_address( 'billing' ), 'billing' );
+				}
+				if ( empty( $shipping ) ) {
+					$shipping = $this->normalize_address_keys( $last_order->get_address( 'shipping' ), 'shipping' );
+				}
+			}
 		}
-		if ( isset( $data['shipping_first_name'] ) ) {
-			$order->set_address( $data, 'shipping' );
+
+		if ( ! $this->has_minimum_address( $billing ) ) {
+			$billing = array();
 		}
+		if ( empty( $shipping ) && ! empty( $billing ) ) {
+			$shipping = $billing;
+		}
+		if ( ! $this->has_minimum_address( $shipping ) ) {
+			$shipping = array();
+		}
+
+		return array(
+			'billing'  => $billing,
+			'shipping' => $shipping,
+		);
+	}
+
+	private function has_minimum_address( $address ) {
+		if ( empty( $address ) || ! is_array( $address ) ) {
+			return false;
+		}
+		$required = array( 'first_name', 'address_1', 'city', 'country' );
+		$prefixed = array( 'billing_first_name', 'billing_address_1', 'billing_city', 'billing_country' );
+		$prefixed_shipping = array( 'shipping_first_name', 'shipping_address_1', 'shipping_city', 'shipping_country' );
+
+		// Normalize lookup to both unprefixed and prefixed keys.
+		foreach ( $required as $key ) {
+			if ( ! empty( $address[ $key ] ) ) {
+				continue;
+			}
+			// Try prefixed billing.
+			$billing_key = 'billing_' . $key;
+			if ( ! empty( $address[ $billing_key ] ) ) {
+				continue;
+			}
+			$shipping_key = 'shipping_' . $key;
+			if ( ! empty( $address[ $shipping_key ] ) ) {
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private function normalize_address_keys( $address, $type ) {
+		if ( empty( $address ) || ! is_array( $address ) ) {
+			return array();
+		}
+		$mapped = array();
+		$fields = array(
+			'first_name',
+			'last_name',
+			'company',
+			'address_1',
+			'address_2',
+			'city',
+			'state',
+			'postcode',
+			'country',
+			'phone',
+			'email',
+		);
+		foreach ( $fields as $field ) {
+			$key = "{$type}_{$field}";
+			if ( isset( $address[ $field ] ) ) {
+				$mapped[ $key ] = $address[ $field ];
+			}
+		}
+		return $mapped;
+	}
+
+	private function get_last_customer_order( $user_id ) {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return false;
+		}
+		$orders = wc_get_orders(
+			array(
+				'customer' => $user_id,
+				'limit'    => 1,
+				'orderby'  => 'date',
+				'order'    => 'DESC',
+				'status'   => array( 'completed', 'processing', 'on-hold' ),
+				'return'   => 'objects',
+			)
+		);
+		if ( empty( $orders ) ) {
+			return false;
+		}
+		return $orders[0];
+	}
+
+	private function get_edit_address_url() {
+		$account_page = wc_get_page_permalink( 'myaccount' );
+		if ( ! $account_page ) {
+			return wp_login_url();
+		}
+		return wc_get_endpoint_url( 'edit-address', '', $account_page );
 	}
 }

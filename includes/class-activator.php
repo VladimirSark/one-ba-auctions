@@ -19,6 +19,8 @@ class OBA_Activator {
 		$winners_table      = $prefix . 'winners';
 		$audit_table        = $prefix . 'audit_log';
 		$ledger_table       = $prefix . 'credit_ledger';
+		$points_table       = $prefix . 'user_points';
+		$points_ledger      = $prefix . 'points_ledger';
 
 		$sql_user_credits = "CREATE TABLE {$user_credits_table} (
 		  user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
@@ -88,12 +90,34 @@ class OBA_Activator {
 		  KEY reference_id (reference_id)
 		) {$charset_collate};";
 
+		$sql_points = "CREATE TABLE {$points_table} (
+		  user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+		  points_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+		  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		) {$charset_collate};";
+
+		$sql_points_ledger = "CREATE TABLE {$points_ledger} (
+		  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		  user_id BIGINT UNSIGNED NOT NULL,
+		  amount DECIMAL(12,2) NOT NULL,
+		  balance_after DECIMAL(12,2) NOT NULL,
+		  reason VARCHAR(100) NOT NULL,
+		  reference_id BIGINT UNSIGNED DEFAULT NULL,
+		  meta TEXT DEFAULT NULL,
+		  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		  KEY user_id (user_id),
+		  KEY reason (reason),
+		  KEY reference_id (reference_id)
+		) {$charset_collate};";
+
 		dbDelta( $sql_user_credits );
 		dbDelta( $sql_participants );
 		dbDelta( $sql_bids );
 		dbDelta( $sql_winners );
 		dbDelta( $sql_audit );
 		dbDelta( $sql_ledger );
+		dbDelta( $sql_points );
+		dbDelta( $sql_points_ledger );
 	}
 
 	public static function maybe_upgrade() {
@@ -106,6 +130,7 @@ class OBA_Activator {
 			$prefix . 'winners',
 			$prefix . 'audit_log',
 			$prefix . 'credit_ledger',
+			$prefix . 'user_points',
 		);
 
 		$missing = false;

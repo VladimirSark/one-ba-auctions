@@ -9,10 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$reg_points     = (float) get_post_meta( $product->get_id(), '_registration_points', true );
+$bid_product_id = (int) get_post_meta( $product->get_id(), '_bid_product_id', true );
+$bid_price      = $bid_product_id ? wc_get_product( $bid_product_id ) : null;
+$bid_price_text = ( $bid_price && $bid_price->get_price() !== '' ) ? wc_price( $bid_price->get_price() ) : '';
 $meta     = array(
-	'registration_fee' => get_post_meta( $product->get_id(), '_registration_fee_credits', true ),
-	'bid_cost'         => get_post_meta( $product->get_id(), '_bid_cost_credits', true ),
-	'claim_price'      => get_post_meta( $product->get_id(), '_claim_price_credits', true ),
+	'registration_fee' => $reg_points ? $reg_points . ' pts' : '',
+	'bid_cost'         => $bid_price_text,
+	'claim_price'      => '',
 );
 $settings = OBA_Settings::get_settings();
 $tr       = isset( $settings['translations'] ) ? $settings['translations'] : array();
@@ -28,6 +32,18 @@ $stage_tips = array(
 ?>
 
 <div class="oba-auction-wrap">
+	<div class="oba-membership-overlay" style="display:none;">
+		<div class="oba-lock-overlay__inner">
+			<div class="oba-lock-title"><?php echo esc_html( $get( 'membership_required_title', __( 'Membership required to view auction details.', 'one-ba-auctions' ) ) ); ?></div>
+			<div class="oba-membership-links"></div>
+		</div>
+	</div>
+	<div class="oba-points-overlay" style="display:none;">
+		<div class="oba-lock-overlay__inner">
+			<div class="oba-lock-title"><?php echo esc_html( $get( 'points_low_title', __( 'Not enough points to continue. Update membership to get more points.', 'one-ba-auctions' ) ) ); ?></div>
+			<div class="oba-membership-links"></div>
+		</div>
+	</div>
 	<div class="oba-layout">
 		<div class="oba-col-right">
 			<div class="oba-card oba-phase-card" data-step="registration">
@@ -41,15 +57,11 @@ $stage_tips = array(
 					</span>
 				</div>
 				<div class="oba-phase-body">
+					<div class="oba-pending-banner" style="display:none;"><?php esc_html_e( 'Registration pending admin approval.', 'one-ba-auctions' ); ?></div>
 					<p>
 						<?php
-						/* translators: 1: label, 2: amount, 3: credits plural */
-						printf(
-							esc_html__( '%1$s: %2$s %3$s', 'one-ba-auctions' ),
-							esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ),
-							esc_html( $meta['registration_fee'] ),
-							esc_html( $get( 'credit_plural', __( 'credits', 'one-ba-auctions' ) ) )
-						);
+						$label = $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) );
+						echo wp_kses_post( $label . ( $meta['registration_fee'] ? ': ' . $meta['registration_fee'] : '' ) );
 						?>
 					</p>
 					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
@@ -57,6 +69,9 @@ $stage_tips = array(
 					<div class="oba-register-note">
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
+					</div>
+					<div class="oba-points-row">
+						<span class="oba-label"><?php esc_html_e( 'Your points', 'one-ba-auctions' ); ?>: <strong class="oba-user-points">0</strong></span>
 					</div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
@@ -93,6 +108,9 @@ $stage_tips = array(
 					<?php endif; ?>
 					<div class="oba-actions">
 						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
+					</div>
+					<div class="oba-points-row">
+						<span class="oba-label"><?php esc_html_e( 'Your points', 'one-ba-auctions' ); ?>: <strong class="oba-user-points">0</strong></span>
 					</div>
 					<div class="oba-registered-note" style="display:none;margin-top:8px;">
 						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
@@ -137,13 +155,7 @@ $stage_tips = array(
 					<p>
 						<?php
 						$bid_label = $get( 'bid_cost_label', __( 'Bid cost', 'one-ba-auctions' ) );
-						$credits_label = $get( 'credit_plural', __( 'credits', 'one-ba-auctions' ) );
-						printf(
-							esc_html__( '%1$s: %2$s %3$s', 'one-ba-auctions' ),
-							esc_html( $bid_label ),
-							esc_html( $meta['bid_cost'] ),
-							esc_html( $credits_label )
-						);
+						echo wp_kses_post( $bid_label . ( $meta['bid_cost'] ? ': ' . $meta['bid_cost'] : '' ) );
 						?>
 					</p>
 					<div class="oba-timer-large"><span class="oba-live-seconds">0</span></div>
@@ -157,6 +169,11 @@ $stage_tips = array(
 							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_cost_label', __( 'Your cost', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value oba-user-cost">0</div>
 						</div>
+					</div>
+					<div class="oba-history-head">
+						<span><?php esc_html_e( 'Last bidder', 'one-ba-auctions' ); ?></span>
+						<span class="oba-history-time-head"><?php esc_html_e( 'Time', 'one-ba-auctions' ); ?></span>
+						<span class="oba-history-value-head"><?php esc_html_e( "Bid's value", 'one-ba-auctions' ); ?></span>
 					</div>
 					<ul class="oba-history"></ul>
 					<div class="oba-actions">
@@ -178,15 +195,19 @@ $stage_tips = array(
 				<div class="oba-phase-body">
 					<div class="oba-winner-claim" style="display:none;">
 						<div class="oba-outcome oba-outcome--win">
-							<p><?php echo esc_html( $get( 'winner_msg', __( 'You won! Claim price:', 'one-ba-auctions' ) ) ); ?> <span class="oba-claim-amount"><?php echo esc_html( $meta['claim_price'] ); ?></span></p>
+							<h4 class="oba-win-title"><?php echo esc_html( $get( 'winner_msg', __( 'You won!', 'one-ba-auctions' ) ) ); ?></h4>
+							<p class="oba-win-stat oba-win-bids"><?php esc_html_e( 'Bids placed:', 'one-ba-auctions' ); ?> <span class="oba-win-bids-count">0</span></p>
+							<p class="oba-win-stat oba-win-value"><?php esc_html_e( 'Bids value:', 'one-ba-auctions' ); ?> <span class="oba-win-bids-value">0</span></p>
 							<div class="oba-claim-status" style="display:none;"></div>
-							<button class="button button-primary oba-claim"><?php echo esc_html( $get( 'claim_button', __( 'Claim now', 'one-ba-auctions' ) ) ); ?></button>
+							<button class="button button-primary oba-claim"><?php echo esc_html( $get( 'claim_button', __( 'Claim now', 'one-ba-auctions' ) ) ); ?> <span class="oba-claim-amount"></span></button>
 						</div>
 					</div>
 					<div class="oba-loser" style="display:none;">
 						<div class="oba-outcome oba-outcome--lose">
-							<p><?php echo esc_html( $get( 'loser_msg', __( 'You did not win this auction.', 'one-ba-auctions' ) ) ); ?></p>
-							<p class="oba-refund-note"><?php echo esc_html( $get( 'refund_msg', __( 'Your reserved credits have been refunded.', 'one-ba-auctions' ) ) ); ?></p>
+							<h4 class="oba-lose-title"><?php echo esc_html( $get( 'loser_msg', __( 'You did not win this auction.', 'one-ba-auctions' ) ) ); ?></h4>
+							<p class="oba-lose-stat oba-lose-bids"><?php esc_html_e( 'Bids placed:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-count">0</span></p>
+							<p class="oba-lose-stat oba-lose-value"><?php esc_html_e( 'Bids value:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-value">0</span></p>
+							<a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Return to home page', 'one-ba-auctions' ); ?></a>
 						</div>
 					</div>
 				</div>
@@ -201,18 +222,6 @@ $stage_tips = array(
 </div>
 
 <div class="oba-modal-overlay" style="display:none;"></div>
-<div class="oba-claim-modal">
-	<h4><?php echo esc_html( $get( 'claim_modal_title', __( 'Choose how to claim', 'one-ba-auctions' ) ) ); ?></h4>
-	<div class="oba-claim-options">
-		<label><input type="radio" name="oba-claim-method" value="credits" checked /> <?php echo esc_html( $get( 'claim_option_credits', __( 'Pay with credits', 'one-ba-auctions' ) ) ); ?></label>
-		<label><input type="radio" name="oba-claim-method" value="gateway" /> <?php echo esc_html( $get( 'claim_option_gateway', __( 'Pay via checkout', 'one-ba-auctions' ) ) ); ?></label>
-	</div>
-	<div class="oba-claim-error oba-alert oba-alert-error"><?php echo esc_html( $get( 'claim_error', __( 'Claim failed. Please try again.', 'one-ba-auctions' ) ) ); ?></div>
-	<div class="oba-actions">
-		<button class="button button-primary oba-claim-confirm"><?php echo esc_html( $get( 'claim_continue', __( 'Continue', 'one-ba-auctions' ) ) ); ?></button>
-		<button class="button oba-claim-cancel" type="button"><?php echo esc_html( $get( 'claim_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
-	</div>
-</div>
 
 <div class="oba-credit-overlay" style="display:none;"></div>
 <div class="oba-credit-modal" style="display:none;">

@@ -1,5 +1,31 @@
 # Developer Log
 
+# Developer Log
+
+## 2025-12-09 — Points-based registration & membership gating
+- **Summary:** Swapped registration to points instead of Woo orders; membership required to view/participate. Membership products grant points on completion; registration deducts points immediately via AJAX (no checkout). State now exposes `user_points_balance` and `membership_active`; frontend shows “Your points” and locks steps without membership. Points stored in `wp_auction_user_points`.
+- **Why:** Replace the previous pay-to-register flow with a lightweight, wallet-like model tied to memberships.
+- **Files/Classes:** `includes/class-activator.php` (points table), `includes/class-points-service.php`, `includes/class-points-order-integration.php`, `includes/class-auction-engine.php`, `includes/class-ajax-controller.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
+- **DB:** `wp_auction_user_points` (+ ledger table if present).
+- **Constraints/Assumptions:** Membership flag `_oba_has_membership` required; registration cost stored as `_registration_points` on the auction product; bids/claims still use WooCommerce products.
+- **How to test:** Complete order for membership product with points meta (grants points + membership flag), visit auction page, confirm membership lock overlay hidden, register (points deducted, participant added), lobby updates without checkout.
+- **Known limits/TODO:** Points ledger display pending; ensure translations updated for points terminology.
+
+## 2025-12-09 — Admin calculations & legacy cleanup
+- **Summary:** Added “Point value” setting and auto-registration value preview (points × required participants) in auction editor; detail view shows registration points/value totals. Removed legacy product selectors (credit pack, claim product, registration product, membership plan/limit, credits amount) and unused registration fee totals.
+- **Why:** Align admin tools with the points model and remove outdated product flags to avoid confusion.
+- **Files/Classes:** `includes/class-settings.php`, `includes/class-admin.php`, `includes/class-product-type.php`, `includes/class-credits-order-integration.php`.
+- **DB:** None (settings only).
+- **How to test:** Set Point value in Settings → General; edit auction, adjust registration points/required participants, confirm value auto-updates; view All Auctions detail to see registration points/value totals; verify product edit screen no longer shows old selectors.
+
+## 2025-12-09 — Memberships admin screen (points)
+- **Summary:** Added 1BA → Memberships page listing users with membership/points; inline form toggles membership flag and edits points balance.
+- **Why:** Give admins a single place to manage membership status and balances after the points shift.
+- **Files/Classes:** `includes/class-admin.php`, `includes/class-points-service.php`.
+- **DB:** Reads `wp_auction_user_points`, usermeta `_oba_has_membership`.
+- **Constraints/Assumptions:** Limit to ~200 rows; requires `manage_woocommerce`.
+- **How to test:** Open 1BA → Memberships, adjust a user’s points and membership flag, save, and verify state updates on frontend.
+
 ## 2025-11-20 — Plugin skeleton, DB tables, product type, frontend override
 - **Summary:** Created base plugin bootstrap, activation hooks, custom tables, WooCommerce `auction` product type with meta fields, and single-product template override with 4-step UI and polling script/styles.
 - **Why:** Establish core structure for credits-based auction flow and data storage, replacing default add-to-cart UI.
@@ -188,6 +214,15 @@
 - **DB:** No schema change.
 - **Constraints/Assumptions:** Last-refreshed/system time is suppressed; polling remains.
 - **How to test:** On auction page, status and credits pills align in height; system time label no longer appears.
+
+## 2025-12-08 — Remove credits/memberships, Woo-based fees, new 1BA admin
+- **Summary:** Removed credits and membership slot requirements entirely. Registration now uses the configured registration product via WC checkout; bidding uses the bid product price. Claim adds total bid value to checkout; claimed status reads completed claim orders. Added 1BA admin menu with All Auctions list (status filter, participants registered/required), auction detail (status, winner, claimed with order link, end time, totals, participant log with inline removal). Settings tabs (General/Emails/Translations) render inline under 1BA; old menus removed.
+- **Why:** Simplify to pure WooCommerce product/checkout model and streamline admin UX.
+- **Files/Classes:** `README.md`, `includes/class-ajax-controller.php`, `includes/class-auction-engine.php`, `includes/class-credits-order-integration.php`, `includes/class-claim-checkout.php`, `includes/class-frontend.php`, `includes/class-admin.php`, `assets/js/auction.js`, `assets/css/auction.css`, `templates/oba-single-auction.php`.
+- **DB:** Uses existing participants/bids/winners/audit tables; legacy credits tables untouched but unused.
+- **Constraints/Assumptions:** Registration completes on WC order completion; leading bidder cannot rebid; claim recognized when a completed order contains `_oba_claim_auction_id`.
+- **How to test:** Register to an auction (checkout/complete), see pending cleared; bid and ensure timer resets and leading lockout; end auction, claim, complete order, and verify claimed “Yes #order — completed” on auction detail; open 1BA settings tabs without warnings; manage participants inline from auction detail.
+- **Email scope change:** Removed “Credits edited” test/selection from Emails tab (credits no longer in use).
 
 ## 2025-11-21 — Ended state outcome styling
 - **Summary:** Enhanced ended step visuals with win/lose outcome blocks (green win, red loss) with background/border emphasis (titles removed per UX request).

@@ -1,73 +1,61 @@
 # Architecture Decision Log
 
+## Points + membership model
+- **Decision:** Require membership to view/participate; store points in `wp_auction_user_points`; membership products grant points on order completion and set `_oba_has_membership`.
+- **Why:** Replace the previous checkout/credits flows with a lightweight balance tied to memberships.
+- **Alternatives:** Continue pay-to-register via checkout or legacy credits wallet. Rejected to reduce friction and duplicated carts.
+- **Consequences:** Registration uses point deduction only; membership flag/points must be kept in sync; points ledger/table required on activation.
+
+## Registration without Woo checkout
+- **Decision:** Registration deducts `_registration_points` directly via AJAX after validation (login, membership, T&C, status).
+- **Why:** Avoid cart/checkout for registration and keep lobby updates immediate.
+- **Alternatives:** Add registration product to cart. Rejected to prevent pending orders and user confusion.
+- **Consequences:** No Woo order exists for registration; refunds are not applicable; validation errors handled in AJAX responses.
+
+## Admin point-value calculator
+- **Decision:** Store a single “point value” in settings and auto-calculate registration monetary value in the auction editor based on points × required participants.
+- **Why:** Give admins quick visibility into real-world cost/profit without reintroducing checkout products.
+- **Alternatives:** Keep registration fee products. Rejected because registration is fully point-based now.
+- **Consequences:** Estimations rely on the configured point value; update it to match business rules.
+
+## Claim recognized by completed claim order
+- **Decision:** Mark auction as claimed when a completed order exists with `_oba_claim_auction_id`; store `wc_order_id` in winners.
+- **Why:** Align claimed status with paid orders.
+- **Alternatives:** Treat any order meta as claimed. Rejected because on-hold/pending orders are not final.
+- **Consequences:** Admin detail looks up completed orders; claim button remains until completion.
+
+## Consolidate admin under 1BA menu
+- **Decision:** Use a single “1BA Auctions” menu for lists, detail, settings, audit, and memberships.
+- **Why:** Reduce clutter from legacy menus after pivots.
+- **Alternatives:** Keep dual menus. Rejected to avoid confusion and deprecated redirects.
+- **Consequences:** Old menu links removed; new slugs start with `oba-1ba-*`.
+
 ## Auction data in custom tables
-- **Decision:** Store credits, participants, bids, winners, audit, and ledger in custom tables.
-- **Why:** WooCommerce postmeta is inefficient for high-write flows like bidding; tables enable indexed queries and clean separation.
-- **Alternatives:** Store bids/participants in postmeta or custom post types. Rejected for performance/complexity.
-- **Consequences:** Requires activation dbDelta migrations; developers must handle direct SQL and upgrades.
+- **Decision:** Store participants, bids, winners, audit (and points) in dedicated tables; timers remain in post meta.
+- **Why:** Indexed writes for bidding/participants and simple meta for timers.
+- **Alternatives:** Postmeta/custom post types for bids. Rejected for performance.
+- **Consequences:** Activation must run migrations; direct SQL usage required.
 
 ## Winner = last valid bid
-- **Decision:** Determine winner as the user in the last bid by sequence number when live expires.
-- **Why:** Simple lowest-latency rule matching spec; no proxy bidding/price increments.
-- **Alternatives:** Highest-price or random tie-breaker. Not needed per spec.
-- **Consequences:** Users must outbid by timing; race conditions mitigated by sequence numbers.
+- **Decision:** Winner is the user in the last bid by sequence when live expires.
+- **Why:** Matches spec; simplest deterministic rule.
+- **Alternatives:** Highest-price or proxy bidding. Not required.
+- **Consequences:** Timing matters; bid lock prevents current leader repeats.
 
-## Credit reservation model
-- **Decision:** Deduct credits on each bid immediately; refund all non-winner bid credits at auction end; registration fee never refunded.
-- **Why:** Simplifies wallet state; avoids holding balances across requests; matches spec of “reserved” then refunded.
-- **Alternatives:** Pre-authorize without deducting; hold separate “reserved” bucket. Chosen method avoids dual balances.
-- **Consequences:** Users need sufficient live balance before each bid; refunds only happen at end.
-
-## Timers stored in meta
-- **Decision:** Store `_pre_live_start` and `_live_expires_at` in post meta.
-- **Why:** Lightweight persistence without extra tables; easy to query and adjust in admin.
-- **Alternatives:** Separate timer table or transient storage. Meta chosen for simplicity.
-- **Consequences:** Clock relies on server time; manual edits possible; ensure gmtime formatting.
-
-## State transitions triggered by polling and cron
-- **Decision:** Move pre_live→live and end live auctions during AJAX polling and via minute-level cron/manual trigger.
-- **Why:** Avoid stuck auctions when no clients poll; keep logic simple without long-running daemons.
-- **Alternatives:** WebSockets/push or background workers. Not needed yet; WP-Cron is acceptable.
-- **Consequences:** Resolution within ~1 minute worst-case; reliant on WP-Cron availability.
+## State transitions via polling + cron
+- **Decision:** Advance pre_live→live and end live auctions during AJAX polling and via minute cron/manual end.
+- **Why:** Prevent stuck auctions when no users are connected.
+- **Alternatives:** WebSockets/background workers. Deferred for now.
+- **Consequences:** Worst-case ~1 minute lag; depends on WP-Cron.
 
 ## AJAX shape and nonce use
-- **Decision:** Use `admin-ajax.php` endpoints with nonce `oba_auction`; GET for state, POST for mutations; enforce login for bid/claim/register.
-- **Why:** Standard WP pattern; works with localized script data.
-- **Alternatives:** REST API endpoints. Ajax chosen for speed with Woo templates.
-- **Consequences:** Same-origin required; payloads limited to JSON shape defined in spec.
+- **Decision:** `admin-ajax.php` endpoints with nonce `oba_auction`; GET for state, POST for mutations; enforce login for bid/register/claim.
+- **Why:** Standard WP pattern compatible with localized scripts.
+- **Alternatives:** REST endpoints. Ajax chosen for speed in Woo templates.
+- **Consequences:** Same-origin; JSON matches frontend mapping.
 
-## Claim order handling
-- **Decision:** Credits claim creates paid WC order at 0 EUR with custom payment method `auction_credits`; gateway claim creates payable order at claim price in EUR.
-- **Why:** Fits WooCommerce fulfillment pipeline while supporting internal credits.
-- **Alternatives:** Custom post for claims. Rejected to leverage Woo orders for shipping/records.
-- **Consequences:** Order metadata needed for reporting; payment gateways handle gateway path.
-
-## Admin controls and logging
-- **Decision:** Provide admin pages for status actions, winners, credits, settings, and participant removal; log all admin actions and credit changes to audit/ledger tables.
-- **Why:** Operational transparency and reversible actions; audit trail for support.
-- **Alternatives:** Minimal admin UI. Chosen richer UI for clarity.
-- **Consequences:** More surfaces to maintain; audit/ledger tables must be kept in sync on future changes.
-
-## Participants management UI
-- **Decision:** Surface participant counts, filters, CSV export, and bulk remove/restore in admin.
-- **Why:** Ops needs to triage/remove/restore users quickly and export lists.
-- **Alternatives:** SQL/manual edits only. Chosen UI for speed and safety.
-- **Consequences:** Bulk actions flip status (not refunding fees); exports limited to filtered set.
-
-## Frontend force-end for admins
-- **Decision:** Add admin-only “End now” button using AJAX path that calls winner resolution.
-- **Why:** Quick operational control without visiting admin pages.
-- **Alternatives:** Admin-only cron/CLI only. Chosen to keep controls near live view.
-- **Consequences:** Shares bid endpoint; must keep capability checks tight.
-
-## WP-CLI listing
-- **Decision:** Provide CLI to list auctions by status, inspect participants/bids, list winners, and reset live timer.
-- **Why:** Fast inspection and control in ops scripts or during support.
-- **Alternatives:** Rely on admin UI only. CLI chosen for automation.
-- **Consequences:** Lists product titles/status and raw participant/bid/winner rows; no pagination; timer reset uses meta update.
-
-## Product type override instead of custom endpoint pages
-- **Decision:** Override single product summary for `auction` type instead of separate page template.
-- **Why:** Keeps URL structure and Woo context; reuses product data and theme layout.
-- **Alternatives:** Custom page template or shortcode. Override was quickest to integrate.
-- **Consequences:** Theme hooks must be compatible; other plugins altering single summary may need adjustments.
+## Admin controls, logging, and CLI
+- **Decision:** Keep admin pages for status actions, participants, audit log, settings, memberships; CLI for listing/ending/resetting.
+- **Why:** Operational visibility and support.
+- **Alternatives:** Minimal UI. Rejected to avoid SQL reliance.
+- **Consequences:** More surfaces to maintain; audit must stay in sync with actions.
