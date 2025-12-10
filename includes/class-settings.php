@@ -107,6 +107,10 @@ class OBA_Settings {
 			'points_low_title' => '',
 			'points_label'    => '',
 			'points_suffix'   => '',
+			'win_save_prefix' => '',
+			'win_save_suffix' => '',
+			'lose_save_prefix' => '',
+			'lose_save_suffix' => '',
 		);
 
 		$translations = array();

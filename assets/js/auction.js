@@ -67,6 +67,7 @@
 
 		const status = state.data.status;
 		const unlocked = !!state.data.registration_unlocked;
+		const productCost = parseFloat($('.oba-auction-wrap').data('product-cost') || 0);
 		const pointsBalance = Number(state.data.user_points_balance || 0);
 
 		updateStepBar(status);
@@ -154,6 +155,16 @@
 			$('.oba-win-bids-count').text(stats.bid_count || 0);
 			const valueText = (stats.bid_value_plain || stats.bid_value_fmt || stats.bid_value || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
 			$('.oba-win-bids-value').text(valueText || '0');
+			const bidValNum = typeof stats.bid_value_num !== 'undefined' ? Number(stats.bid_value_num) : parseFloat(stats.bid_value_plain || stats.bid_value || 0);
+			if (productCost && bidValNum >= 0) {
+				const saved = Math.max(0, productCost - bidValNum);
+				$('.oba-win-save-value').text(formatMoney(saved));
+				$('.oba-win-save .oba-save-prefix').text(obaAuction.i18n?.win_save_prefix || 'You saved around');
+				$('.oba-win-save .oba-save-suffix').text(obaAuction.i18n?.win_save_suffix || 'from regular price in other stores.');
+				$('.oba-win-save').show();
+			} else {
+				$('.oba-win-save').hide();
+			}
 			if (state.data.claim_pending) {
 				$('.oba-claim').prop('disabled', true).text(obaAuction.i18n?.registration_pending || 'Pending approval');
 				$('.oba-claim-status').text(obaAuction.i18n?.registration_pending || 'Pending approval').show();
@@ -169,6 +180,16 @@
 				$('.oba-lose-bids-count').text(state.data.user_bids_count || 0);
 				const loseValue = (state.data.user_cost_plain || state.data.user_cost_formatted || state.data.user_cost || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
 				$('.oba-lose-bids-value').text(loseValue || '0');
+				const costNum = typeof state.data.user_cost_num !== 'undefined' ? Number(state.data.user_cost_num) : parseFloat(state.data.user_cost_plain || 0);
+				if (productCost && costNum >= 0) {
+					const saved = Math.max(0, productCost - costNum);
+					$('.oba-lose-save-value').text(formatMoney(saved));
+					$('.oba-lose-save .oba-save-prefix').text(obaAuction.i18n?.lose_save_prefix || 'If you win, you would save around');
+					$('.oba-lose-save .oba-save-suffix').text(obaAuction.i18n?.lose_save_suffix || 'from regular price in other stores.');
+					$('.oba-lose-save').show();
+				} else {
+					$('.oba-lose-save').hide();
+				}
 			}
 		}
 
@@ -567,6 +588,26 @@
 				pillWrap.find('.oba-credit-label').text(obaAuction.i18n.points_label);
 			}
 		}
+	}
+
+	function formatMoney(val) {
+		const num = Number(val) || 0;
+		if (typeof wcSettings !== 'undefined' && wcSettings.currency) {
+			const c = wcSettings.currency;
+			try {
+				return new Intl.NumberFormat(undefined, {
+					style: 'currency',
+					currency: c.currency_code || c.code || 'EUR',
+					minimumFractionDigits: c.currency_minor_unit || obaAuction.currency_decimals || 2,
+					maximumFractionDigits: c.currency_minor_unit || obaAuction.currency_decimals || 2,
+				}).format(num);
+			} catch (e) {
+				return num.toFixed(2);
+			}
+		}
+		const symbol = obaAuction.currency_symbol || '';
+		const decimals = typeof obaAuction.currency_decimals !== 'undefined' ? obaAuction.currency_decimals : 2;
+		return `${symbol}${num.toFixed(decimals)}`;
 	}
 
 	buildPackLinks();

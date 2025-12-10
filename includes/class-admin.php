@@ -1127,6 +1127,10 @@ class OBA_Admin {
 			'points_low_title'          => __( 'Low points title', 'one-ba-auctions' ),
 			'points_label'             => __( 'Points label (pill)', 'one-ba-auctions' ),
 			'points_suffix'            => __( 'Points suffix (pts)', 'one-ba-auctions' ),
+			'win_save_prefix'          => __( 'Win save prefix', 'one-ba-auctions' ),
+			'win_save_suffix'          => __( 'Win save suffix', 'one-ba-auctions' ),
+			'lose_save_prefix'         => __( 'Lose save prefix', 'one-ba-auctions' ),
+			'lose_save_suffix'         => __( 'Lose save suffix', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1211,6 +1215,12 @@ class OBA_Admin {
 				'stage1_tip'       => isset( $_POST['stage1_tip'] ) ? $_POST['stage1_tip'] : '',
 				'membership_required_title' => isset( $_POST['membership_required_title'] ) ? $_POST['membership_required_title'] : '',
 				'points_low_title' => isset( $_POST['points_low_title'] ) ? $_POST['points_low_title'] : '',
+				'points_label'    => isset( $_POST['points_label'] ) ? $_POST['points_label'] : '',
+				'points_suffix'   => isset( $_POST['points_suffix'] ) ? $_POST['points_suffix'] : '',
+				'win_save_prefix' => isset( $_POST['win_save_prefix'] ) ? $_POST['win_save_prefix'] : '',
+				'win_save_suffix' => isset( $_POST['win_save_suffix'] ) ? $_POST['win_save_suffix'] : '',
+				'lose_save_prefix' => isset( $_POST['lose_save_prefix'] ) ? $_POST['lose_save_prefix'] : '',
+				'lose_save_suffix' => isset( $_POST['lose_save_suffix'] ) ? $_POST['lose_save_suffix'] : '',
 			)
 		);
 

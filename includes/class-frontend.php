@@ -52,6 +52,9 @@ class OBA_Frontend {
 			'membership_labels'=> $settings['membership_labels'],
 			'login_url'    => $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ),
 			'i18n'         => $this->build_i18n( $settings ),
+			'currency_symbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '€',
+			'currency_code'   => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
+			'currency_decimals' => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
 			)
 		);
 	}
@@ -129,6 +132,12 @@ class OBA_Frontend {
 			'stage4_tip'       => ! empty( $t['stage4_tip'] ) ? $t['stage4_tip'] : '',
 			'membership_required_title' => ! empty( $t['membership_required_title'] ) ? $t['membership_required_title'] : '',
 			'points_low_title' => ! empty( $t['points_low_title'] ) ? $t['points_low_title'] : '',
+			'points_label'      => ! empty( $t['points_label'] ) ? $t['points_label'] : __( 'Points', 'one-ba-auctions' ),
+			'points_suffix'     => ! empty( $t['points_suffix'] ) ? $t['points_suffix'] : __( 'pts', 'one-ba-auctions' ),
+			'win_save_prefix'   => ! empty( $t['win_save_prefix'] ) ? $t['win_save_prefix'] : __( 'You saved around', 'one-ba-auctions' ),
+			'win_save_suffix'   => ! empty( $t['win_save_suffix'] ) ? $t['win_save_suffix'] : __( 'from regular price in other stores.', 'one-ba-auctions' ),
+			'lose_save_prefix'  => ! empty( $t['lose_save_prefix'] ) ? $t['lose_save_prefix'] : __( 'If you win, you would save around', 'one-ba-auctions' ),
+			'lose_save_suffix'  => ! empty( $t['lose_save_suffix'] ) ? $t['lose_save_suffix'] : __( 'from regular price in other stores.', 'one-ba-auctions' ),
 		);
 	}
 

@@ -19,6 +19,7 @@ $get      = function( $key, $default ) use ( $tr ) {
 	return ! empty( $tr[ $key ] ) ? $tr[ $key ] : $default;
 };
 $points_suffix = $get( 'points_suffix', __( 'pts', 'one-ba-auctions' ) );
+$product_cost  = (float) get_post_meta( $product->get_id(), '_product_cost', true );
 $meta     = array(
 	'registration_fee' => $reg_points ? $reg_points . ' ' . $points_suffix : '',
 	'bid_cost'         => $bid_price_text,
@@ -32,7 +33,7 @@ $stage_tips = array(
 );
 ?>
 
-<div class="oba-auction-wrap">
+<div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>">
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
 			<div class="oba-lock-title"><?php echo esc_html( $get( 'membership_required_title', __( 'Membership required to view auction details.', 'one-ba-auctions' ) ) ); ?></div>
@@ -193,6 +194,11 @@ $stage_tips = array(
 							<h4 class="oba-win-title"><?php echo esc_html( $get( 'winner_msg', __( 'You won!', 'one-ba-auctions' ) ) ); ?></h4>
 							<p class="oba-win-stat oba-win-bids"><?php esc_html_e( 'Bids placed:', 'one-ba-auctions' ); ?> <span class="oba-win-bids-count">0</span></p>
 							<p class="oba-win-stat oba-win-value"><?php esc_html_e( 'Bids value:', 'one-ba-auctions' ); ?> <span class="oba-win-bids-value">0</span></p>
+							<p class="oba-win-save" style="display:none;">
+								<span class="oba-save-prefix"><?php esc_html_e( 'You saved around', 'one-ba-auctions' ); ?></span>
+								<span class="oba-save-highlight oba-win-save-value">0</span>
+								<span class="oba-save-suffix"><?php esc_html_e( 'from regular price in other stores.', 'one-ba-auctions' ); ?></span>
+							</p>
 							<div class="oba-claim-status" style="display:none;"></div>
 							<button class="button button-primary oba-claim"><?php echo esc_html( $get( 'claim_button', __( 'Claim now', 'one-ba-auctions' ) ) ); ?> <span class="oba-claim-amount"></span></button>
 						</div>
@@ -202,6 +208,11 @@ $stage_tips = array(
 							<h4 class="oba-lose-title"><?php echo esc_html( $get( 'loser_msg', __( 'You did not win this auction.', 'one-ba-auctions' ) ) ); ?></h4>
 							<p class="oba-lose-stat oba-lose-bids"><?php esc_html_e( 'Bids placed:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-count">0</span></p>
 							<p class="oba-lose-stat oba-lose-value"><?php esc_html_e( 'Bids value:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-value">0</span></p>
+							<p class="oba-lose-save" style="display:none;">
+								<span class="oba-save-prefix"><?php esc_html_e( 'If you win, you would save around', 'one-ba-auctions' ); ?></span>
+								<span class="oba-save-highlight oba-lose-save-value">0</span>
+								<span class="oba-save-suffix"><?php esc_html_e( 'from regular price in other stores.', 'one-ba-auctions' ); ?></span>
+							</p>
 							<a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Return to home page', 'one-ba-auctions' ); ?></a>
 						</div>
 					</div>
