@@ -105,6 +105,8 @@ class OBA_Settings {
 			'login_button'     => '',
 			'membership_required_title' => '',
 			'points_low_title' => '',
+			'points_label'    => '',
+			'points_suffix'   => '',
 		);
 
 		$translations = array();

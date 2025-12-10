@@ -1125,6 +1125,8 @@ class OBA_Admin {
 			'stage1_tip'       => __( 'Tooltip: Registration', 'one-ba-auctions' ),
 			'membership_required_title' => __( 'Membership required title', 'one-ba-auctions' ),
 			'points_low_title'          => __( 'Low points title', 'one-ba-auctions' ),
+			'points_label'             => __( 'Points label (pill)', 'one-ba-auctions' ),
+			'points_suffix'            => __( 'Points suffix (pts)', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1179,6 +1181,8 @@ class OBA_Admin {
 				'not_registered_badge' => isset( $_POST['not_registered_badge'] ) ? $_POST['not_registered_badge'] : '',
 				'credit_singular' => isset( $_POST['credit_singular'] ) ? $_POST['credit_singular'] : '',
 				'credit_plural'   => isset( $_POST['credit_plural'] ) ? $_POST['credit_plural'] : '',
+				'points_label'    => isset( $_POST['points_label'] ) ? $_POST['points_label'] : '',
+				'points_suffix'   => isset( $_POST['points_suffix'] ) ? $_POST['points_suffix'] : '',
 				'bid_cost_label'  => isset( $_POST['bid_cost_label'] ) ? $_POST['bid_cost_label'] : '',
 				'your_bids_label' => isset( $_POST['your_bids_label'] ) ? $_POST['your_bids_label'] : '',
 				'your_cost_label' => isset( $_POST['your_cost_label'] ) ? $_POST['your_cost_label'] : '',

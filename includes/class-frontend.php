@@ -60,6 +60,8 @@ class OBA_Frontend {
 		$t = isset( $settings['translations'] ) ? $settings['translations'] : array();
 		$credit_singular = ! empty( $t['credit_singular'] ) ? $t['credit_singular'] : __( 'credit', 'one-ba-auctions' );
 		$credit_plural   = ! empty( $t['credit_plural'] ) ? $t['credit_plural'] : __( 'credits', 'one-ba-auctions' );
+		$points_label    = ! empty( $t['points_label'] ) ? $t['points_label'] : __( 'Points', 'one-ba-auctions' );
+		$points_suffix   = ! empty( $t['points_suffix'] ) ? $t['points_suffix'] : __( 'pts', 'one-ba-auctions' );
 		return array(
 			'registered'        => __( 'Registered', 'one-ba-auctions' ),
 			'registration_fail' => __( 'Registration failed. Please try again.', 'one-ba-auctions' ),
@@ -77,6 +79,8 @@ class OBA_Frontend {
 			'login_required'    => __( 'Please log in to register.', 'one-ba-auctions' ),
 			'register'          => __( 'Register', 'one-ba-auctions' ),
 			'register_cta'      => ! empty( $t['register_cta'] ) ? $t['register_cta'] : __( 'Register & Reserve Spot', 'one-ba-auctions' ),
+			'points_label'      => $points_label,
+			'points_suffix'     => $points_suffix,
 			'membership_required' => ! empty( $t['membership_required'] ) ? $t['membership_required'] : __( 'A membership plan is required to register.', 'one-ba-auctions' ),
 			'membership_cta'      => ! empty( $t['membership_cta'] ) ? $t['membership_cta'] : __( 'Get membership', 'one-ba-auctions' ),
 			'lobby_progress'    => ! empty( $t['lobby_progress'] ) ? $t['lobby_progress'] : __( 'Lobby progress', 'one-ba-auctions' ),
