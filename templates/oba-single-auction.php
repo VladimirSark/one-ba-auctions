@@ -70,9 +70,6 @@ $stage_tips = array(
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
 					</div>
-					<div class="oba-points-row">
-						<span class="oba-label"><?php esc_html_e( 'Your points', 'one-ba-auctions' ); ?>: <strong class="oba-user-points">0</strong></span>
-					</div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
 							<?php
@@ -108,9 +105,6 @@ $stage_tips = array(
 					<?php endif; ?>
 					<div class="oba-actions">
 						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
-					</div>
-					<div class="oba-points-row">
-						<span class="oba-label"><?php esc_html_e( 'Your points', 'one-ba-auctions' ); ?>: <strong class="oba-user-points">0</strong></span>
 					</div>
 					<div class="oba-registered-note" style="display:none;margin-top:8px;">
 						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
