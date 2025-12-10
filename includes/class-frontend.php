@@ -211,4 +211,92 @@ class OBA_Frontend {
 		</style>
 		<?php
 	}
+
+	public function shortcode_ended_auctions( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'limit' => 20,
+			),
+			$atts
+		);
+		$limit = max( 1, absint( $atts['limit'] ) );
+
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => $limit,
+				'post_status'    => array( 'publish' ),
+				'meta_query'     => array(
+					array(
+						'key'   => '_auction_status',
+						'value' => 'ended',
+					),
+				),
+			)
+		);
+
+		if ( ! $q->have_posts() ) {
+			return '<p>' . esc_html__( 'No ended auctions found.', 'one-ba-auctions' ) . '</p>';
+		}
+
+		ob_start();
+		?>
+		<div class="oba-ended-table">
+			<div class="oba-ended-row oba-ended-head">
+				<span><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></span>
+				<span><?php esc_html_e( 'Regular price', 'one-ba-auctions' ); ?></span>
+				<span><?php esc_html_e( 'Winner bids', 'one-ba-auctions' ); ?></span>
+				<span><?php esc_html_e( 'Total paid', 'one-ba-auctions' ); ?></span>
+				<span><?php esc_html_e( 'Saved', 'one-ba-auctions' ); ?></span>
+				<span><?php esc_html_e( 'Ended at', 'one-ba-auctions' ); ?></span>
+			</div>
+			<?php
+			$repo = new OBA_Auction_Repository();
+			while ( $q->have_posts() ) :
+				$q->the_post();
+				$pid        = get_the_ID();
+				$meta       = $repo->get_auction_meta( $pid );
+				$product    = wc_get_product( $pid );
+				$cost       = (float) get_post_meta( $pid, '_product_cost', true );
+				$winner_row = $repo->get_winner_row( $pid );
+				$bid_product_id = isset( $meta['bid_product_id'] ) ? (int) $meta['bid_product_id'] : 0;
+				$bid_price      = $bid_product_id ? wc_get_product( $bid_product_id ) : null;
+				$bid_fee        = ( $bid_price && $bid_price->get_price() !== '' ) ? (float) $bid_price->get_price() : 0;
+				$winner_bids    = 0;
+				$total_paid     = 0;
+				if ( $winner_row ) {
+					$totals = $repo->get_bid_totals_by_user( $pid );
+					foreach ( $totals as $row ) {
+						if ( (int) $row['user_id'] === (int) $winner_row['winner_user_id'] ) {
+							$winner_bids = (int) $row['total_bids'];
+							$total_paid  = $winner_bids * $bid_fee;
+							break;
+						}
+					}
+				}
+				$saved    = $cost > 0 ? max( 0, $cost - $total_paid ) : 0;
+				$ended_at = get_post_meta( $pid, '_live_expires_at', true );
+				?>
+				<div class="oba-ended-row">
+					<span><a href="<?php echo esc_url( get_permalink( $pid ) ); ?>"><?php echo esc_html( get_the_title( $pid ) ); ?></a></span>
+					<span><?php echo $cost ? wp_kses_post( wc_price( $cost ) ) : '—'; ?></span>
+					<span><?php echo esc_html( $winner_bids ); ?></span>
+					<span><?php echo $total_paid ? wp_kses_post( wc_price( $total_paid ) ) : '—'; ?></span>
+					<span><?php echo $saved ? wp_kses_post( wc_price( $saved ) ) : '—'; ?></span>
+					<span><?php echo $ended_at ? esc_html( $ended_at ) : '—'; ?></span>
+				</div>
+				<?php
+			endwhile;
+			wp_reset_postdata();
+			?>
+		</div>
+		<style>
+			.oba-ended-table{display:flex;flex-direction:column;gap:8px;margin:12px 0;}
+			.oba-ended-row{display:grid;grid-template-columns:2fr repeat(5,1fr);gap:8px;padding:8px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;}
+			.oba-ended-head{font-weight:700;background:#f3f4f6;}
+			.oba-ended-row span{font-size:13px;line-height:1.3;}
+		</style>
+		<?php
+		return ob_get_clean();
+	}
 }
