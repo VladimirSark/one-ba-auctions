@@ -15,11 +15,11 @@ WooCommerce auction product type with an AJAX 4-step frontend. Registration now 
 - **Ops/reliability:** cron expiry check, manual status actions, CLI tools for expiry/end/list; admin “End now”.
 
 ## Quick test checklist
-1) Create auction: set registration points value, bid product, required participants, timers, status=registration.
+1) Create auction: set registration points value, bid product, required participants, timers, product cost, status=registration.
 2) Ensure user has membership + points (complete an order for a membership product with points meta).
 3) Register: accept T&C, click register → points deducted, user added to participants, lobby updates.
 4) Fill lobby → pre-live auto start → live auto start after countdown.
 5) Live: place bids, timer resets, history updates, leading bidder blocked.
 6) Let timer expire → ended, winner row created.
 7) Claim as winner → checkout with bid total → complete order → admin detail shows claimed “Yes #order — completed”.
-8) Admin detail: view status/winner/claim, participants (ID/name/email) with remove action; Memberships page shows membership flag and points; Settings tabs load without warnings.
+8) Admin detail: view status/winner/claim, participants (ID/name/email) with remove action; Memberships page shows membership flag and points; Settings tabs load without warnings; profit totals reflect points and cost.

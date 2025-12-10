@@ -88,8 +88,9 @@
 		$('.oba-user-cost').text(userCost);
 		const regBtn = $('.oba-register');
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
+		const suffix = obaAuction.i18n?.points_suffix || 'pts';
 		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
-		regBtn.text(`${regText}${fee ? ` (${fee} pts)` : ''}`);
+		regBtn.text(`${regText}${fee ? ` (${fee} ${suffix})` : ''}`);
 		if (!unlocked) {
 			regBtn.prop('disabled', true);
 			showAlert(obaAuction.i18n?.membership_required || 'Membership required to register.');
@@ -555,12 +556,16 @@
 		}
 		const pill = $('.oba-credit-amount');
 		if (pill.length) {
+			const pillWrap = pill.closest('.oba-credit-pill');
 			if (!membershipActive) {
-				pill.closest('.oba-credit-pill').hide();
+				pillWrap.hide();
 			} else {
-				pill.closest('.oba-credit-pill').show();
+				pillWrap.show();
 			}
 			pill.text(balance);
+			if (obaAuction.i18n?.points_label) {
+				pillWrap.find('.oba-credit-label').text(obaAuction.i18n.points_label);
+			}
 		}
 	}
 
@@ -593,18 +598,8 @@
 
 	function showMembershipLinks() {}
 
-	$(document).on('click', '.oba-credit-pill', (e) => {
-		if ($(e.target).is('a') || $(e.target).closest('a').length) {
-			return;
-		}
-		e.preventDefault();
-		buildCreditModal();
-	});
-
-	$(document).on('click', '.oba-credit-overlay, .oba-credit-close', (e) => {
-		e.preventDefault();
-		closeCreditModal();
-	});
+	// Disable old credit modal behavior; pill now only displays balance.
+	$(document).off('click', '.oba-credit-pill');
 
 	$(document).on('click', '.oba-share-btn', function (e) {
 		e.preventDefault();

@@ -144,9 +144,11 @@ class OBA_Frontend {
 
 		$points_service = new OBA_Points_Service();
 		$balance        = $points_service->get_balance( get_current_user_id() );
+		$tr = isset( $settings['translations'] ) ? $settings['translations'] : array();
+		$label = ! empty( $tr['points_label'] ) ? $tr['points_label'] : __( 'Points', 'one-ba-auctions' );
 		?>
 		<div class="oba-credit-pill oba-credit-floating" aria-live="polite">
-			<span class="oba-credit-label"><?php esc_html_e( 'Points', 'one-ba-auctions' ); ?></span>
+			<span class="oba-credit-label"><?php echo esc_html( $label ); ?></span>
 			<span class="oba-credit-amount"><?php echo esc_html( $balance ); ?></span>
 		</div>
 		<style>

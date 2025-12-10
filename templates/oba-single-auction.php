@@ -13,16 +13,17 @@ $reg_points     = (float) get_post_meta( $product->get_id(), '_registration_poin
 $bid_product_id = (int) get_post_meta( $product->get_id(), '_bid_product_id', true );
 $bid_price      = $bid_product_id ? wc_get_product( $bid_product_id ) : null;
 $bid_price_text = ( $bid_price && $bid_price->get_price() !== '' ) ? wc_price( $bid_price->get_price() ) : '';
-$meta     = array(
-	'registration_fee' => $reg_points ? $reg_points . ' pts' : '',
-	'bid_cost'         => $bid_price_text,
-	'claim_price'      => '',
-);
 $settings = OBA_Settings::get_settings();
 $tr       = isset( $settings['translations'] ) ? $settings['translations'] : array();
 $get      = function( $key, $default ) use ( $tr ) {
 	return ! empty( $tr[ $key ] ) ? $tr[ $key ] : $default;
 };
+$points_suffix = $get( 'points_suffix', __( 'pts', 'one-ba-auctions' ) );
+$meta     = array(
+	'registration_fee' => $reg_points ? $reg_points . ' ' . $points_suffix : '',
+	'bid_cost'         => $bid_price_text,
+	'claim_price'      => '',
+);
 $stage_tips = array(
 	'registration' => isset( $tr['stage1_tip'] ) ? $tr['stage1_tip'] : '',
 	'pre_live' => isset( $tr['stage2_tip'] ) ? $tr['stage2_tip'] : '',
