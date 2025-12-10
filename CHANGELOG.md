@@ -11,7 +11,9 @@
 - Claim flow unchanged: winner pays total bid value via checkout; claim order uses `_oba_claim_auction_id` meta; claimed status shows order link when completed.
 - Emails/translations cleaned of credits references.
 - Removed legacy product selectors (credit pack, claim product, registration fee product, membership plan, limits, credits amount); only bid product flag remains.
-- Auction detail totals now use registration points/value; legacy fee totals removed; “All Auctions” menu item restored.
+- Auction detail totals now use registration points/value and show winner-only bid value plus savings vs. cost; legacy fee totals removed; “All Auctions” menu item restored.
+- Savings callouts added to ended state (winner/loser) using product cost; points labels/suffix and savings copy translatable; points pill no longer opens credit modal.
+- Product cost stored on auction; profit calculations use points × participants – cost; money formatting now uses store currency.
 ### Fixed
 - Removed legacy membership slots UI and related fatal redeclare from admin; membership management now matches points model.
 

@@ -18,6 +18,13 @@
 - **DB:** None (settings only).
 - **How to test:** Set Point value in Settings → General; edit auction, adjust registration points/required participants, confirm value auto-updates; view All Auctions detail to see registration points/value totals; verify product edit screen no longer shows old selectors.
 
+## 2025-12-10 — Savings UI & currency updates
+- **Summary:** Added savings callouts in the ended state (winner/loser) using product cost vs. bid value, with translation keys; ensured currency symbol/decimals are localized to JS; removed credit-pack modal behavior from points pill; cleaned badge/column layout back to single-column focus.
+- **Why:** Make value proposition clearer and keep UI consistent with the points model.
+- **Files/Classes:** `templates/oba-single-auction.php`, `assets/js/auction.js`, `assets/css/auction.css`, `includes/class-frontend.php`.
+- **DB:** None.
+- **How to test:** End an auction; winner sees savings message with currency symbol; loser sees potential savings; translations for savings/points apply; points pill shows balance only.
+
 ## 2025-12-09 — Memberships admin screen (points)
 - **Summary:** Added 1BA → Memberships page listing users with membership/points; inline form toggles membership flag and edits points balance.
 - **Why:** Give admins a single place to manage membership status and balances after the points shift.

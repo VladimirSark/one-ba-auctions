@@ -9,6 +9,7 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
+		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
 	}
 
 	public function enqueue_assets() {
@@ -151,10 +152,11 @@ class OBA_Frontend {
 			return;
 		}
 
+		$settings       = OBA_Settings::get_settings();
 		$points_service = new OBA_Points_Service();
 		$balance        = $points_service->get_balance( get_current_user_id() );
-		$tr = isset( $settings['translations'] ) ? $settings['translations'] : array();
-		$label = ! empty( $tr['points_label'] ) ? $tr['points_label'] : __( 'Points', 'one-ba-auctions' );
+		$tr             = isset( $settings['translations'] ) ? $settings['translations'] : array();
+		$label          = ! empty( $tr['points_label'] ) ? $tr['points_label'] : __( 'Points', 'one-ba-auctions' );
 		?>
 		<div class="oba-credit-pill oba-credit-floating" aria-live="polite">
 			<span class="oba-credit-label"><?php echo esc_html( $label ); ?></span>
@@ -177,5 +179,36 @@ class OBA_Frontend {
 		$credits_service = new OBA_Credits_Service();
 		$balance         = $credits_service->get_balance( get_current_user_id() );
 		return '<span class="oba-credit-shortcode">' . esc_html( $balance ) . '</span>';
+	}
+
+	public function render_archive_teaser() {
+		global $product;
+
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+
+		$repo         = new OBA_Auction_Repository();
+		$auction_id   = $product->get_id();
+		$meta         = $repo->get_auction_meta( $auction_id );
+		$required     = isset( $meta['required_participants'] ) ? (int) $meta['required_participants'] : 0;
+		$registered   = $repo->get_participant_count( $auction_id );
+		$lobby_pct    = $required > 0 ? round( ( $registered / max( 1, $required ) ) * 100 ) : 0;
+		$status       = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
+		$reg_points   = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+		$status_label = ucfirst( $status );
+		?>
+		<div class="oba-loop-teaser" aria-label="<?php esc_attr_e( 'Auction summary', 'one-ba-auctions' ); ?>">
+			<span class="oba-loop-pill"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></span>
+			<span class="oba-loop-status"><?php echo esc_html( $status_label ); ?></span>
+			<span class="oba-loop-lobby"><?php printf( esc_html__( 'Lobby: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></span>
+			<span class="oba-loop-reg"><?php printf( esc_html__( 'Reg: %s pts', 'one-ba-auctions' ), esc_html( $reg_points ) ); ?></span>
+		</div>
+		<style>
+			.oba-loop-teaser{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:12px;align-items:center;}
+			.oba-loop-teaser span{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 8px;color:#111827;font-weight:600;}
+			.oba-loop-pill{background:#111827;color:#fff;border-color:#111827;}
+		</style>
+		<?php
 	}
 }

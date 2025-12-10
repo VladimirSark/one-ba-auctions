@@ -10,7 +10,7 @@ WooCommerce auction product type with an AJAX 4-step frontend. Registration now 
 - **Claim:** winner claim adds total bid fees to checkout; claim order tagged with `_oba_claim_auction_id`; claimed status shows with order link when completed.
 - **Data tables:** participants, bids, winners, audit log, user points (+ ledger).
 - **Frontend:** single template with 4 step cards, lobby %, timers, history, winner/loser blocks, T&C modal, membership lock overlay, and “Your points” display.
-- **Admin (1BA menu):** All Auctions list with status filter and “registered/required” counts; auction detail shows status, winner, claim/order, end time, totals (registration points/value and bids), participant log with inline removal; Audit Log; Settings (General/Emails/Translations); Memberships screen to toggle membership and edit points.
+- **Admin (1BA menu):** All Auctions list with status filter and “registered/required” counts; auction detail shows status, winner, claim/order, end time, totals (registration points/value and bids/savings), participant log with inline removal; Audit Log; Settings (General/Emails/Translations); Memberships screen to toggle membership and edit points.
 - **Settings:** default timers, poll interval, T&C text, login link, status-info HTML, email sender, translations overrides, email templates, point value (for money equivalent).
 - **Ops/reliability:** cron expiry check, manual status actions, CLI tools for expiry/end/list; admin “End now”.
 
@@ -22,4 +22,4 @@ WooCommerce auction product type with an AJAX 4-step frontend. Registration now 
 5) Live: place bids, timer resets, history updates, leading bidder blocked.
 6) Let timer expire → ended, winner row created.
 7) Claim as winner → checkout with bid total → complete order → admin detail shows claimed “Yes #order — completed”.
-8) Admin detail: view status/winner/claim, participants (ID/name/email) with remove action; Memberships page shows membership flag and points; Settings tabs load without warnings; profit totals reflect points and cost.
+8) Admin detail: view status/winner/claim, participants (ID/name/email) with remove action; Memberships page shows membership flag and points; Settings tabs load without warnings; profit totals reflect points and cost; ended view shows savings vs. regular price.
