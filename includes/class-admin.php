@@ -1525,11 +1525,12 @@ class OBA_Admin {
 
 		global $wpdb;
 		$meta      = $this->repo->get_auction_meta( $auction_id );
-		$reg_points= isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
-		$reg_fee   = $meta['registration_product_id'] ? wc_get_product( $meta['registration_product_id'] ) : null;
-		$bid_fee   = $meta['bid_product_id'] ? wc_get_product( $meta['bid_product_id'] ) : null;
-		$reg_price = ( $reg_fee && '' !== $reg_fee->get_price() ) ? (float) $reg_fee->get_price() : 0;
-		$bid_price = ( $bid_fee && '' !== $bid_fee->get_price() ) ? (float) $bid_fee->get_price() : 0;
+		$reg_points   = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+		$product_cost = (float) get_post_meta( $auction_id, '_product_cost', true );
+		$reg_fee      = isset( $meta['registration_product_id'] ) ? wc_get_product( $meta['registration_product_id'] ) : null;
+		$bid_fee      = $meta['bid_product_id'] ? wc_get_product( $meta['bid_product_id'] ) : null;
+		$reg_price    = ( $reg_fee && '' !== $reg_fee->get_price() ) ? (float) $reg_fee->get_price() : 0;
+		$bid_price    = ( $bid_fee && '' !== $bid_fee->get_price() ) ? (float) $bid_fee->get_price() : 0;
 		$points_value = isset( $this->settings['points_value'] ) ? (float) $this->settings['points_value'] : 1;
 
 		$participants_table = $wpdb->prefix . 'auction_participants';
@@ -1556,10 +1557,26 @@ class OBA_Admin {
 		$total_reg_fees = $reg_price * count( $participants );
 		$total_bid_fees = $bid_price * $total_bids;
 
+		$winner_total_bids  = 0;
+		$winner_bid_value   = 0;
+		$current_winner_row = $this->repo->get_winner_row( $auction_id );
+		if ( $current_winner_row ) {
+			$winner_row = $current_winner_row;
+			$totals = $this->repo->get_bid_totals_by_user( $auction_id );
+			foreach ( $totals as $row ) {
+				if ( (int) $row['user_id'] === (int) $winner_row['winner_user_id'] ) {
+					$winner_total_bids = (int) $row['total_bids'];
+					$winner_bid_value  = $bid_price ? $winner_total_bids * $bid_price : 0;
+					break;
+				}
+			}
+		}
+
+		$auction_total_value = ( $total_reg_points * $points_value ) + $winner_bid_value - $product_cost;
+
 		$status            = $meta['auction_status'] ?: 'registration';
 		$edit_link         = get_edit_post_link( $auction_id );
 		$participants_link = admin_url( 'admin.php?page=oba-participants&auction_id=' . $auction_id );
-		$winner_row        = $this->repo->get_winner_row( $auction_id );
 		$winner_user       = $winner_row ? get_userdata( (int) $winner_row['winner_user_id'] ) : null;
 		$claimed_order_id  = $winner_row && ! empty( $winner_row['wc_order_id'] ) ? (int) $winner_row['wc_order_id'] : 0;
 		$claimed_status    = '';
@@ -1690,9 +1707,10 @@ class OBA_Admin {
 				<li><?php esc_html_e( 'Registration points each', 'one-ba-auctions' ); ?>: <?php echo esc_html( $reg_points ); ?></li>
 				<li><?php esc_html_e( 'Registration points total', 'one-ba-auctions' ); ?>: <?php echo esc_html( $total_reg_points ); ?></li>
 				<li><?php esc_html_e( 'Registration value (approx.)', 'one-ba-auctions' ); ?>: <?php echo wp_kses_post( wc_price( $total_reg_points * $points_value ) ); ?></li>
-				<li><?php esc_html_e( 'Bid fee each', 'one-ba-auctions' ); ?>: <?php echo $bid_price ? wp_kses_post( wc_price( $bid_price ) ) : esc_html__( 'n/a', 'one-ba-auctions' ); ?></li>
-				<li><?php esc_html_e( 'Total bids placed', 'one-ba-auctions' ); ?>: <?php echo esc_html( $total_bids ); ?></li>
-				<li><?php esc_html_e( 'Total bid fees (approx.)', 'one-ba-auctions' ); ?>: <?php echo $bid_price ? wp_kses_post( wc_price( $total_bid_fees ) ) : esc_html__( 'n/a', 'one-ba-auctions' ); ?></li>
+				<li><?php esc_html_e( 'Winner bids placed', 'one-ba-auctions' ); ?>: <?php echo esc_html( $winner_total_bids ); ?></li>
+				<li><?php esc_html_e( 'Winner bids value', 'one-ba-auctions' ); ?>: <?php echo wp_kses_post( wc_price( $winner_bid_value ) ); ?></li>
+				<li><?php esc_html_e( 'Product cost', 'one-ba-auctions' ); ?>: <?php echo wp_kses_post( wc_price( $product_cost ) ); ?></li>
+				<li><strong><?php esc_html_e( 'Auction total value (reg + winner bids - cost)', 'one-ba-auctions' ); ?></strong>: <?php echo wp_kses_post( wc_price( $auction_total_value ) ); ?></li>
 			</ul>
 
 			<h2><?php esc_html_e( 'Users registering log', 'one-ba-auctions' ); ?></h2>

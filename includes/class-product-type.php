@@ -54,6 +54,7 @@ class OBA_Product_Type {
 		$settings     = OBA_Settings::get_settings();
 		$current_id   = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$current_pts  = $current_id ? (float) get_post_meta( $current_id, '_registration_points', true ) : 0;
+		$current_cost = $current_id ? (float) get_post_meta( $current_id, '_product_cost', true ) : 0;
 		$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
 
 		woocommerce_wp_text_input(
@@ -116,6 +117,19 @@ class OBA_Product_Type {
 		);
 		woocommerce_wp_text_input(
 			array(
+				'id'          => '_product_cost',
+				'label'       => __( 'Cost of product (store currency)', 'one-ba-auctions' ),
+				'type'        => 'number',
+				'custom_attributes' => array(
+					'step' => '0.01',
+					'min'  => '0',
+				),
+				'description' => __( 'Internal cost used to estimate profit.', 'one-ba-auctions' ),
+				'desc_tip'    => true,
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
 				'id'          => '_registration_points',
 				'label'       => __( 'Registration points required', 'one-ba-auctions' ),
 				'type'        => 'number',
@@ -129,17 +143,19 @@ class OBA_Product_Type {
 		);
 		?>
 		<p>
-			<strong><?php esc_html_e( 'Registration value (approx.):', 'one-ba-auctions' ); ?></strong>
-			<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( $current_pts * $points_rate ) ); ?></span>
-			<br><span class="description"><?php esc_html_e( 'Uses the Points value from settings to estimate money value.', 'one-ba-auctions' ); ?></span>
+			<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
+			<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( ( $current_pts * $points_rate ) - $current_cost ) ); ?></span>
+			<br><span class="description"><?php esc_html_e( 'Points × participants × point value minus cost.', 'one-ba-auctions' ); ?></span>
 		</p>
 		<script>
 			jQuery(function($){
 				const rate = <?php echo wp_json_encode( $points_rate ); ?>;
 				const participants = parseFloat($('#_required_participants').val() || 0);
+				let cost = <?php echo wp_json_encode( $current_cost ); ?>;
 				function calc() {
 					const pts = parseFloat($('#_registration_points').val() || 0);
-					const val = pts * rate * (participants || 1);
+					cost = parseFloat($('#_product_cost').val() || cost || 0);
+					const val = (pts * rate * (participants || 1)) - cost;
 					$('#oba_reg_points_value').text(obaFormatPrice(val));
 				}
 				function obaFormatPrice(val){
@@ -173,6 +189,7 @@ class OBA_Product_Type {
 			'_auction_status',
 			'_bid_product_id',
 			'_registration_points',
+			'_product_cost',
 		);
 
 		foreach ( $fields as $field ) {
