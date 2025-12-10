@@ -955,7 +955,7 @@ class OBA_Admin {
 						<th scope="row"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></th>
 						<td>
 							<p class="description"><?php esc_html_e( 'Manage all frontend translations from the Translations page.', 'one-ba-auctions' ); ?></p>
-							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-translations' ) ); ?>"><?php esc_html_e( 'Open Translations', 'one-ba-auctions' ); ?></a>
+							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-1ba-settings&tab=translations' ) ); ?>"><?php esc_html_e( 'Open Translations', 'one-ba-auctions' ); ?></a>
 						</td>
 					</tr>
 					<?php endif; ?>
@@ -1210,7 +1210,7 @@ class OBA_Admin {
 			)
 		);
 
-		wp_redirect( admin_url( 'admin.php?page=oba-translations&updated=1' ) );
+		wp_redirect( admin_url( 'admin.php?page=oba-1ba-settings&tab=translations&updated=1' ) );
 		exit;
 	}
 

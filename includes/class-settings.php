@@ -103,6 +103,8 @@ class OBA_Settings {
 			'stage1_tip'       => '',
 			'login_prompt'     => '',
 			'login_button'     => '',
+			'membership_required_title' => '',
+			'points_low_title' => '',
 		);
 
 		$translations = array();
