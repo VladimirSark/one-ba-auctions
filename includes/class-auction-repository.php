@@ -60,7 +60,7 @@ class OBA_Auction_Repository {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT user_id, credits_reserved, created_at, auction_id FROM {$table} WHERE auction_id = %d ORDER BY sequence_number DESC LIMIT %d",
+				"SELECT user_id, credits_reserved, created_at, auction_id, is_autobid FROM {$table} WHERE auction_id = %d ORDER BY sequence_number DESC LIMIT %d",
 				$auction_id,
 				$limit
 			),

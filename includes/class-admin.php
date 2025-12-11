@@ -879,6 +879,30 @@ class OBA_Admin {
 						<td><input type="number" name="poll_interval_ms" min="500" step="100" value="<?php echo esc_attr( $settings['poll_interval_ms'] ); ?>" /></td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Enable autobid', 'one-ba-auctions' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="autobid_enabled" value="1" <?php checked( ! empty( $settings['autobid_enabled'] ) ); ?> />
+								<?php esc_html_e( 'Allow users to use autobid', 'one-ba-auctions' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Master switch for autobid feature.', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Autobid window (seconds)', 'one-ba-auctions' ); ?></th>
+						<td>
+							<input type="number" name="autobid_window_seconds" min="30" step="10" value="<?php echo esc_attr( $settings['autobid_window_seconds'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'How long autobid stays active after activation.', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Autobid activation cost (points)', 'one-ba-auctions' ); ?></th>
+						<td>
+							<input type="number" name="autobid_activation_cost_points" min="0" step="1" value="<?php echo esc_attr( $settings['autobid_activation_cost_points'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'Points charged each time a user turns autobid on.', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Point value', 'one-ba-auctions' ); ?></th>
 						<td>
 							<input type="text" name="points_value" value="<?php echo esc_attr( $settings['points_value'] ); ?>" placeholder="<?php esc_attr_e( '1.00', 'one-ba-auctions' ); ?>" />
@@ -1066,6 +1090,9 @@ class OBA_Admin {
 				'membership_links'        => isset( $_POST['membership_links'] ) ? (array) wp_unslash( $_POST['membership_links'] ) : array(),
 				'membership_labels'       => isset( $_POST['membership_labels'] ) ? (array) wp_unslash( $_POST['membership_labels'] ) : array(),
 				'points_value'            => isset( $_POST['points_value'] ) ? wp_unslash( $_POST['points_value'] ) : null,
+				'autobid_enabled'         => isset( $_POST['autobid_enabled'] ),
+				'autobid_window_seconds'  => isset( $_POST['autobid_window_seconds'] ) ? wp_unslash( $_POST['autobid_window_seconds'] ) : null,
+				'autobid_activation_cost_points' => isset( $_POST['autobid_activation_cost_points'] ) ? wp_unslash( $_POST['autobid_activation_cost_points'] ) : null,
 			)
 		);
 
@@ -1131,6 +1158,18 @@ class OBA_Admin {
 			'win_save_suffix'          => __( 'Win save suffix', 'one-ba-auctions' ),
 			'lose_save_prefix'         => __( 'Lose save prefix', 'one-ba-auctions' ),
 			'lose_save_suffix'         => __( 'Lose save suffix', 'one-ba-auctions' ),
+			'autobid_on_button'        => __( 'Autobid ON button', 'one-ba-auctions' ),
+			'autobid_off_button'       => __( 'Autobid OFF button', 'one-ba-auctions' ),
+			'autobid_on'               => __( 'Autobid enabled text', 'one-ba-auctions' ),
+			'autobid_off'              => __( 'Autobid disabled text', 'one-ba-auctions' ),
+			'autobid_saved'            => __( 'Autobid saved message', 'one-ba-auctions' ),
+			'autobid_error'            => __( 'Autobid error message', 'one-ba-auctions' ),
+			'autobid_ended'            => __( 'Autobid ended message', 'one-ba-auctions' ),
+			'autobid_confirm'          => __( 'Autobid confirm message', 'one-ba-auctions' ),
+			'remaining'                => __( 'Autobid remaining label', 'one-ba-auctions' ),
+			'registration_closed'      => __( 'Registration closed text', 'one-ba-auctions' ),
+			'autobid_title'            => __( 'Autobid title', 'one-ba-auctions' ),
+			'autobid_cost_hint'        => __( 'Autobid cost hint', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1221,6 +1260,18 @@ class OBA_Admin {
 				'win_save_suffix' => isset( $_POST['win_save_suffix'] ) ? $_POST['win_save_suffix'] : '',
 				'lose_save_prefix' => isset( $_POST['lose_save_prefix'] ) ? $_POST['lose_save_prefix'] : '',
 				'lose_save_suffix' => isset( $_POST['lose_save_suffix'] ) ? $_POST['lose_save_suffix'] : '',
+				'autobid_on_button' => isset( $_POST['autobid_on_button'] ) ? $_POST['autobid_on_button'] : '',
+				'autobid_off_button' => isset( $_POST['autobid_off_button'] ) ? $_POST['autobid_off_button'] : '',
+				'autobid_on' => isset( $_POST['autobid_on'] ) ? $_POST['autobid_on'] : '',
+				'autobid_off' => isset( $_POST['autobid_off'] ) ? $_POST['autobid_off'] : '',
+				'autobid_saved' => isset( $_POST['autobid_saved'] ) ? $_POST['autobid_saved'] : '',
+				'autobid_error' => isset( $_POST['autobid_error'] ) ? $_POST['autobid_error'] : '',
+				'autobid_ended' => isset( $_POST['autobid_ended'] ) ? $_POST['autobid_ended'] : '',
+				'autobid_confirm' => isset( $_POST['autobid_confirm'] ) ? $_POST['autobid_confirm'] : '',
+				'remaining' => isset( $_POST['remaining'] ) ? $_POST['remaining'] : '',
+				'registration_closed' => isset( $_POST['registration_closed'] ) ? $_POST['registration_closed'] : '',
+				'autobid_title' => isset( $_POST['autobid_title'] ) ? $_POST['autobid_title'] : '',
+				'autobid_cost_hint' => isset( $_POST['autobid_cost_hint'] ) ? $_POST['autobid_cost_hint'] : '',
 			)
 		);
 

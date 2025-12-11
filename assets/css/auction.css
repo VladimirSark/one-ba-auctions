@@ -263,6 +263,40 @@
 	font-size: 15px;
 }
 
+.oba-autobid-toggle {
+	background: #e2e8f0;
+	color: #0f172a;
+	border-color: #cbd5e1;
+	font-weight: 700;
+	transition: all 0.15s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.oba-autobid-toggle.is-on {
+	background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%);
+	color: #fff;
+	border-color: #1d4ed8;
+	box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.oba-autobid-toggle[disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
+	box-shadow: none;
+}
+
+.oba-autobid-status {
+	background: linear-gradient(90deg, #0ea5e9 0%, #22d3ee 100%);
+	color: #000;
+	border-radius: 8px;
+	padding: 10px 12px;
+	font-size: 15px;
+	display: inline-block;
+	box-shadow: 0 6px 16px rgba(14, 165, 233, 0.25);
+}
+
 .oba-history {
 	list-style: none;
 	padding: 0;
@@ -292,6 +326,15 @@
 	background: #f8fafc;
 	font-size: 13px;
 	color: #0f172a;
+}
+
+.oba-history-auto {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: #0ea5e9;
+	font-weight: 700;
+	font-size: 12px;
 }
 
 .oba-timer-large {

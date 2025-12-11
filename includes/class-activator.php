@@ -145,5 +145,45 @@ class OBA_Activator {
 		if ( $missing ) {
 			self::activate();
 		}
+
+		self::ensure_autobid_schema();
+	}
+
+	private static function ensure_autobid_schema() {
+		global $wpdb;
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$autobid_table = $wpdb->prefix . 'auction_autobid';
+		$sql_autobid   = "CREATE TABLE {$autobid_table} (
+		  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		  auction_id BIGINT UNSIGNED NOT NULL,
+		  user_id BIGINT UNSIGNED NOT NULL,
+		  enabled TINYINT(1) NOT NULL DEFAULT 0,
+		  max_bids INT UNSIGNED NOT NULL DEFAULT 0,
+		  remaining_bids INT UNSIGNED NOT NULL DEFAULT 0,
+		  enabled_at DATETIME NULL,
+		  window_started_at DATETIME NULL,
+		  window_ends_at DATETIME NULL,
+		  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		  UNIQUE KEY auction_user (auction_id, user_id),
+		  KEY enabled_idx (auction_id, enabled)
+		) {$charset_collate};";
+		dbDelta( $sql_autobid );
+
+		$bids_table = $wpdb->prefix . 'auction_bids';
+		$col        = $wpdb->get_results( "SHOW COLUMNS FROM {$bids_table} LIKE 'is_autobid'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $col ) ) {
+			$wpdb->query( "ALTER TABLE {$bids_table} ADD COLUMN is_autobid TINYINT(1) NOT NULL DEFAULT 0" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+
+		$window_start = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'window_started_at'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $window_start ) ) {
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN window_started_at DATETIME NULL AFTER enabled_at" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+		$window_end = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'window_ends_at'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $window_end ) ) {
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN window_ends_at DATETIME NULL AFTER window_started_at" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 	}
 }

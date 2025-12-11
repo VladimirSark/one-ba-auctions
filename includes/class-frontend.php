@@ -10,6 +10,7 @@ class OBA_Frontend {
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
+		add_shortcode( 'oba_ended_auctions', array( $this, 'shortcode_ended_auctions' ) );
 	}
 
 	public function enqueue_assets() {
@@ -56,6 +57,8 @@ class OBA_Frontend {
 			'currency_symbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '€',
 			'currency_code'   => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
 			'currency_decimals' => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
+			'autobid_window_seconds' => isset( $settings['autobid_window_seconds'] ) ? (int) $settings['autobid_window_seconds'] : 300,
+			'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
 			)
 		);
 	}
@@ -83,12 +86,30 @@ class OBA_Frontend {
 			'login_required'    => __( 'Please log in to register.', 'one-ba-auctions' ),
 			'register'          => __( 'Register', 'one-ba-auctions' ),
 			'register_cta'      => ! empty( $t['register_cta'] ) ? $t['register_cta'] : __( 'Register & Reserve Spot', 'one-ba-auctions' ),
+			'registration_closed'=> __( 'Registration closed', 'one-ba-auctions' ),
 			'points_label'      => $points_label,
 			'points_suffix'     => $points_suffix,
 			'membership_required' => ! empty( $t['membership_required'] ) ? $t['membership_required'] : __( 'A membership plan is required to register.', 'one-ba-auctions' ),
 			'membership_cta'      => ! empty( $t['membership_cta'] ) ? $t['membership_cta'] : __( 'Get membership', 'one-ba-auctions' ),
 			'lobby_progress'    => ! empty( $t['lobby_progress'] ) ? $t['lobby_progress'] : __( 'Lobby progress', 'one-ba-auctions' ),
 			'bid_button'        => ! empty( $t['bid_button'] ) ? $t['bid_button'] : __( 'Place bid', 'one-ba-auctions' ),
+			'autobid_on_button' => ! empty( $t['autobid_on_button'] ) ? $t['autobid_on_button'] : __( 'Autobid ON', 'one-ba-auctions' ),
+			'autobid_off_button'=> ! empty( $t['autobid_off_button'] ) ? $t['autobid_off_button'] : __( 'Autobid OFF', 'one-ba-auctions' ),
+			'autobid_on'        => ! empty( $t['autobid_on'] ) ? $t['autobid_on'] : __( 'Autobid enabled', 'one-ba-auctions' ),
+			'autobid_off'       => ! empty( $t['autobid_off'] ) ? $t['autobid_off'] : __( 'Autobid disabled.', 'one-ba-auctions' ),
+			'autobid_saved'     => ! empty( $t['autobid_saved'] ) ? $t['autobid_saved'] : __( 'Autobid updated', 'one-ba-auctions' ),
+			'autobid_error'     => ! empty( $t['autobid_error'] ) ? $t['autobid_error'] : __( 'Could not update autobid', 'one-ba-auctions' ),
+			'autobid_ended'     => ! empty( $t['autobid_ended'] ) ? $t['autobid_ended'] : __( 'Autobid is unavailable after the auction ends.', 'one-ba-auctions' ),
+			'remaining'         => ! empty( $t['remaining'] ) ? $t['remaining'] : __( 'Remaining', 'one-ba-auctions' ),
+			'autobid_confirm'   => sprintf(
+				/* translators: 1: window minutes, 2: points cost */
+				! empty( $t['autobid_confirm'] ) ? $t['autobid_confirm'] : __( 'Autobid will charge %2$s points and will be enabled for %1$s minutes in live stage. Proceed?', 'one-ba-auctions' ),
+				isset( $settings['autobid_window_seconds'] ) ? ceil( $settings['autobid_window_seconds'] / 60 ) : 5,
+				isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0
+			),
+			'registration_closed'=> ! empty( $t['registration_closed'] ) ? $t['registration_closed'] : __( 'Registration closed', 'one-ba-auctions' ),
+			'autobid_title'      => ! empty( $t['autobid_title'] ) ? $t['autobid_title'] : __( 'Autobid', 'one-ba-auctions' ),
+			'autobid_cost_hint'  => ! empty( $t['autobid_cost_hint'] ) ? $t['autobid_cost_hint'] : __( 'Enabling autobid will charge points and stay active for a limited time.', 'one-ba-auctions' ),
 			'step1'             => __( 'Step 1. Registration', 'one-ba-auctions' ),
 			'step2'             => __( 'Step 2. Pre-Live', 'one-ba-auctions' ),
 			'step3'             => __( 'Step 3. Live', 'one-ba-auctions' ),

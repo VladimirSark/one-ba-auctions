@@ -124,7 +124,7 @@ class OBA_Auction_Engine {
 		}
 	}
 
-	public function process_bid( $auction_id, $user_id ) {
+	public function process_bid( $auction_id, $user_id, $is_autobid = false ) {
 		$meta = $this->repo->get_auction_meta( $auction_id );
 
 		if ( $meta['auction_status'] !== 'live' ) {
@@ -155,8 +155,9 @@ class OBA_Auction_Engine {
 				'user_id'          => $user_id,
 				'credits_reserved' => $bid_cost,
 				'sequence_number'  => $sequence,
+				'is_autobid'       => $is_autobid ? 1 : 0,
 			),
-			array( '%d', '%d', '%f', '%d' )
+			array( '%d', '%d', '%f', '%d', '%d' )
 		);
 
 		update_post_meta( $auction_id, '_live_expires_at', gmdate( 'Y-m-d H:i:s', $animated_timer ) );

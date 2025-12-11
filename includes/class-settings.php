@@ -21,6 +21,9 @@ class OBA_Settings {
 			'membership_links'        => array( '', '', '' ),
 			'membership_labels'       => array( '', '', '' ),
 			'points_value'            => '1.00',
+			'autobid_enabled'         => true,
+			'autobid_window_seconds'  => 300,
+			'autobid_activation_cost_points' => 5,
 			'translations'            => array(),
 			'email_templates'         => array(),
 		);
@@ -48,6 +51,9 @@ class OBA_Settings {
 			'membership_links'        => isset( $data['membership_links'] ) && is_array( $data['membership_links'] ) ? array_map( 'esc_url_raw', $data['membership_links'] ) : $defaults['membership_links'],
 			'membership_labels'       => isset( $data['membership_labels'] ) && is_array( $data['membership_labels'] ) ? array_map( 'sanitize_text_field', $data['membership_labels'] ) : $defaults['membership_labels'],
 			'points_value'            => isset( $data['points_value'] ) ? sanitize_text_field( wp_unslash( $data['points_value'] ) ) : $defaults['points_value'],
+			'autobid_enabled'         => isset( $data['autobid_enabled'] ) ? (bool) $data['autobid_enabled'] : $defaults['autobid_enabled'],
+			'autobid_window_seconds'  => isset( $data['autobid_window_seconds'] ) ? max( 30, (int) $data['autobid_window_seconds'] ) : $defaults['autobid_window_seconds'],
+			'autobid_activation_cost_points' => isset( $data['autobid_activation_cost_points'] ) ? max( 0, (int) $data['autobid_activation_cost_points'] ) : $defaults['autobid_activation_cost_points'],
 			'translations'            => isset( $data['translations'] ) && is_array( $data['translations'] ) ? array_map( 'sanitize_text_field', $data['translations'] ) : ( isset( $stored['translations'] ) ? $stored['translations'] : array() ),
 			'email_templates'         => isset( $data['email_templates'] ) && is_array( $data['email_templates'] ) ? self::sanitize_email_templates( $data['email_templates'] ) : ( isset( $stored['email_templates'] ) ? $stored['email_templates'] : array() ),
 		);
@@ -111,6 +117,18 @@ class OBA_Settings {
 			'win_save_suffix' => '',
 			'lose_save_prefix' => '',
 			'lose_save_suffix' => '',
+			'autobid_on_button' => '',
+			'autobid_off_button' => '',
+			'autobid_on' => '',
+			'autobid_off' => '',
+			'autobid_saved' => '',
+			'autobid_error' => '',
+			'autobid_ended' => '',
+			'autobid_confirm' => '',
+			'remaining' => '',
+			'registration_closed' => '',
+			'autobid_title' => '',
+			'autobid_cost_hint' => '',
 		);
 
 		$translations = array();

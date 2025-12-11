@@ -7,6 +7,7 @@ require_once OBA_PLUGIN_DIR . 'includes/class-settings.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-credits-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-points-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-repository.php';
+require_once OBA_PLUGIN_DIR . 'includes/class-autobid-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-engine.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-product-type.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-ajax-controller.php';
