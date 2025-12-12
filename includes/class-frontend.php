@@ -11,6 +11,9 @@ class OBA_Frontend {
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
 		add_shortcode( 'oba_ended_auctions', array( $this, 'shortcode_ended_auctions' ) );
+		add_shortcode( 'oba_upcoming_auctions', array( $this, 'shortcode_upcoming_auctions' ) );
+		add_shortcode( 'oba_live_auctions', array( $this, 'shortcode_live_auctions' ) );
+		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
 	}
 
 	public function enqueue_assets() {
@@ -317,6 +320,173 @@ class OBA_Frontend {
 			.oba-ended-head{font-weight:700;background:#f3f4f6;}
 			.oba-ended-row span{font-size:13px;line-height:1.3;}
 		</style>
+		<?php
+		return ob_get_clean();
+	}
+
+	private function render_auction_cards( $status_list, $limit = 5, $show_timer = false ) {
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => $limit,
+				'post_status'    => array( 'publish' ),
+				'meta_query'     => array(
+					array(
+						'key'   => '_auction_status',
+						'value' => (array) $status_list,
+						'compare' => 'IN',
+					),
+				),
+				'fields' => 'ids',
+			)
+		);
+
+		if ( ! $q->have_posts() ) {
+			return '<p>' . esc_html__( 'No auctions found.', 'one-ba-auctions' ) . '</p>';
+		}
+
+		$repo = new OBA_Auction_Repository();
+		ob_start();
+		?>
+		<div class="oba-shortcode-grid">
+			<?php foreach ( $q->posts as $pid ) :
+				$meta      = $repo->get_auction_meta( $pid );
+				$product   = wc_get_product( $pid );
+				if ( ! $product || 'auction' !== $product->get_type() ) {
+					continue;
+				}
+				$required  = isset( $meta['required_participants'] ) ? (int) $meta['required_participants'] : 0;
+				$registered= $repo->get_participant_count( $pid );
+				$lobby_pct = $required > 0 ? min( 100, (int) floor( ( $registered / max( 1, $required ) ) * 100 ) ) : 0;
+				$status    = isset( $meta['auction_status'] ) ? $meta['auction_status'] : '';
+				$link      = get_permalink( $pid );
+				$live_left = $show_timer ? max( 0, $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'] ) ) : 0;
+				?>
+				<div class="oba-shortcard">
+					<h4 class="oba-shortcard__title"><?php echo esc_html( $product->get_name() ); ?></h4>
+					<p class="oba-shortcard__status"><?php echo esc_html( ucfirst( $status ) ); ?></p>
+					<?php if ( in_array( $status, array( 'registration', 'pre_live' ), true ) ) : ?>
+						<div class="oba-shortcard__bar"><span style="width:<?php echo esc_attr( $lobby_pct ); ?>%"></span></div>
+						<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Progress: %s%% (%s/%s)', 'one-ba-auctions' ), esc_html( $lobby_pct ), esc_html( $registered ), esc_html( $required ) ); ?></p>
+					<?php endif; ?>
+					<?php if ( $show_timer && $status === 'live' ) : ?>
+						<p class="oba-shortcard__timer"><?php printf( esc_html__( 'Live ends in %ss', 'one-ba-auctions' ), esc_html( $live_left ) ); ?></p>
+					<?php endif; ?>
+					<a class="oba-shortcard__btn" href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'View auction', 'one-ba-auctions' ); ?></a>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<style>
+			.oba-shortcode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+			.oba-shortcard{border:1px solid #e5e7eb;border-radius:10px;padding:12px;background:#fff;box-shadow:0 4px 12px rgba(15,23,42,0.06);}
+			.oba-shortcard__title{margin:0 0 6px;font-size:16px;font-weight:700;color:#0f172a;}
+			.oba-shortcard__status{margin:0 0 8px;font-size:12px;color:#475569;}
+			.oba-shortcard__bar{background:#f1f5f9;border-radius:8px;height:8px;overflow:hidden;margin:6px 0;}
+			.oba-shortcard__bar span{display:block;height:100%;background:#0ea5e9;width:0%;}
+			.oba-shortcard__meta{margin:0 0 8px;font-size:12px;color:#334155;}
+			.oba-shortcard__timer{margin:0 0 8px;font-size:13px;font-weight:700;color:#0f172a;}
+			.oba-shortcard__btn{display:inline-block;padding:8px 12px;border-radius:8px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700;}
+		</style>
+		<?php
+		return ob_get_clean();
+	}
+
+	public function shortcode_upcoming_auctions( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'limit' => 6,
+			),
+			$atts
+		);
+		return $this->render_auction_cards( array( 'registration', 'pre_live' ), (int) $atts['limit'], false );
+	}
+
+	public function shortcode_live_auctions( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'limit' => 6,
+			),
+			$atts
+		);
+		return $this->render_auction_cards( array( 'live' ), (int) $atts['limit'], true );
+	}
+
+	private function calculate_seconds_left( $start_time, $duration ) {
+		if ( ! $start_time ) {
+			return (int) $duration;
+		}
+		$start = strtotime( $start_time );
+		return max( 0, $start - time() );
+	}
+
+	public function shortcode_recent_ended_auctions( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'limit' => 6,
+			),
+			$atts
+		);
+
+		$limit = max( 1, (int) $atts['limit'] );
+		$q     = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => $limit,
+				'post_status'    => array( 'publish' ),
+				'meta_query'     => array(
+					array(
+						'key'   => '_auction_status',
+						'value' => 'ended',
+					),
+				),
+				'orderby' => 'date',
+				'order'   => 'DESC',
+				'fields'  => 'ids',
+			)
+		);
+
+		if ( ! $q->have_posts() ) {
+			return '<p>' . esc_html__( 'No ended auctions found.', 'one-ba-auctions' ) . '</p>';
+		}
+
+		$repo = new OBA_Auction_Repository();
+		ob_start();
+		?>
+		<div class="oba-shortcode-grid">
+			<?php foreach ( $q->posts as $pid ) :
+				$product = wc_get_product( $pid );
+				if ( ! $product || 'auction' !== $product->get_type() ) {
+					continue;
+				}
+				$meta   = $repo->get_auction_meta( $pid );
+				$winner = $repo->get_winner_row( $pid );
+				$winner_id = $winner ? (int) $winner['winner_user_id'] : 0;
+				$winner_bids = $winner ? (int) $winner['total_bids'] : 0;
+				$winner_value = $winner ? (float) $winner['total_credits_consumed'] : 0;
+				$claim_price = $winner ? (float) $winner['claim_price_credits'] : 0;
+				$product_cost = (float) get_post_meta( $pid, '_product_cost', true );
+				$saved = $product_cost > 0 ? max( 0, $product_cost - $winner_value ) : 0;
+				$ended_at = isset( $winner['created_at'] ) ? $winner['created_at'] : $product->get_date_modified();
+				$mask = function( $uid ) {
+					$user = get_user_by( 'id', $uid );
+					if ( ! $user ) {
+						return __( 'Anon', 'one-ba-auctions' );
+					}
+					$name = $user->display_name ? $user->display_name : $user->user_login;
+					return substr( $name, 0, 3 ) . '***' . substr( $uid, -1 );
+				};
+				?>
+				<div class="oba-shortcard">
+					<h4 class="oba-shortcard__title"><?php echo esc_html( $product->get_name() ); ?></h4>
+					<p class="oba-shortcard__status"><?php esc_html_e( 'Ended', 'one-ba-auctions' ); ?></p>
+					<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Winner: %s', 'one-ba-auctions' ), esc_html( $winner_id ? $mask( $winner_id ) : __( 'N/A', 'one-ba-auctions' ) ) ); ?></p>
+					<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Bids placed: %s (value: %s)', 'one-ba-auctions' ), esc_html( $winner_bids ), esc_html( wp_strip_all_tags( wc_price( $winner_value ) ) ) ); ?></p>
+					<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Saved vs. cost: %s', 'one-ba-auctions' ), esc_html( $product_cost ? wp_strip_all_tags( wc_price( $saved ) ) : __( 'N/A', 'one-ba-auctions' ) ) ); ?></p>
+					<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Ended: %s', 'one-ba-auctions' ), esc_html( $ended_at ? ( is_string( $ended_at ) ? $ended_at : $ended_at->date_i18n( 'Y-m-d H:i' ) ) : '' ) ); ?></p>
+					<a class="oba-shortcard__btn" href="<?php echo esc_url( get_permalink( $pid ) ); ?>"><?php esc_html_e( 'View auction', 'one-ba-auctions' ); ?></a>
+				</div>
+			<?php endforeach; ?>
+		</div>
 		<?php
 		return ob_get_clean();
 	}
