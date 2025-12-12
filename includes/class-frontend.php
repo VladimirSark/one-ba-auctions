@@ -367,7 +367,7 @@ class OBA_Frontend {
 					<p class="oba-shortcard__status"><?php echo esc_html( ucfirst( $status ) ); ?></p>
 					<?php if ( in_array( $status, array( 'registration', 'pre_live' ), true ) ) : ?>
 						<div class="oba-shortcard__bar"><span style="width:<?php echo esc_attr( $lobby_pct ); ?>%"></span></div>
-						<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Progress: %s%% (%s/%s)', 'one-ba-auctions' ), esc_html( $lobby_pct ), esc_html( $registered ), esc_html( $required ) ); ?></p>
+						<p class="oba-shortcard__meta"><?php printf( esc_html__( 'Progress: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></p>
 					<?php endif; ?>
 					<?php if ( $show_timer && $status === 'live' ) : ?>
 						<p class="oba-shortcard__timer"><?php printf( esc_html__( 'Live ends in %ss', 'one-ba-auctions' ), esc_html( $live_left ) ); ?></p>
