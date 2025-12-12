@@ -24,7 +24,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT enabled, max_bids, remaining_bids, window_started_at, window_ends_at FROM {$table} WHERE auction_id = %d AND user_id = %d",
+				"SELECT enabled, max_bids, remaining_bids, window_started_at, window_ends_at, reminder_sent FROM {$table} WHERE auction_id = %d AND user_id = %d",
 				$auction_id,
 				$user_id
 			),
@@ -37,6 +37,9 @@ class OBA_Autobid_Service {
 				'remaining_bids'  => 0,
 				'window_started_at' => null,
 				'window_ends_at'  => null,
+				'reminder_sent'   => 0,
+				'auction_id'      => $auction_id,
+				'user_id'         => $user_id,
 			);
 		}
 		return array(
@@ -45,6 +48,7 @@ class OBA_Autobid_Service {
 			'remaining_bids' => (int) $row['remaining_bids'],
 			'window_started_at' => $row['window_started_at'],
 			'window_ends_at'    => $row['window_ends_at'],
+			'reminder_sent'     => isset( $row['reminder_sent'] ) ? (int) $row['reminder_sent'] : 0,
 			'auction_id'    => $auction_id,
 			'user_id'       => $user_id,
 		);
@@ -74,12 +78,13 @@ class OBA_Autobid_Service {
 					'enabled_at'     => current_time( 'mysql' ),
 					'window_started_at' => current_time( 'mysql' ),
 					'window_ends_at'    => gmdate( 'Y-m-d H:i:s', time() + $this->get_window_seconds() ),
+					'reminder_sent'     => 0,
 				),
 				array(
 					'auction_id' => $auction_id,
 					'user_id'    => $user_id,
 				),
-				array( '%d', '%d', '%d', '%s', '%s', '%s' ),
+				array( '%d', '%d', '%d', '%s', '%s', '%s', '%d' ),
 				array( '%d', '%d' )
 			);
 		} else {
@@ -94,8 +99,9 @@ class OBA_Autobid_Service {
 					'enabled_at'     => current_time( 'mysql' ),
 					'window_started_at' => current_time( 'mysql' ),
 					'window_ends_at'    => gmdate( 'Y-m-d H:i:s', time() + $this->get_window_seconds() ),
+					'reminder_sent'     => 0,
 				),
-				array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s' )
+				array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d' )
 			);
 		}
 
@@ -145,12 +151,13 @@ class OBA_Autobid_Service {
 						'enabled'          => 1,
 						'window_started_at'=> $start,
 						'window_ends_at'   => $ends_at,
+						'reminder_sent'    => 0,
 					),
 					array(
 						'auction_id' => $auction_id,
 						'user_id'    => $user_id,
 					),
-					array( '%d', '%s', '%s' ),
+					array( '%d', '%s', '%s', '%d' ),
 					array( '%d', '%d' )
 				);
 			} else {
@@ -165,8 +172,9 @@ class OBA_Autobid_Service {
 						'enabled_at'       => current_time( 'mysql' ),
 						'window_started_at'=> $start,
 						'window_ends_at'   => $ends_at,
+						'reminder_sent'    => 0,
 					),
-					array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s' )
+					array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d' )
 				);
 			}
 		} else {
@@ -226,6 +234,7 @@ class OBA_Autobid_Service {
 			if ( ! $this->repo->is_user_registered( $auction_id, (int) $row['user_id'] ) ) {
 				continue;
 			}
+			$this->maybe_send_autobid_reminder( $auction_id, $row );
 			if ( $this->repo->get_current_winner( $auction_id ) === (int) $row['user_id'] ) {
 				continue;
 			}
@@ -306,7 +315,7 @@ class OBA_Autobid_Service {
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$table}
-				SET window_started_at = UTC_TIMESTAMP(), window_ends_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL %d SECOND)
+				SET window_started_at = UTC_TIMESTAMP(), window_ends_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL %d SECOND), reminder_sent = 0
 				WHERE auction_id = %d AND enabled = 1 AND window_started_at IS NULL",
 				$seconds,
 				$auction_id
@@ -321,7 +330,7 @@ class OBA_Autobid_Service {
 		$wpdb->query(
 			$wpdb->prepare(
 				"UPDATE {$table}
-				SET window_started_at = UTC_TIMESTAMP(), window_ends_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL %d SECOND)
+				SET window_started_at = UTC_TIMESTAMP(), window_ends_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL %d SECOND), reminder_sent = 0
 				WHERE auction_id = %d AND user_id = %d AND enabled = 1 AND window_started_at IS NULL",
 				$seconds,
 				$auction_id,
@@ -329,5 +338,37 @@ class OBA_Autobid_Service {
 			)
 		); // phpcs:ignore WordPress.DB.PreparedSQL
 		return $this->get_settings( $auction_id, $user_id );
+	}
+
+	private function maybe_send_autobid_reminder( $auction_id, $row ) {
+		if ( empty( $row['window_ends_at'] ) || ! empty( $row['reminder_sent'] ) ) {
+			return;
+		}
+		$remaining = strtotime( $row['window_ends_at'] ) - time();
+		if ( $remaining <= 60 && $remaining > 0 ) {
+			$user_id = (int) $row['user_id'];
+			if ( class_exists( 'OBA_Email' ) ) {
+				$mailer = new OBA_Email();
+				$mailer->notify_autobid_expiring(
+					$user_id,
+					$auction_id,
+					array(
+						'seconds' => $remaining,
+					)
+				);
+			}
+			global $wpdb;
+			$table = $wpdb->prefix . 'auction_autobid';
+			$wpdb->update(
+				$table,
+				array( 'reminder_sent' => 1 ),
+				array(
+					'auction_id' => $auction_id,
+					'user_id'    => (int) $row['user_id'],
+				),
+				array( '%d' ),
+				array( '%d', '%d' )
+			);
+		}
 	}
 }

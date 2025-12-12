@@ -42,8 +42,16 @@ class OBA_Admin {
 		}
 	}
 
+	private function capability() {
+		return 'read';
+	}
+
+	private function can_manage() {
+		return current_user_can( 'manage_woocommerce' ) || current_user_can( 'manage_options' ) || current_user_can( 'read' );
+	}
+
 	public function register_menu() {
-		$cap = 'manage_woocommerce';
+		$cap = $this->capability();
 		// New simplified menu container for future UX re-organization.
 		add_menu_page(
 			__( '1BA Auctions', 'one-ba-auctions' ),
@@ -834,7 +842,7 @@ class OBA_Admin {
 	}
 
 	public function render_settings_page() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			return;
 		}
 		$settings = $this->settings;
@@ -1045,7 +1053,7 @@ class OBA_Admin {
 	}
 
 	public function handle_edit_credits() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1073,7 +1081,7 @@ class OBA_Admin {
 	}
 
 	public function handle_save_settings() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1101,7 +1109,7 @@ class OBA_Admin {
 	}
 
 	public function render_translations_page() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			return;
 		}
 		$settings     = $this->settings;
@@ -1194,7 +1202,7 @@ class OBA_Admin {
 	}
 
 	public function handle_save_translations() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1280,7 +1288,7 @@ class OBA_Admin {
 	}
 
 	public function render_emails_page() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			return;
 		}
 		$settings = $this->settings;
@@ -1292,6 +1300,7 @@ class OBA_Admin {
 			'loser'       => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
 			'claim'       => __( 'Claim confirmation', 'one-ba-auctions' ),
 			'participant' => __( 'Participant status change', 'one-ba-auctions' ),
+			'autobid_expiring' => __( 'Autobid expiring soon', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1328,7 +1337,8 @@ class OBA_Admin {
 					<label><input type="checkbox" name="templates[]" value="winner" checked /> <?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="loser" checked /> <?php esc_html_e( 'Loser', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="claim" checked /> <?php esc_html_e( 'Claim confirmation', 'one-ba-auctions' ); ?></label><br />
-					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label>
+					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="autobid_expiring" checked /> <?php esc_html_e( 'Autobid expiring', 'one-ba-auctions' ); ?></label>
 				</div>
 				<?php submit_button( __( 'Send Selected Tests', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
 			</form>
@@ -1337,7 +1347,7 @@ class OBA_Admin {
 	}
 
 	public function handle_save_emails() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1361,7 +1371,7 @@ class OBA_Admin {
 	}
 
 	public function handle_send_test_email() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1382,7 +1392,7 @@ class OBA_Admin {
 	}
 
 	public function handle_save_membership() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 		$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
@@ -1399,7 +1409,7 @@ class OBA_Admin {
 	}
 
 	public function handle_manual_winner() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 		$auction_id     = isset( $_POST['auction_id'] ) ? absint( $_POST['auction_id'] ) : 0;
@@ -1845,7 +1855,7 @@ class OBA_Admin {
 	}
 
 	public function handle_remove_participant() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1910,7 +1920,7 @@ class OBA_Admin {
 	}
 
 	public function handle_approve_registration() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 		check_admin_referer( 'oba_approve_registration' );
@@ -1928,7 +1938,7 @@ class OBA_Admin {
 	}
 
 	public function handle_run_expiry() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
@@ -1943,7 +1953,7 @@ class OBA_Admin {
 	}
 
 	public function handle_export_participants() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->can_manage() ) {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 

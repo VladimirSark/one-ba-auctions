@@ -213,14 +213,22 @@ class OBA_Email {
 						array_merge( $tokens_base, array( 'delta' => 5 ) )
 					);
 					break;
-				case 'participant':
-					list( $subject, $body ) = $this->resolve_template(
-						'participant',
-						__( '[Auction] Participation updated', 'one-ba-auctions' ),
-						__( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
-						$tokens_base
-					);
-					break;
+			case 'participant':
+				list( $subject, $body ) = $this->resolve_template(
+					'participant',
+					__( '[Auction] Participation updated', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'autobid_expiring':
+				list( $subject, $body ) = $this->resolve_template(
+					'autobid_expiring',
+					__( '[Auction] Autobid ending soon: {auction_title}', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid for "<strong>{auction_title}</strong>" is about to expire (less than 1 minute left).<br />Open the auction to extend if needed.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
 			}
 			$this->send_raw( $email, $subject, $body );
 		}
@@ -258,6 +266,22 @@ class OBA_Email {
 		foreach ( $user_ids as $uid ) {
 			$this->send( $uid, $subject_tpl, $body_tpl, __( 'Bid now', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 		}
+	}
+
+	public function notify_autobid_expiring( $user_id, $auction_id, $data ) {
+		$seconds = isset( $data['seconds'] ) ? (int) $data['seconds'] : 60;
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'autobid_expiring',
+			__( '[Auction] Autobid ending soon: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid for "<strong>{auction_title}</strong>" will expire in less than a minute.<br />Open the auction to extend if needed.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'     => $this->get_user_name( $user_id ),
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
+				'seconds'       => $seconds,
+			)
+		);
+		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
 	}
 
 	public function notify_end_winner( $auction_id, $winner_id, $details ) {
