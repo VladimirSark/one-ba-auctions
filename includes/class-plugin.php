@@ -56,9 +56,9 @@ class OBA_Plugin {
 		add_filter(
 			'cron_schedules',
 			function ( $schedules ) {
-				$schedules['oba_five_seconds'] = array(
-					'interval' => 5,
-					'display'  => __( 'Every 5 seconds (OBA)', 'one-ba-auctions' ),
+				$schedules['oba_one_second'] = array(
+					'interval' => 1,
+					'display'  => __( 'Every 1 second (OBA)', 'one-ba-auctions' ),
 				);
 				return $schedules;
 			}
@@ -140,7 +140,7 @@ class OBA_Plugin {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'minute', 'oba_run_expiry_check' );
 		}
 		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
-			wp_schedule_event( time() + 10, 'oba_five_seconds', 'oba_run_autobid_guard' );
+			wp_schedule_event( time() + 1, 'oba_one_second', 'oba_run_autobid_guard' );
 		}
 	}
 
@@ -150,10 +150,10 @@ class OBA_Plugin {
 	public function maybe_ping_cron() {
 		$key  = 'oba_last_cron_ping';
 		$last = (int) get_transient( $key );
-		if ( $last && ( time() - $last ) < 30 ) {
+		if ( $last && ( time() - $last ) < 5 ) {
 			return;
 		}
-		set_transient( $key, time(), 45 );
+		set_transient( $key, time(), 10 );
 		wp_remote_post(
 			site_url( 'wp-cron.php' ),
 			array(
