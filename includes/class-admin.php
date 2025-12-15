@@ -1003,8 +1003,8 @@ class OBA_Admin {
 			wp_die( esc_html__( 'Not allowed', 'one-ba-auctions' ) );
 		}
 
-		$auction_id = isset( $_GET['auction_id'] ) ? absint( $_GET['auction_id'] ) : 0;
-		$action     = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+		$auction_id = isset( $_REQUEST['auction_id'] ) ? absint( wp_unslash( $_REQUEST['auction_id'] ) ) : 0;
+		$action     = isset( $_REQUEST['status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['status'] ) ) : '';
 
 		check_admin_referer( "oba_set_status_{$auction_id}" );
 
@@ -1441,11 +1441,6 @@ class OBA_Admin {
 			exit;
 		}
 
-		if ( $this->repo->get_winner_row( $auction_id ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&winner=exists' ) );
-			exit;
-		}
-
 		$meta        = $this->repo->get_auction_meta( $auction_id );
 		$totals      = $this->repo->get_bid_totals_by_user( $auction_id );
 		$winner_rows = array_filter(
@@ -1461,18 +1456,35 @@ class OBA_Admin {
 
 		global $wpdb;
 		$winners_table = $wpdb->prefix . 'auction_winners';
-		$wpdb->insert(
-			$winners_table,
-			array(
-				'auction_id'             => $auction_id,
-				'winner_user_id'         => $winner_user_id,
-				'total_bids'             => $total_bids,
-				'total_credits_consumed' => $total_cost,
-				'claim_price_credits'    => $total_cost,
-				'wc_order_id'            => null,
-			),
-			array( '%d', '%d', '%d', '%f', '%f', '%d' )
-		);
+		$existing_winner = $this->repo->get_winner_row( $auction_id );
+		if ( $existing_winner ) {
+			$wpdb->update(
+				$winners_table,
+				array(
+					'winner_user_id'         => $winner_user_id,
+					'total_bids'             => $total_bids,
+					'total_credits_consumed' => $total_cost,
+					'claim_price_credits'    => $total_cost,
+					'wc_order_id'            => null,
+				),
+				array( 'id' => (int) $existing_winner['id'] ),
+				array( '%d', '%d', '%f', '%f', '%d' ),
+				array( '%d' )
+			);
+		} else {
+			$wpdb->insert(
+				$winners_table,
+				array(
+					'auction_id'             => $auction_id,
+					'winner_user_id'         => $winner_user_id,
+					'total_bids'             => $total_bids,
+					'total_credits_consumed' => $total_cost,
+					'claim_price_credits'    => $total_cost,
+					'wc_order_id'            => null,
+				),
+				array( '%d', '%d', '%d', '%f', '%f', '%d' )
+			);
+		}
 
 		update_post_meta( $auction_id, '_auction_status', 'ended' );
 		OBA_Audit_Log::log(
@@ -1481,11 +1493,12 @@ class OBA_Admin {
 				'winner_user_id' => $winner_user_id,
 				'total_bids'     => $total_bids,
 				'total_cost'     => $total_cost,
+				'action'         => $existing_winner ? 'replaced' : 'created',
 			),
 			$auction_id
 		);
 
-		wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&winner=set' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&winner=set' . ( $existing_winner ? '&replaced=1' : '' ) ) );
 		exit;
 	}
 
@@ -1654,6 +1667,7 @@ class OBA_Admin {
 
 		$winner_total_bids  = 0;
 		$winner_bid_value   = 0;
+		$winner_row         = null;
 		$current_winner_row = $this->repo->get_winner_row( $auction_id );
 		if ( $current_winner_row ) {
 			$winner_row = $current_winner_row;
