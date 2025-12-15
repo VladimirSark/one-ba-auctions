@@ -52,6 +52,18 @@ class OBA_Plugin {
 		}
 
 		add_action( 'oba_run_expiry_check', array( $this, 'check_expired_auctions' ) );
+		add_action( 'oba_run_autobid_guard', array( $this, 'run_autobid_guard' ) );
+		add_filter(
+			'cron_schedules',
+			function ( $schedules ) {
+				$schedules['oba_five_seconds'] = array(
+					'interval' => 5,
+					'display'  => __( 'Every 5 seconds (OBA)', 'one-ba-auctions' ),
+				);
+				return $schedules;
+			}
+		);
+		add_action( 'init', array( $this, 'maybe_ping_cron' ) );
 		add_action( 'wp', array( $this, 'maybe_schedule_cron' ) );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'register_gateway' ) );
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'ensure_claim_gateway_available' ) );
@@ -89,10 +101,67 @@ class OBA_Plugin {
 		}
 	}
 
+	public function run_autobid_guard() {
+		$settings = OBA_Settings::get_settings();
+		if ( empty( $settings['autobid_enabled'] ) ) {
+			return;
+		}
+		$repo    = new OBA_Auction_Repository();
+		$autobid = new OBA_Autobid_Service();
+
+		$q = new WP_Query(
+			array(
+				'post_type'      => 'product',
+				'posts_per_page' => 10,
+				'meta_query'     => array(
+					array(
+						'key'   => '_product_type',
+						'value' => 'auction',
+					),
+					array(
+						'key'   => '_auction_status',
+						'value' => 'live',
+					),
+				),
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+			)
+		);
+		if ( ! $q->have_posts() ) {
+			return;
+		}
+		foreach ( $q->posts as $auction_id ) {
+			$autobid->maybe_run_autobids( $auction_id );
+		}
+	}
+
 	public function maybe_schedule_cron() {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'minute', 'oba_run_expiry_check' );
 		}
+		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
+			wp_schedule_event( time() + 10, 'oba_five_seconds', 'oba_run_autobid_guard' );
+		}
+	}
+
+	/**
+	 * Keep WP-Cron alive by pinging wp-cron.php via loopback. Best-effort; cached for 30s.
+	 */
+	public function maybe_ping_cron() {
+		$key  = 'oba_last_cron_ping';
+		$last = (int) get_transient( $key );
+		if ( $last && ( time() - $last ) < 30 ) {
+			return;
+		}
+		set_transient( $key, time(), 45 );
+		wp_remote_post(
+			site_url( 'wp-cron.php' ),
+			array(
+				'timeout'   => 0.5,
+				'blocking'  => false,
+				'sslverify' => apply_filters( 'https_local_ssl_verify', false ),
+			)
+		);
 	}
 
 	public function register_gateway( $gateways ) {

@@ -262,21 +262,31 @@ class OBA_Autobid_Service {
 			}
 		);
 
-		$challenger = null;
+		// Round-robin rotation so every autobidder gets a turn.
+		$pointer_key = '_oba_autobid_pointer_' . $auction_id;
+		$pointer     = (int) get_transient( $pointer_key );
+		if ( $pointer > 0 ) {
+			$pointer = $pointer % count( $candidates );
+			if ( $pointer > 0 ) {
+				$head = array_splice( $candidates, 0, $pointer );
+				$candidates = array_merge( $candidates, $head );
+			}
+		}
+
+		$placed = 0;
 		foreach ( $candidates as $candidate ) {
 			if ( $current_winner && (int) $candidate['user_id'] === (int) $current_winner ) {
 				continue;
 			}
-			$challenger = $candidate;
-			break;
+			$this->engine->process_bid( $auction_id, (int) $candidate['user_id'], true );
+			$placed++;
+			if ( $placed >= 2 ) {
+				break;
+			}
 		}
 
-		$target_user = $challenger ? (int) $challenger['user_id'] : null;
-		if ( ! $target_user ) {
-			return;
-		}
-
-		$this->engine->process_bid( $auction_id, $target_user, true );
+		$next_pointer = $pointer + max( 1, $placed );
+		set_transient( $pointer_key, $next_pointer, MINUTE_IN_SECONDS );
 	}
 
 	private function calculate_seconds_left( $expires_at, $timer_seconds ) {
