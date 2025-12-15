@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OBA_Autobid_Service {
 
-	const TRIGGER_THRESHOLD = 3;
+	const TRIGGER_THRESHOLD = 4;
 
 	private $repo;
 	private $engine;
@@ -24,7 +24,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT enabled, max_bids, remaining_bids, window_started_at, window_ends_at, reminder_sent FROM {$table} WHERE auction_id = %d AND user_id = %d",
+				"SELECT enabled, max_bids, remaining_bids, window_started_at, window_ends_at, reminder_sent, max_spend FROM {$table} WHERE auction_id = %d AND user_id = %d",
 				$auction_id,
 				$user_id
 			),
@@ -38,6 +38,7 @@ class OBA_Autobid_Service {
 				'window_started_at' => null,
 				'window_ends_at'  => null,
 				'reminder_sent'   => 0,
+				'max_spend'       => 0,
 				'auction_id'      => $auction_id,
 				'user_id'         => $user_id,
 			);
@@ -49,6 +50,7 @@ class OBA_Autobid_Service {
 			'window_started_at' => $row['window_started_at'],
 			'window_ends_at'    => $row['window_ends_at'],
 			'reminder_sent'     => isset( $row['reminder_sent'] ) ? (int) $row['reminder_sent'] : 0,
+			'max_spend'         => isset( $row['max_spend'] ) ? (float) $row['max_spend'] : 0,
 			'auction_id'    => $auction_id,
 			'user_id'       => $user_id,
 		);
@@ -124,11 +126,11 @@ class OBA_Autobid_Service {
 		return $this->get_settings( $auction_id, $user_id );
 	}
 
-	public function toggle_autobid( $auction_id, $user_id, $enable, $status = 'registration' ) {
+	public function toggle_autobid( $auction_id, $user_id, $enable, $status = 'registration', $max_bids = 0 ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'auction_autobid';
 		$enable = $enable ? 1 : 0;
-		$window_seconds = $this->get_window_seconds();
+		$max_bids = max( 1, (int) $max_bids );
 
 		$current = $this->get_settings( $auction_id, $user_id );
 
@@ -141,9 +143,8 @@ class OBA_Autobid_Service {
 		);
 
 		if ( $enable ) {
-			$start_now = ( 'live' === $status );
-			$start     = $start_now ? gmdate( 'Y-m-d H:i:s' ) : null;
-			$ends_at   = $start_now ? gmdate( 'Y-m-d H:i:s', time() + $window_seconds ) : null;
+			$start = null;
+			$ends_at = null;
 			if ( $exists ) {
 				$wpdb->update(
 					$table,
@@ -152,12 +153,14 @@ class OBA_Autobid_Service {
 						'window_started_at'=> $start,
 						'window_ends_at'   => $ends_at,
 						'reminder_sent'    => 0,
+						'max_spend'        => 0,
+						'max_bids'         => $max_bids,
 					),
 					array(
 						'auction_id' => $auction_id,
 						'user_id'    => $user_id,
 					),
-					array( '%d', '%s', '%s', '%d' ),
+					array( '%d', '%s', '%s', '%d', '%f', '%d' ),
 					array( '%d', '%d' )
 				);
 			} else {
@@ -173,8 +176,10 @@ class OBA_Autobid_Service {
 						'window_started_at'=> $start,
 						'window_ends_at'   => $ends_at,
 						'reminder_sent'    => 0,
+						'max_spend'        => 0,
+						'max_bids'         => $max_bids,
 					),
-					array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d' )
+					array( '%d', '%d', '%d', '%d', '%d', '%s', '%s', '%s', '%d', '%f', '%d' )
 				);
 			}
 		} else {
@@ -203,11 +208,9 @@ class OBA_Autobid_Service {
 		$meta = $this->repo->get_auction_meta( $auction_id );
 
 		if ( $meta['auction_status'] !== 'live' ) {
-			$this->expire_windows( $auction_id );
 			return;
 		}
 
-		$this->expire_windows( $auction_id );
 		$this->start_windows_for_live( $auction_id );
 
 		$live_left = $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'] );
@@ -220,7 +223,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE auction_id = %d AND enabled = 1 AND (window_ends_at IS NULL OR window_ends_at > UTC_TIMESTAMP()) ORDER BY window_started_at ASC, user_id ASC",
+				"SELECT * FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY max_bids DESC, user_id ASC",
 				$auction_id
 			),
 			ARRAY_A
@@ -230,23 +233,49 @@ class OBA_Autobid_Service {
 			return;
 		}
 
+		$candidates = array();
 		foreach ( $rows as $row ) {
-			if ( ! $this->repo->is_user_registered( $auction_id, (int) $row['user_id'] ) ) {
+			$user_id = (int) $row['user_id'];
+			if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 				continue;
 			}
 			$this->maybe_send_autobid_reminder( $auction_id, $row );
-			if ( $this->repo->get_current_winner( $auction_id ) === (int) $row['user_id'] ) {
+			$bids = $this->repo->get_user_bids( $auction_id, $user_id );
+			if ( $bids >= (int) $row['max_bids'] ) {
 				continue;
 			}
-			if ( $live_left > self::TRIGGER_THRESHOLD ) {
-				continue;
-			}
-			$result = $this->engine->process_bid( $auction_id, (int) $row['user_id'], true );
-			if ( is_wp_error( $result ) ) {
-				continue;
-			}
-			break; // single auto-bid per tick
+			$candidates[] = $row + array( 'bids' => $bids );
 		}
+
+		if ( empty( $candidates ) ) {
+			return;
+		}
+
+		usort(
+			$candidates,
+			function ( $a, $b ) {
+				if ( (int) $a['max_bids'] === (int) $b['max_bids'] ) {
+					return $a['user_id'] <=> $b['user_id'];
+				}
+				return (int) $b['max_bids'] <=> (int) $a['max_bids'];
+			}
+		);
+
+		$challenger = null;
+		foreach ( $candidates as $candidate ) {
+			if ( $current_winner && (int) $candidate['user_id'] === (int) $current_winner ) {
+				continue;
+			}
+			$challenger = $candidate;
+			break;
+		}
+
+		$target_user = $challenger ? (int) $challenger['user_id'] : null;
+		if ( ! $target_user ) {
+			return;
+		}
+
+		$this->engine->process_bid( $auction_id, $target_user, true );
 	}
 
 	private function calculate_seconds_left( $expires_at, $timer_seconds ) {
@@ -290,11 +319,7 @@ class OBA_Autobid_Service {
 		if ( empty( $settings_row['enabled'] ) ) {
 			return 0;
 		}
-		$end = ! empty( $settings_row['window_ends_at'] ) ? strtotime( $settings_row['window_ends_at'] ) : 0;
-		if ( ! $end ) {
-			return $this->get_window_seconds();
-		}
-		return max( 0, $end - time() );
+		return 0;
 	}
 
 	private function expire_windows( $auction_id ) {
@@ -309,18 +334,7 @@ class OBA_Autobid_Service {
 	}
 
 	private function start_windows_for_live( $auction_id ) {
-		global $wpdb;
-		$table = $wpdb->prefix . 'auction_autobid';
-		$seconds = $this->get_window_seconds();
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$table}
-				SET window_started_at = UTC_TIMESTAMP(), window_ends_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL %d SECOND), reminder_sent = 0
-				WHERE auction_id = %d AND enabled = 1 AND window_started_at IS NULL",
-				$seconds,
-				$auction_id
-			)
-		); // phpcs:ignore WordPress.DB.PreparedSQL
+		return;
 	}
 
 	public function start_window_for_user( $auction_id, $user_id ) {

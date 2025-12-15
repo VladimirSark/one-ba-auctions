@@ -346,8 +346,88 @@
 
 .oba-legend {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: 1fr;
 	gap: 12px;
+}
+.oba-legend .oba-card {
+	padding: 10px 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.oba-legend .oba-legend-label {
+	font-size: 13px;
+	color: #475569;
+	margin-right: 8px;
+}
+.oba-legend .oba-legend-value {
+	font-size: 20px;
+	font-weight: 700;
+	color: #0f172a;
+}
+.oba-legend .oba-autobid-card .oba-legend-value {
+	font-size: 16px;
+}
+.oba-legend .oba-bidder-status-card .oba-legend-value {
+	font-size: 16px;
+	padding: 10px 12px;
+	border-radius: 10px;
+}
+.oba-legend .oba-autobid-card .oba-toggle-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+.oba-switch {
+	position: relative;
+	display: inline-block;
+	width: 42px;
+	height: 24px;
+}
+.oba-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.oba-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #cbd5e1;
+	transition: 0.2s;
+	border-radius: 34px;
+}
+.oba-slider:before {
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.2s;
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+}
+.oba-switch input:checked + .oba-slider {
+	background-color: #22c55e;
+}
+.oba-switch input:checked + .oba-slider:before {
+	transform: translateX(18px);
+}
+
+@media (min-width: 900px) {
+	.oba-legend {
+		grid-template-columns: repeat(2, 1fr);
+		grid-auto-flow: row dense;
+	}
+	.oba-legend .oba-card:nth-child(1) { order: 1; }
+	.oba-legend .oba-card:nth-child(2) { order: 2; }
+	.oba-legend .oba-card:nth-child(3) { order: 3; }
+	.oba-legend .oba-card:nth-child(4) { order: 4; }
 }
 
 .oba-legend .oba-card {
@@ -550,6 +630,38 @@
 .oba-info-modal__inner,
 .oba-terms-modal__inner {
 	position: relative;
+}
+
+.oba-autobid-modal,
+.oba-autobid-overlay {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	display: none;
+}
+.oba-autobid-overlay {
+	background: rgba(0,0,0,0.4);
+	z-index: 120000;
+}
+.oba-autobid-modal {
+	z-index: 120001;
+	display: none;
+}
+.oba-autobid-modal__inner {
+	position: fixed;
+	left: 50%;
+	top: 120px;
+	transform: translateX(-50%);
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+	min-width: 280px;
+	max-width: 90%;
+	max-height: calc(100vh - 200px);
+	overflow: auto;
+	padding: 18px;
 }
 
 .oba-credit-close,

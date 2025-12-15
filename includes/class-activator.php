@@ -166,6 +166,7 @@ class OBA_Activator {
 		  window_started_at DATETIME NULL,
 		  window_ends_at DATETIME NULL,
 		  reminder_sent TINYINT(1) NOT NULL DEFAULT 0,
+		  max_spend DECIMAL(12,2) NOT NULL DEFAULT 0,
 		  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 		  UNIQUE KEY auction_user (auction_id, user_id),
 		  KEY enabled_idx (auction_id, enabled)
@@ -189,6 +190,10 @@ class OBA_Activator {
 		$reminder = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'reminder_sent'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( empty( $reminder ) ) {
 			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN reminder_sent TINYINT(1) NOT NULL DEFAULT 0 AFTER window_ends_at" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
+		$max_spend = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'max_spend'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $max_spend ) ) {
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN max_spend DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER reminder_sent" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 }

@@ -317,3 +317,19 @@
 - **DB:** No schema change.
 - **Constraints/Assumptions:** Falls back to default `wp_login_url` if empty.
 - **How to test:** Set login URL in settings; log out and click Register to be directed to that URL.
+
+## 2025-11-21 — Autobid proxy V2 (max bids, late firing, modal)
+- **Summary:** Switched autobid to a max-bid-count proxy that triggers only in the last ~4s, removed time-window expiry, marked auto bids, and added a modal-based autobid configurator.
+- **Why:** Prevent early burn and ensure fair triggering while letting users pre-set counts without polling overrides.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `includes/class-frontend.php`, `assets/js/auction.js`, `assets/css/auction.css`, `templates/oba-single-auction.php`.
+- **DB:** Autobid table already includes `max_bids`; `is_autobid` column required on bids table (previous migration).
+- **Constraints/Assumptions:** Autobid only fires when live timer ≤ threshold and user isn’t leading; one auto-bid per tick; registration required to show UI.
+- **How to test:** Register, open autobid modal, set max bids (>1), enable; during live, bids fire near 3–4s when outbid; autobid bids marked in history.
+
+## 2025-11-21 — Autobid UI/UX refresh (cards, modal, pills)
+- **Summary:** Added registration-stage autobid prompt with pill showing ON/OFF, modal input for max bids with EUR totals, single Set/Edit entry point, live legend cards for Autobid + Status (currency value and leading/outbid state with full-card color), and responsive 2x2 grid layout on desktop/stacked on mobile. Removed inline toggles/status clutter.
+- **Why:** Simplify autobid setup, avoid polling overwrites, and surface state clearly next to live stats.
+- **Files/Classes:** `templates/oba-single-auction.php`, `assets/js/auction.js`, `assets/css/auction.css`, `includes/class-frontend.php`, `includes/class-settings.php`, `includes/class-admin.php`.
+- **DB:** None.
+- **Constraints/Assumptions:** Users must register before seeing autobid UI; autobid toggle/enable handled via modal; status pill reflects state; legend Status card auto-updates win/lose colors.
+- **How to test:** Register → see autobid prompt and pill; open modal, set bids, enable; live stage shows Autobid card with EUR total and toggle, Status card flips colors when leading/outbid; translations for new strings appear in Settings → Translations.

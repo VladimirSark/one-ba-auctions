@@ -1178,6 +1178,13 @@ class OBA_Admin {
 			'registration_closed'      => __( 'Registration closed text', 'one-ba-auctions' ),
 			'autobid_title'            => __( 'Autobid title', 'one-ba-auctions' ),
 			'autobid_cost_hint'        => __( 'Autobid cost hint', 'one-ba-auctions' ),
+			'autobid_prompt_title'     => __( 'Autobid prompt title', 'one-ba-auctions' ),
+			'autobid_set_title'        => __( 'Autobid set title', 'one-ba-auctions' ),
+			'autobid_set'              => __( 'Autobid set button', 'one-ba-auctions' ),
+			'autobid_edit'             => __( 'Autobid edit button', 'one-ba-auctions' ),
+			'autobid_on_badge'         => __( 'Autobid ON badge', 'one-ba-auctions' ),
+			'autobid_off_badge'        => __( 'Autobid OFF badge', 'one-ba-auctions' ),
+			'outbid_label'             => __( 'Outbid label', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
@@ -1280,6 +1287,13 @@ class OBA_Admin {
 				'registration_closed' => isset( $_POST['registration_closed'] ) ? $_POST['registration_closed'] : '',
 				'autobid_title' => isset( $_POST['autobid_title'] ) ? $_POST['autobid_title'] : '',
 				'autobid_cost_hint' => isset( $_POST['autobid_cost_hint'] ) ? $_POST['autobid_cost_hint'] : '',
+				'autobid_prompt_title' => isset( $_POST['autobid_prompt_title'] ) ? $_POST['autobid_prompt_title'] : '',
+				'autobid_set_title' => isset( $_POST['autobid_set_title'] ) ? $_POST['autobid_set_title'] : '',
+				'autobid_set' => isset( $_POST['autobid_set'] ) ? $_POST['autobid_set'] : '',
+				'autobid_edit' => isset( $_POST['autobid_edit'] ) ? $_POST['autobid_edit'] : '',
+				'autobid_on_badge' => isset( $_POST['autobid_on_badge'] ) ? $_POST['autobid_on_badge'] : '',
+				'autobid_off_badge' => isset( $_POST['autobid_off_badge'] ) ? $_POST['autobid_off_badge'] : '',
+				'outbid_label' => isset( $_POST['outbid_label'] ) ? $_POST['outbid_label'] : '',
 			)
 		);
 

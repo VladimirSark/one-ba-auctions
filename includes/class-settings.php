@@ -129,6 +129,13 @@ class OBA_Settings {
 			'registration_closed' => '',
 			'autobid_title' => '',
 			'autobid_cost_hint' => '',
+			'autobid_prompt_title' => '',
+			'autobid_set_title' => '',
+			'autobid_set' => '',
+			'autobid_edit' => '',
+			'autobid_on_badge' => '',
+			'autobid_off_badge' => '',
+			'outbid_label' => '',
 		);
 
 		$translations = array();

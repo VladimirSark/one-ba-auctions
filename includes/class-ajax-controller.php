@@ -163,26 +163,11 @@ class OBA_Ajax_Controller {
 		}
 
 		$enabled  = isset( $_POST['enabled'] ) ? (int) $_POST['enabled'] : 0;
-		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
-		if ( $enabled ) {
-			if ( $max_bids < 1 || $max_bids > 100 ) {
-				wp_send_json_error(
-					array(
-						'code'    => 'invalid_max',
-						'message' => __( 'Max autobids must be between 1 and 100.', 'one-ba-auctions' ),
-					)
-				);
-			}
-			$data = $this->autobid->set_settings( $auction_id, $user_id, true, $max_bids );
-		} else {
-			$data = $this->autobid->disable( $auction_id, $user_id );
-		}
-
-		wp_send_json_success(
+		// Legacy endpoint no-op to reduce errors; prefer auction_toggle_autobid.
+		wp_send_json_error(
 			array(
-				'autobid_enabled'        => (bool) $data['enabled'],
-				'autobid_max_bids'       => (int) $data['max_bids'],
-				'autobid_remaining_bids' => (int) $data['remaining_bids'],
+				'code'    => 'deprecated',
+				'message' => __( 'Use the new autobid controls.', 'one-ba-auctions' ),
 			)
 		);
 	}
@@ -202,6 +187,18 @@ class OBA_Ajax_Controller {
 		}
 
 		$enable = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
+		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
+		if ( $enable && $max_bids < 1 ) {
+			$max_bids = 1;
+		}
+		if ( $enable && $max_bids < 1 ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'invalid_max_bids',
+					'message' => __( 'Please set how many autobids to place (1 or more).', 'one-ba-auctions' ),
+				)
+			);
+		}
 		$meta   = $this->repo->get_auction_meta( $auction_id );
 		$status = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
 
@@ -255,7 +252,7 @@ class OBA_Ajax_Controller {
 			}
 		}
 
-		$data = $this->autobid->toggle_autobid( $auction_id, $user_id, $enable, $status );
+		$data = $this->autobid->toggle_autobid( $auction_id, $user_id, $enable, $status, $max_bids );
 
 		wp_send_json_success(
 			array(
@@ -264,6 +261,8 @@ class OBA_Ajax_Controller {
 				'autobid_remaining_bids'    => isset( $data['remaining_bids'] ) ? (int) $data['remaining_bids'] : 0,
 				'autobid_window_seconds'    => $this->autobid->get_window_seconds(),
 				'autobid_remaining_seconds' => $this->autobid->get_remaining_seconds( $data ),
+				'autobid_max_spend'         => isset( $data['max_spend'] ) ? (float) $data['max_spend'] : 0,
+				'autobid_max_bids'          => isset( $data['max_bids'] ) ? (int) $data['max_bids'] : 0,
 				'user_points_balance'       => ( new OBA_Points_Service() )->get_balance( $user_id ),
 				'success_message'           => $enable ? __( 'Autobid enabled.', 'one-ba-auctions' ) : __( 'Autobid disabled.', 'one-ba-auctions' ),
 			)
@@ -448,6 +447,8 @@ class OBA_Ajax_Controller {
 			'autobid_remaining_bids'    => (int) $autobid_settings['remaining_bids'],
 			'autobid_window_seconds'    => $this->autobid->get_window_seconds(),
 			'autobid_remaining_seconds' => $this->autobid->get_remaining_seconds( $autobid_settings ),
+			'autobid_max_spend'         => isset( $autobid_settings['max_spend'] ) ? (float) $autobid_settings['max_spend'] : 0,
+			'autobid_max_bids'          => isset( $autobid_settings['max_bids'] ) ? (int) $autobid_settings['max_bids'] : 0,
 		);
 	}
 
