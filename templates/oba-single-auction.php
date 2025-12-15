@@ -296,6 +296,10 @@ $stage_tips = array(
 			<span><?php esc_html_e( 'Max autobid bids', 'one-ba-auctions' ); ?></span>
 			<input type="number" min="1" id="oba-autobid-max-amount" placeholder="5" />
 		</label>
+		<label style="display:flex;align-items:center;gap:8px;margin:6px 0;">
+			<input type="checkbox" id="oba-autobid-limitless" />
+			<span><?php esc_html_e( 'Stay on top (no limit)', 'one-ba-auctions' ); ?></span>
+		</label>
 		<p class="oba-autobid-total oba-autobid-total-modal" style="margin:4px 0;font-size:12px;color:#0f172a;font-weight:700;"></p>
 		<p class="oba-autobid-cost" style="margin:6px 0 0;font-size:12px;color:#475569;">
 			<?php echo esc_html( $get( 'autobid_cost_hint', __( 'Enabling autobid will charge points and stay active for a limited time.', 'one-ba-auctions' ) ) ); ?>

@@ -642,23 +642,31 @@
 		const box = $('.oba-autobid');
 		if (!box.length) return;
 		const enabled = !!state.data.autobid_enabled;
+		const limitless = (state.data.autobid_max_bids || 0) === 0;
 		$('#oba-autobid-enabled').prop('checked', enabled);
 		const toggle = $('.oba-autobid-toggle');
 		const maxInput = $('#oba-autobid-max-amount');
+		const limitlessCheckbox = $('#oba-autobid-limitless');
+		if (limitlessCheckbox.length) {
+			limitlessCheckbox.prop('checked', limitless);
+		}
 		if (maxInput.length) {
 			const currentVal = parseInt(maxInput.val(), 10);
 			const modalOpen = $('.oba-autobid-modal').is(':visible');
 			const dirty = maxInput.data('dirty');
 			if (!modalOpen || (!dirty && !maxInput.is(':focus'))) {
-				maxInput.val(state.data.autobid_max_bids || currentVal || 1);
+				maxInput.val(limitless ? '' : (state.data.autobid_max_bids || currentVal || 1));
 			}
+			maxInput.prop('disabled', limitless);
 		}
 		const totalEl = $('.oba-autobid-total');
 		if (totalEl.length) {
 			const raw = maxInput.length ? parseInt(maxInput.val(), 10) || 0 : 0;
-			const count = raw || state.data.autobid_max_bids || 1;
+			const count = limitless ? 0 : (raw || state.data.autobid_max_bids || 1);
 			const total = count * Number(state.data.bid_cost || 0);
-			const text = count ? `${count} × ${formatMoney(state.data.bid_cost)} = ${formatMoney(total)}` : `${formatMoney(Number(state.data.bid_cost || 0))}`;
+			const text = limitless
+				? (obaAuction.i18n?.autobid_limitless_label || 'Staying on top (no limit)')
+				: (count ? `${count} × ${formatMoney(state.data.bid_cost)} = ${formatMoney(total)}` : `${formatMoney(Number(state.data.bid_cost || 0))}`);
 			totalEl.filter('.oba-autobid-total-modal').text(text).show();
 			totalEl.not('.oba-autobid-total-modal').text('').hide();
 		}
@@ -711,7 +719,8 @@
 					const count = Number(state.data.autobid_max_bids || 0);
 					const unit = Number(state.data.bid_cost || 0);
 					const total = count && unit ? formatMoney(count * unit) : (obaAuction.i18n?.autobid_on_badge || 'On');
-					liveCardValue.text(total);
+					const limitlessText = obaAuction.i18n?.autobid_limitless_label || 'Staying on top (no limit)';
+					liveCardValue.text(limitless ? limitlessText : total);
 				} else {
 					liveCardValue.text(obaAuction.i18n?.autobid_off_badge || 'Off');
 				}
@@ -731,9 +740,22 @@
 	}
 
 	function toggleAutobid(enable) {
+		if (enable) {
+			const cost = obaAuction.autobid_cost_points || 0;
+			const message = obaAuction.i18n?.autobid_confirm
+				|| `Autobid will charge ${cost} points. Proceed?`;
+			// eslint-disable-next-line no-alert
+			if (!window.confirm(message)) {
+				return;
+			}
+		}
 		let maxBids = parseInt($('#oba-autobid-max-amount').val(), 10);
 		if (!Number.isFinite(maxBids) || maxBids < 1) {
 			maxBids = state.data.autobid_max_bids || 1;
+		}
+		const limitless = $('#oba-autobid-limitless').is(':checked');
+		if (limitless) {
+			maxBids = 0;
 		}
 		$('#oba-autobid-max-amount').val(maxBids).data('dirty', true);
 		$.post(
@@ -744,6 +766,7 @@
 				nonce: obaAuction.nonce,
 				enable: enable ? 1 : 0,
 				max_bids: maxBids,
+				limitless: limitless ? 1 : 0,
 			},
 			(response) => {
 				if (response && response.success) {
@@ -825,6 +848,20 @@
 			const appliedTotal = appliedCount * Number(state.data?.bid_cost || 0);
 			totalEl.text(count ? `${count} × ${formatMoney(state.data.bid_cost)} = ${formatMoney(total)}` : `${formatMoney(appliedTotal)}`);
 		}
+	});
+
+	$(document).on('change', '#oba-autobid-limitless', function () {
+		const checked = $(this).is(':checked');
+		const input = $('#oba-autobid-max-amount');
+		if (checked) {
+			input.prop('disabled', true).val('');
+		} else {
+			input.prop('disabled', false);
+			if (!input.val()) {
+				input.val(state.data?.autobid_max_bids || 1);
+			}
+		}
+		updateAutobidUI();
 	});
 
 	buildPackLinks();

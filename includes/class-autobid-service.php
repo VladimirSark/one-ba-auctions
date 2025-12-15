@@ -60,7 +60,7 @@ class OBA_Autobid_Service {
 		global $wpdb;
 		$table = $wpdb->prefix . 'auction_autobid';
 		$enabled = $enabled ? 1 : 0;
-		$max_bids = max( 1, (int) $max_bids );
+		$max_bids = max( 0, (int) $max_bids );
 
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
@@ -130,7 +130,7 @@ class OBA_Autobid_Service {
 		global $wpdb;
 		$table = $wpdb->prefix . 'auction_autobid';
 		$enable = $enable ? 1 : 0;
-		$max_bids = max( 1, (int) $max_bids );
+		$max_bids = max( 0, (int) $max_bids );
 
 		$current = $this->get_settings( $auction_id, $user_id );
 
@@ -211,8 +211,6 @@ class OBA_Autobid_Service {
 			return;
 		}
 
-		$this->start_windows_for_live( $auction_id );
-
 		$live_left = $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'] );
 		if ( $live_left > self::TRIGGER_THRESHOLD ) {
 			return;
@@ -241,7 +239,8 @@ class OBA_Autobid_Service {
 			}
 			$this->maybe_send_autobid_reminder( $auction_id, $row );
 			$bids = $this->repo->get_user_bids( $auction_id, $user_id );
-			if ( $bids >= (int) $row['max_bids'] ) {
+			$limitless = (int) $row['max_bids'] === 0;
+			if ( ! $limitless && $bids >= (int) $row['max_bids'] ) {
 				continue;
 			}
 			$candidates[] = $row + array( 'bids' => $bids );
@@ -254,10 +253,12 @@ class OBA_Autobid_Service {
 		usort(
 			$candidates,
 			function ( $a, $b ) {
-				if ( (int) $a['max_bids'] === (int) $b['max_bids'] ) {
+				$ma = (int) $a['max_bids'] === 0 ? PHP_INT_MAX : (int) $a['max_bids'];
+				$mb = (int) $b['max_bids'] === 0 ? PHP_INT_MAX : (int) $b['max_bids'];
+				if ( $ma === $mb ) {
 					return $a['user_id'] <=> $b['user_id'];
 				}
-				return (int) $b['max_bids'] <=> (int) $a['max_bids'];
+				return $mb <=> $ma;
 			}
 		);
 
@@ -355,34 +356,26 @@ class OBA_Autobid_Service {
 	}
 
 	private function maybe_send_autobid_reminder( $auction_id, $row ) {
-		if ( empty( $row['window_ends_at'] ) || ! empty( $row['reminder_sent'] ) ) {
+		// Legacy window reminder removed. If limitless autobid is enabled, send periodic reminders every 10 minutes.
+		if ( (int) $row['max_bids'] !== 0 || empty( $row['enabled'] ) ) {
 			return;
 		}
-		$remaining = strtotime( $row['window_ends_at'] ) - time();
-		if ( $remaining <= 60 && $remaining > 0 ) {
-			$user_id = (int) $row['user_id'];
-			if ( class_exists( 'OBA_Email' ) ) {
-				$mailer = new OBA_Email();
-				$mailer->notify_autobid_expiring(
-					$user_id,
-					$auction_id,
-					array(
-						'seconds' => $remaining,
-					)
-				);
-			}
-			global $wpdb;
-			$table = $wpdb->prefix . 'auction_autobid';
-			$wpdb->update(
-				$table,
-				array( 'reminder_sent' => 1 ),
+		$user_id = (int) $row['user_id'];
+		$key     = '_oba_autobid_limitless_' . $auction_id;
+		$last    = (int) get_user_meta( $user_id, $key, true );
+		if ( $last && ( time() - $last ) < 600 ) {
+			return;
+		}
+		if ( class_exists( 'OBA_Email' ) ) {
+			$mailer = new OBA_Email();
+			$mailer->notify_autobid_limitless_reminder(
+				$user_id,
+				$auction_id,
 				array(
-					'auction_id' => $auction_id,
-					'user_id'    => (int) $row['user_id'],
-				),
-				array( '%d' ),
-				array( '%d', '%d' )
+					'autobid_max_bids' => (int) $row['max_bids'],
+				)
 			);
 		}
+		update_user_meta( $user_id, $key, time() );
 	}
 }

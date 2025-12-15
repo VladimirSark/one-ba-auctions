@@ -188,16 +188,19 @@ class OBA_Ajax_Controller {
 
 		$enable = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
 		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
-		if ( $enable && $max_bids < 1 ) {
-			$max_bids = 1;
-		}
-		if ( $enable && $max_bids < 1 ) {
+		$limitless = isset( $_POST['limitless'] ) ? (int) $_POST['limitless'] : 0;
+		if ( $enable && ! $limitless && $max_bids < 1 ) {
 			wp_send_json_error(
 				array(
 					'code'    => 'invalid_max_bids',
 					'message' => __( 'Please set how many autobids to place (1 or more).', 'one-ba-auctions' ),
 				)
 			);
+		}
+		if ( $enable && $limitless ) {
+			$max_bids = 0;
+		} elseif ( $enable && $max_bids < 1 ) {
+			$max_bids = 1;
 		}
 		$meta   = $this->repo->get_auction_meta( $auction_id );
 		$status = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
@@ -253,6 +256,24 @@ class OBA_Ajax_Controller {
 		}
 
 		$data = $this->autobid->toggle_autobid( $auction_id, $user_id, $enable, $status, $max_bids );
+
+		if ( class_exists( 'OBA_Email' ) ) {
+			$mailer = new OBA_Email();
+			if ( $enable ) {
+				$mailer->notify_autobid_on(
+					$user_id,
+					$auction_id,
+					array(
+						'autobid_max_bids' => $max_bids,
+					)
+				);
+			} else {
+				$mailer->notify_autobid_off(
+					$user_id,
+					$auction_id
+				);
+			}
+		}
 
 		wp_send_json_success(
 			array(

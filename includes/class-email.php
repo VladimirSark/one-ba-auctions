@@ -144,6 +144,7 @@ class OBA_Email {
 			'seconds'       => 15,
 			'balance'       => 99,
 			'status'        => __( 'active', 'one-ba-auctions' ),
+			'autobid_max_bids' => __( 'No limit', 'one-ba-auctions' ),
 		);
 		foreach ( $keys as $key ) {
 			$subject = __( '[Auction Test]', 'one-ba-auctions' );
@@ -222,10 +223,28 @@ class OBA_Email {
 				);
 				break;
 			case 'autobid_expiring':
+				continue 2;
+			case 'autobid_on':
 				list( $subject, $body ) = $this->resolve_template(
-					'autobid_expiring',
-					__( '[Auction] Autobid ending soon: {auction_title}', 'one-ba-auctions' ),
-					__( 'Hi {user_name},<br />Your autobid for "<strong>{auction_title}</strong>" is about to expire (less than 1 minute left).<br />Open the auction to extend if needed.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					'autobid_on',
+					__( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'autobid_off':
+				list( $subject, $body ) = $this->resolve_template(
+					'autobid_off',
+					__( '[Auction] Autobid disabled: {auction_title}', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is now OFF for "<strong>{auction_title}</strong>".<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
+			case 'autobid_limitless_reminder':
+				list( $subject, $body ) = $this->resolve_template(
+					'autobid_limitless_reminder',
+					__( '[Auction] Autobid is active: {auction_title}', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is still ON (no limit) for "<strong>{auction_title}</strong>".<br />We will keep you on top automatically.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 					$tokens_base
 				);
 				break;
@@ -268,17 +287,45 @@ class OBA_Email {
 		}
 	}
 
-	public function notify_autobid_expiring( $user_id, $auction_id, $data ) {
-		$seconds = isset( $data['seconds'] ) ? (int) $data['seconds'] : 60;
+	public function notify_autobid_on( $user_id, $auction_id, $data ) {
+		$max_bids = isset( $data['autobid_max_bids'] ) ? (int) $data['autobid_max_bids'] : 0;
 		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
-			'autobid_expiring',
-			__( '[Auction] Autobid ending soon: {auction_title}', 'one-ba-auctions' ),
-			__( 'Hi {user_name},<br />Your autobid for "<strong>{auction_title}</strong>" will expire in less than a minute.<br />Open the auction to extend if needed.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			'autobid_on',
+			__( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'        => $this->get_user_name( $user_id ),
+				'auction_title'    => $this->auction_title( $auction_id ),
+				'auction_link'     => $this->product_link( $auction_id ),
+				'autobid_max_bids' => $max_bids ? $max_bids : __( 'No limit', 'one-ba-auctions' ),
+			)
+		);
+		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+	}
+
+	public function notify_autobid_off( $user_id, $auction_id ) {
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'autobid_off',
+			__( '[Auction] Autobid disabled: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is now OFF for "<strong>{auction_title}</strong>".<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 			array(
 				'user_name'     => $this->get_user_name( $user_id ),
 				'auction_title' => $this->auction_title( $auction_id ),
 				'auction_link'  => $this->product_link( $auction_id ),
-				'seconds'       => $seconds,
+			)
+		);
+		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+	}
+
+	public function notify_autobid_limitless_reminder( $user_id, $auction_id, $data ) {
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'autobid_limitless_reminder',
+			__( '[Auction] Autobid is active: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is still ON (no limit) for "<strong>{auction_title}</strong>".<br />We will keep you on top automatically.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'     => $this->get_user_name( $user_id ),
+				'auction_title' => $this->auction_title( $auction_id ),
+				'auction_link'  => $this->product_link( $auction_id ),
 			)
 		);
 		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );

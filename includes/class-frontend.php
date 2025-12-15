@@ -120,6 +120,7 @@ class OBA_Frontend {
 			'autobid_on_badge'     => ! empty( $t['autobid_on_badge'] ) ? $t['autobid_on_badge'] : __( 'Autobid ON', 'one-ba-auctions' ),
 			'autobid_off_badge'    => ! empty( $t['autobid_off_badge'] ) ? $t['autobid_off_badge'] : __( 'Autobid OFF', 'one-ba-auctions' ),
 			'outbid_label'         => ! empty( $t['outbid_label'] ) ? $t['outbid_label'] : __( 'Outbid', 'one-ba-auctions' ),
+			'autobid_limitless_label' => ! empty( $t['autobid_limitless_label'] ) ? $t['autobid_limitless_label'] : __( 'Staying on top (no limit)', 'one-ba-auctions' ),
 			'step1'             => __( 'Step 1. Registration', 'one-ba-auctions' ),
 			'step2'             => __( 'Step 2. Pre-Live', 'one-ba-auctions' ),
 			'step3'             => __( 'Step 3. Live', 'one-ba-auctions' ),

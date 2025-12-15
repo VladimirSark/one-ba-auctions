@@ -333,3 +333,11 @@
 - **DB:** None.
 - **Constraints/Assumptions:** Users must register before seeing autobid UI; autobid toggle/enable handled via modal; status pill reflects state; legend Status card auto-updates win/lose colors.
 - **How to test:** Register → see autobid prompt and pill; open modal, set bids, enable; live stage shows Autobid card with EUR total and toggle, Status card flips colors when leading/outbid; translations for new strings appear in Settings → Translations.
+
+## 2025-11-21 — Autobid limitless mode + emails
+- **Summary:** Added a “stay on top (no limit)” autobid option, updated modal UI, allowed max_bids=0 as limitless with reminders every 10 minutes, removed expiring-window emails, and added new emails for autobid on/off and limitless reminder with translation keys.
+- **Why:** Support always-on proxy bidding without depletion and stop obsolete time-window messaging.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `includes/class-email.php`, `includes/class-settings.php`, `includes/class-admin.php`, `includes/class-frontend.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
+- **DB:** None (reminders tracked in user meta).
+- **Constraints/Assumptions:** Limitless mode sends reminder every 10 minutes while enabled; max_bids=0 treated as infinite and prioritized in tie-break; expiring emails removed from UI/tests.
+- **How to test:** Enable autobid with “stay on top” checked → UI shows limitless text, autobid card shows no-limit value; receive autobid on/off emails; while limitless remains on for >10 minutes, reminder email sends; legacy expiring email no longer appears in settings/tests or sends.

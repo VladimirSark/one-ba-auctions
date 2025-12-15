@@ -136,6 +136,7 @@ class OBA_Settings {
 			'autobid_on_badge' => '',
 			'autobid_off_badge' => '',
 			'outbid_label' => '',
+			'autobid_limitless_label' => '',
 		);
 
 		$translations = array();
