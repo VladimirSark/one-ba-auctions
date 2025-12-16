@@ -9,14 +9,12 @@ class OBA_Ajax_Controller {
 	private $repo;
 	private $credits;
 	private $settings;
-	private $autobid;
 
 	public function __construct() {
 		$this->engine  = new OBA_Auction_Engine();
 		$this->repo    = new OBA_Auction_Repository();
 		$this->credits = new OBA_Credits_Service();
 		$this->settings = OBA_Settings::get_settings();
-		$this->autobid = new OBA_Autobid_Service();
 	}
 
 	public function hooks() {
@@ -25,8 +23,6 @@ class OBA_Ajax_Controller {
 		add_action( 'wp_ajax_auction_register_for_auction', array( $this, 'auction_register_for_auction' ) );
 		add_action( 'wp_ajax_auction_place_bid', array( $this, 'auction_place_bid' ) );
 		add_action( 'wp_ajax_auction_claim_prize', array( $this, 'auction_claim_prize' ) );
-		add_action( 'wp_ajax_auction_set_autobid', array( $this, 'auction_set_autobid' ) );
-		add_action( 'wp_ajax_auction_toggle_autobid', array( $this, 'auction_toggle_autobid' ) );
 	}
 
 	private function validate_nonce() {
@@ -134,8 +130,6 @@ class OBA_Ajax_Controller {
 				);
 			}
 
-			$this->autobid->maybe_run_autobids( $auction_id );
-
 			$state                    = $this->serialize_state( $auction_id );
 			$state['success_message'] = __( 'Bid placed.', 'one-ba-auctions' );
 			wp_send_json_success( $state );
@@ -145,164 +139,11 @@ class OBA_Ajax_Controller {
 	}
 
 	public function auction_set_autobid() {
-		$this->validate_nonce();
-		$auction_id = $this->get_request_auction_id();
-		$user_id    = get_current_user_id();
-		if ( ! $user_id ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'not_logged_in',
-					'message' => __( 'You must be logged in.', 'one-ba-auctions' ),
-				)
-			);
-		}
-		$meta    = $this->repo->get_auction_meta( $auction_id );
-		$status  = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
-
-		if ( 'ended' === $status ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'AUCTION_ENDED',
-					'message' => __( 'Autobid settings are not available after the auction ends.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		if ( ! in_array( $status, array( 'registration', 'pre_live', 'live' ), true ) ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'invalid_state',
-					'message' => __( 'Autobid is unavailable right now.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		$enabled  = isset( $_POST['enabled'] ) ? (int) $_POST['enabled'] : 0;
-		// Legacy endpoint no-op to reduce errors; prefer auction_toggle_autobid.
-		wp_send_json_error(
-			array(
-				'code'    => 'deprecated',
-				'message' => __( 'Use the new autobid controls.', 'one-ba-auctions' ),
-			)
-		);
+		wp_send_json_error( array( 'code' => 'autobid_disabled', 'message' => __( 'Autobid is disabled.', 'one-ba-auctions' ) ) );
 	}
 
 	public function auction_toggle_autobid() {
-		$this->validate_nonce();
-		$auction_id = $this->get_request_auction_id();
-		$user_id    = get_current_user_id();
-
-		if ( ! $user_id ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'not_logged_in',
-					'message' => __( 'You must be logged in.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		$enable = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
-		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
-		$limitless = isset( $_POST['limitless'] ) ? (int) $_POST['limitless'] : 0;
-		if ( $enable && ! $limitless && $max_bids < 1 ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'invalid_max_bids',
-					'message' => __( 'Please set how many autobids to place (1 or more).', 'one-ba-auctions' ),
-				)
-			);
-		}
-		if ( $enable && $limitless ) {
-			$max_bids = 0;
-		} elseif ( $enable && $max_bids < 1 ) {
-			$max_bids = 1;
-		}
-		$meta   = $this->repo->get_auction_meta( $auction_id );
-		$status = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
-
-		if ( 'ended' === $status ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'AUCTION_ENDED',
-					'message' => __( 'Autobid settings are not available after the auction ends.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		if ( empty( $this->settings['autobid_enabled'] ) ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'AUTOBID_DISABLED',
-					'message' => __( 'Autobid is disabled.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		$is_registered = $this->repo->is_user_registered( $auction_id, $user_id );
-		if ( ! $is_registered && 'registration' !== $status ) {
-			wp_send_json_error(
-				array(
-					'code'    => 'registration_closed',
-					'message' => __( 'Registration is closed for this auction.', 'one-ba-auctions' ),
-				)
-			);
-		}
-
-		$autobid_settings = $this->autobid->get_settings( $auction_id, $user_id );
-
-		if ( $enable ) {
-			if ( ! $this->autobid->can_user_pay_autobid( $user_id ) ) {
-				wp_send_json_error(
-					array(
-						'code'    => 'NOT_ENOUGH_POINTS_FOR_AUTOBID',
-						'message' => __( 'Not enough points to enable autobid.', 'one-ba-auctions' ),
-					)
-				);
-			}
-			$charged = $this->autobid->charge_user_autobid( $user_id );
-			if ( is_wp_error( $charged ) ) {
-				wp_send_json_error(
-					array(
-						'code'    => $charged->get_error_code(),
-						'message' => $charged->get_error_message(),
-					)
-				);
-			}
-		}
-
-		$data = $this->autobid->toggle_autobid( $auction_id, $user_id, $enable, $status, $max_bids );
-
-		if ( class_exists( 'OBA_Email' ) ) {
-			$mailer = new OBA_Email();
-			if ( $enable ) {
-				$mailer->notify_autobid_on(
-					$user_id,
-					$auction_id,
-					array(
-						'autobid_max_bids' => $max_bids,
-					)
-				);
-			} else {
-				$mailer->notify_autobid_off(
-					$user_id,
-					$auction_id
-				);
-			}
-		}
-
-		wp_send_json_success(
-			array(
-				'autobid_enabled'           => (bool) $data['enabled'],
-				'autobid_max_bids'          => isset( $data['max_bids'] ) ? (int) $data['max_bids'] : 0,
-				'autobid_remaining_bids'    => isset( $data['remaining_bids'] ) ? (int) $data['remaining_bids'] : 0,
-				'autobid_window_seconds'    => $this->autobid->get_window_seconds(),
-				'autobid_remaining_seconds' => $this->autobid->get_remaining_seconds( $data ),
-				'autobid_max_spend'         => isset( $data['max_spend'] ) ? (float) $data['max_spend'] : 0,
-				'autobid_max_bids'          => isset( $data['max_bids'] ) ? (int) $data['max_bids'] : 0,
-				'user_points_balance'       => ( new OBA_Points_Service() )->get_balance( $user_id ),
-				'success_message'           => $enable ? __( 'Autobid enabled.', 'one-ba-auctions' ) : __( 'Autobid disabled.', 'one-ba-auctions' ),
-			)
-		);
+		wp_send_json_error( array( 'code' => 'autobid_disabled', 'message' => __( 'Autobid is disabled.', 'one-ba-auctions' ) ) );
 	}
 
 	public function auction_claim_prize() {
@@ -409,23 +250,9 @@ class OBA_Ajax_Controller {
 			$user_is_winning = $user_id && $current_winner === $user_id;
 		}
 
-		// Run autobid near end if applicable.
-		$this->autobid->maybe_run_autobids( $auction_id );
-
-		$autobid_settings = $user_id ? $this->autobid->get_settings( $auction_id, $user_id ) : array(
-			'enabled'        => false,
-			'max_bids'       => 0,
-			'remaining_bids' => 0,
-			'window_ends_at' => null,
-			'window_started_at' => null,
-		);
-		if ( $user_id && $autobid_settings['enabled'] && 'live' === $meta['auction_status'] && empty( $autobid_settings['window_ends_at'] ) ) {
-			$autobid_settings = $this->autobid->start_window_for_user( $auction_id, $user_id );
-		}
 		$can_bid = 'live' === $meta['auction_status']
 			&& $is_registered
-			&& ! ( $user_id && $current_winner && $current_winner === $user_id )
-			&& empty( $autobid_settings['enabled'] );
+			&& ! ( $user_id && $current_winner && $current_winner === $user_id );
 
 		return array(
 			'status'                    => $meta['auction_status'],
@@ -478,13 +305,6 @@ class OBA_Ajax_Controller {
 			'total_bids_value_plain'    => $total_bids_all ? wp_strip_all_tags( wc_price( $total_bids_all * $bid_fee_amount ) ) : '',
 			'registration_pending'      => $registration_pending,
 			'claim_pending'             => $claim_pending,
-			'autobid_enabled'           => (bool) $autobid_settings['enabled'],
-			'autobid_max_bids'          => (int) $autobid_settings['max_bids'],
-			'autobid_remaining_bids'    => (int) $autobid_settings['remaining_bids'],
-			'autobid_window_seconds'    => $this->autobid->get_window_seconds(),
-			'autobid_remaining_seconds' => $this->autobid->get_remaining_seconds( $autobid_settings ),
-			'autobid_max_spend'         => isset( $autobid_settings['max_spend'] ) ? (float) $autobid_settings['max_spend'] : 0,
-			'autobid_max_bids'          => isset( $autobid_settings['max_bids'] ) ? (int) $autobid_settings['max_bids'] : 0,
 		);
 	}
 

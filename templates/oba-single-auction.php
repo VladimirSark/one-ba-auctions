@@ -71,7 +71,6 @@ $stage_tips = array(
 					<div class="oba-register-note">
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
-						<span class="oba-badge oba-autobid-pill" style="display:none;"></span>
 					</div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
@@ -117,20 +116,6 @@ $stage_tips = array(
 							<a class="oba-share-btn oba-share-x" href="#" data-network="x"><?php esc_html_e( 'Share on X', 'one-ba-auctions' ); ?></a>
 							<a class="oba-share-btn oba-share-copy" href="#" data-network="copy"><?php esc_html_e( 'Copy link', 'one-ba-auctions' ); ?></a>
 						</div>
-					</div>
-					<div class="oba-autobid oba-autobid-registration registration-only" style="display:none;margin-top:12px;padding:10px;border:1px solid #e5e7eb;border-radius:10px;">
-						<div class="oba-autobid-heading" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-							<h4 class="oba-autobid-title" style="margin:0;"><?php esc_html_e( 'Would you like to set autobid?', 'one-ba-auctions' ); ?></h4>
-						</div>
-						<p class="oba-autobid-help" style="margin:6px 0;font-size:13px;color:#475569;">
-							<?php esc_html_e( 'Autobid will place bids automatically for you. It does not guarantee a win if others set autobid later or set higher values.', 'one-ba-auctions' ); ?>
-						</p>
-						<div class="oba-autobid-actions" style="display:flex;gap:8px;align-items:center;">
-							<button type="button" class="button button-secondary oba-autobid-config"><?php esc_html_e( 'Set autobid', 'one-ba-auctions' ); ?></button>
-						</div>
-						<p class="oba-autobid-status" style="display:none;"></p>
-						<p class="oba-autobid-total" style="display:none;"></p>
-						<input type="checkbox" id="oba-autobid-enabled" style="display:none;" />
 					</div>
 				</div>
 			</div>
@@ -180,16 +165,6 @@ $stage_tips = array(
 							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_cost_label', __( 'Your cost', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value oba-user-cost">0</div>
 						</div>
-						<div class="oba-card oba-autobid-card">
-							<div class="oba-legend-label"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></div>
-							<div class="oba-legend-value oba-autobid-value"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></div>
-							<div class="oba-toggle-wrap" style="margin-top:6px;">
-								<label class="oba-switch">
-									<input type="checkbox" class="oba-autobid-switch" />
-									<span class="oba-slider round"></span>
-								</label>
-							</div>
-						</div>
 						<div class="oba-card oba-bidder-status-card">
 							<div class="oba-legend-label"><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></div>
 							<div class="oba-legend-value oba-bidder-status-pill" style="font-size:16px;padding:6px 10px;border-radius:10px;"><?php esc_html_e( 'Outbid', 'one-ba-auctions' ); ?></div>
@@ -197,7 +172,6 @@ $stage_tips = array(
 					</div>
 					<div class="oba-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
 						<button class="button button-primary oba-bid"><?php esc_html_e( 'Place bid', 'one-ba-auctions' ); ?></button>
-						<button type="button" class="button button-secondary oba-autobid-config"><?php esc_html_e( 'Set autobid', 'one-ba-auctions' ); ?></button>
 					</div>
 					<div class="oba-history-head">
 						<span><?php esc_html_e( 'Last bidder', 'one-ba-auctions' ); ?></span>
@@ -275,30 +249,6 @@ $stage_tips = array(
 		<h4><?php esc_html_e( 'Auction steps', 'one-ba-auctions' ); ?></h4>
 		<div class="oba-info-content">
 			<?php echo wp_kses_post( $settings['status_info_html'] ); ?>
-		</div>
-	</div>
-</div>
-
-<div class="oba-autobid-overlay" style="display:none;"></div>
-<div class="oba-autobid-modal" style="display:none;">
-	<div class="oba-autobid-modal__inner">
-		<button class="oba-autobid-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'one-ba-auctions' ); ?>">&times;</button>
-		<h4><?php echo esc_html( $get( 'autobid_title', __( 'Autobid', 'one-ba-auctions' ) ) ); ?></h4>
-		<label style="display:flex;flex-direction:column;gap:4px;margin:8px 0;">
-			<span><?php esc_html_e( 'Max autobid bids', 'one-ba-auctions' ); ?></span>
-			<input type="number" min="1" id="oba-autobid-max-amount" placeholder="5" />
-		</label>
-		<label style="display:flex;align-items:center;gap:8px;margin:6px 0;">
-			<input type="checkbox" id="oba-autobid-limitless" />
-			<span><?php esc_html_e( 'Stay on top (no limit)', 'one-ba-auctions' ); ?></span>
-		</label>
-		<p class="oba-autobid-total oba-autobid-total-modal" style="margin:4px 0;font-size:12px;color:#0f172a;font-weight:700;"></p>
-		<p class="oba-autobid-cost" style="margin:6px 0 0;font-size:12px;color:#475569;">
-			<?php echo esc_html( $get( 'autobid_cost_hint', __( 'Enabling autobid will charge points and stay active for a limited time.', 'one-ba-auctions' ) ) ); ?>
-		</p>
-		<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
-			<button type="button" class="button oba-autobid-close"><?php esc_html_e( 'Cancel', 'one-ba-auctions' ); ?></button>
-			<button type="button" class="button button-primary oba-autobid-toggle" aria-pressed="false"><?php esc_html_e( 'Enable autobid', 'one-ba-auctions' ); ?></button>
 		</div>
 	</div>
 </div>

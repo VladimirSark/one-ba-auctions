@@ -59,12 +59,7 @@
 				clearAlert();
 				render();
 			}
-		).always(() => {
-			// Ensure polling keeps going even if auction hits 0; no early stop.
-			if (typeof obaAuction.poll_interval === 'number') {
-				setTimeout(poll, obaAuction.poll_interval);
-			}
-		});
+		);
 	}
 
 	function render() {
@@ -564,6 +559,7 @@
 	});
 
 	$(poll);
+	setInterval(poll, parseInt(obaAuction.poll_interval, 10) || 3000);
 
 	function buildPackLinks() {
 		const container = $('.oba-credit-links');
@@ -642,105 +638,7 @@
 	}
 
 	function updateAutobidUI() {
-		if (!state.data) return;
-		const box = $('.oba-autobid');
-		if (!box.length) return;
-		const enabled = !!state.data.autobid_enabled;
-		const limitless = (state.data.autobid_max_bids || 0) === 0;
-		$('#oba-autobid-enabled').prop('checked', enabled);
-		const toggle = $('.oba-autobid-toggle');
-		const maxInput = $('#oba-autobid-max-amount');
-		const limitlessCheckbox = $('#oba-autobid-limitless');
-		if (limitlessCheckbox.length) {
-			limitlessCheckbox.prop('checked', limitless);
-		}
-		if (maxInput.length) {
-			const currentVal = parseInt(maxInput.val(), 10);
-			const modalOpen = $('.oba-autobid-modal').is(':visible');
-			const dirty = maxInput.data('dirty');
-			if (!modalOpen || (!dirty && !maxInput.is(':focus'))) {
-				maxInput.val(limitless ? '' : (state.data.autobid_max_bids || currentVal || 1));
-			}
-			maxInput.prop('disabled', limitless);
-		}
-		const totalEl = $('.oba-autobid-total');
-		if (totalEl.length) {
-			const raw = maxInput.length ? parseInt(maxInput.val(), 10) || 0 : 0;
-			const count = limitless ? 0 : (raw || state.data.autobid_max_bids || 1);
-			const total = count * Number(state.data.bid_cost || 0);
-			const text = limitless
-				? (obaAuction.i18n?.autobid_limitless_label || 'Staying on top (no limit)')
-				: (count ? `${count} × ${formatMoney(state.data.bid_cost)} = ${formatMoney(total)}` : `${formatMoney(Number(state.data.bid_cost || 0))}`);
-			totalEl.filter('.oba-autobid-total-modal').text(text).show();
-			totalEl.not('.oba-autobid-total-modal').text('').hide();
-		}
-		const remainingSeconds = 0;
-		let status;
-		const controls = $('#oba-autobid-enabled, .oba-autobid-toggle');
-		if (state.data.status === 'ended') {
-			status = obaAuction.i18n?.autobid_ended || 'Autobid is unavailable after the auction ends.';
-			controls.prop('disabled', true);
-		} else if (!state.data.user_registered && state.data.status !== 'registration') {
-			status = obaAuction.i18n?.registration_closed || 'Registration is closed.';
-			controls.prop('disabled', true);
-		} else if (!state.data.user_registered) {
-			status = '';
-			controls.prop('disabled', true);
-			$('.oba-autobid').hide();
-			$('.oba-autobid-config').prop('disabled', true).hide();
-			$('.oba-autobid-pill').hide();
-		} else {
-			const isRegistration = state.data.status === 'registration';
-			$('.oba-autobid.registration-only').toggle(isRegistration);
-			$('.oba-autobid.live-only').toggle(!isRegistration);
-			$('.oba-autobid').show();
-			controls.prop('disabled', false);
-			const heading = $('.oba-autobid-title');
-			if (heading.length) {
-				if (enabled) {
-					heading.text(obaAuction.i18n?.autobid_set_title || 'Autobid is set.');
-					$('.oba-autobid-config').text(obaAuction.i18n?.autobid_edit || 'Edit autobid');
-				} else {
-					heading.text(obaAuction.i18n?.autobid_prompt_title || 'Would you like to set autobid?');
-					$('.oba-autobid-config').text(obaAuction.i18n?.autobid_set || 'Set autobid');
-				}
-			}
-			status = ''; // hide status text in blocks; pill covers state
-			$('.oba-autobid-config').prop('disabled', false).show();
-			const pill = $('.oba-autobid-pill');
-			if (pill.length) {
-				pill.show().removeClass('success danger');
-				if (enabled) {
-					pill.addClass('success').text(obaAuction.i18n?.autobid_on_badge || 'Autobid ON');
-				} else {
-					pill.addClass('danger').text(obaAuction.i18n?.autobid_off_badge || 'Autobid OFF');
-				}
-			}
-			const liveCardValue = $('.oba-autobid-card .oba-autobid-value');
-			const liveSwitch = $('.oba-autobid-switch');
-			if (liveCardValue.length) {
-				if (enabled) {
-					const count = Number(state.data.autobid_max_bids || 0);
-					const unit = Number(state.data.bid_cost || 0);
-					const total = count && unit ? formatMoney(count * unit) : (obaAuction.i18n?.autobid_on_badge || 'On');
-					const limitlessText = obaAuction.i18n?.autobid_limitless_label || 'Staying on top (no limit)';
-					liveCardValue.text(limitless ? limitlessText : total);
-				} else {
-					liveCardValue.text(obaAuction.i18n?.autobid_off_badge || 'Off');
-				}
-			}
-			if (liveSwitch.length) {
-				liveSwitch.prop('checked', enabled);
-				liveSwitch.prop('disabled', state.data.status === 'ended');
-			}
-		}
-		const statusEl = $('.oba-autobid-status');
-		statusEl.text(status).css('color', status ? '#000' : '');
-		if (!status) {
-			statusEl.hide();
-		} else {
-			statusEl.show();
-		}
+		return;
 	}
 
 	function toggleAutobid(enable) {

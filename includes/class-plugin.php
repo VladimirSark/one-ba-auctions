@@ -7,7 +7,6 @@ require_once OBA_PLUGIN_DIR . 'includes/class-settings.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-credits-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-points-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-repository.php';
-require_once OBA_PLUGIN_DIR . 'includes/class-autobid-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-engine.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-lock.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-product-type.php';
@@ -55,14 +54,9 @@ class OBA_Plugin {
 		}
 
 		add_action( 'oba_run_expiry_check', array( $this, 'check_expired_auctions' ) );
-		add_action( 'oba_run_autobid_guard', array( $this, 'run_autobid_guard' ) );
 		add_filter(
 			'cron_schedules',
 			function ( $schedules ) {
-				$schedules['oba_fifteen_seconds'] = array(
-					'interval' => 15,
-					'display'  => __( 'Every 15 seconds (OBA)', 'one-ba-auctions' ),
-				);
 				$schedules['oba_every_minute'] = array(
 					'interval' => MINUTE_IN_SECONDS,
 					'display'  => __( 'Every 1 minute (OBA)', 'one-ba-auctions' ),
@@ -80,11 +74,11 @@ class OBA_Plugin {
 	}
 
 	private function register_schedules() {
+		// Remove legacy autobid guard if it was scheduled.
+		wp_clear_scheduled_hook( 'oba_run_autobid_guard' );
+
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
-		}
-		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
-			wp_schedule_event( time() + 5, 'oba_fifteen_seconds', 'oba_run_autobid_guard' );
 		}
 	}
 
@@ -153,45 +147,12 @@ class OBA_Plugin {
 	}
 
 	public function run_autobid_guard() {
-		$settings = OBA_Settings::get_settings();
-		if ( empty( $settings['autobid_enabled'] ) ) {
-			return;
-		}
-		$repo    = new OBA_Auction_Repository();
-		$autobid = new OBA_Autobid_Service();
-
-		$q = new WP_Query(
-			array(
-				'post_type'      => 'product',
-				'posts_per_page' => 10,
-				'meta_query'     => array(
-					array(
-						'key'   => '_product_type',
-						'value' => 'auction',
-					),
-					array(
-						'key'   => '_auction_status',
-						'value' => 'live',
-					),
-				),
-				'post_status'    => 'publish',
-				'fields'         => 'ids',
-			)
-		);
-		if ( ! $q->have_posts() ) {
-			return;
-		}
-		foreach ( $q->posts as $auction_id ) {
-			$autobid->maybe_run_autobids( $auction_id );
-		}
+		return;
 	}
 
 	public function maybe_schedule_cron() {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
-		}
-		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
-			wp_schedule_event( time() + 5, 'oba_fifteen_seconds', 'oba_run_autobid_guard' );
 		}
 	}
 
