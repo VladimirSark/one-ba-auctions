@@ -111,6 +111,18 @@ class OBA_Plugin {
 
 		$q = new WP_Query( $args );
 		$scanned = 0;
+		$candidates = $q->have_posts() ? $q->posts : array();
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'expiry_check_candidates',
+				array(
+					'count' => count( $candidates ),
+					'ids'   => $candidates,
+					'query' => $args,
+				),
+				0
+			);
+		}
 		if ( $q->have_posts() ) {
 			foreach ( $q->posts as $auction_id ) {
 				$engine->end_auction_if_expired( $auction_id );

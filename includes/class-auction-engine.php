@@ -190,6 +190,17 @@ class OBA_Auction_Engine {
 
 			$expires = strtotime( $meta['live_expires_at'] );
 			if ( ! $expires || $expires > time() ) {
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					OBA_Audit_Log::log(
+						'expiry_check_status',
+						array(
+							'auction_id'     => $auction_id,
+							'status'         => $meta['auction_status'],
+							'live_expires_at'=> $meta['live_expires_at'],
+						),
+						$auction_id
+					);
+				}
 				return;
 			}
 
