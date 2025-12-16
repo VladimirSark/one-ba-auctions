@@ -26,7 +26,9 @@ class OBA_Plugin {
 
 	public function init() {
 		OBA_Activator::maybe_upgrade();
+		$this->register_schedules();
 		$this->register_hooks();
+		$this->maybe_schedule_cron();
 	}
 
 	private function register_hooks() {
@@ -61,6 +63,10 @@ class OBA_Plugin {
 					'interval' => 15,
 					'display'  => __( 'Every 15 seconds (OBA)', 'one-ba-auctions' ),
 				);
+				$schedules['oba_every_minute'] = array(
+					'interval' => MINUTE_IN_SECONDS,
+					'display'  => __( 'Every 1 minute (OBA)', 'one-ba-auctions' ),
+				);
 				return $schedules;
 			}
 		);
@@ -71,6 +77,15 @@ class OBA_Plugin {
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'claim_address_prompt' ), 5 );
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'output_checkout_notices' ), 1 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_checkout_helpers' ) );
+	}
+
+	private function register_schedules() {
+		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
+			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
+		}
+		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
+			wp_schedule_event( time() + 5, 'oba_fifteen_seconds', 'oba_run_autobid_guard' );
+		}
 	}
 
 	public function check_expired_auctions() {
@@ -95,10 +110,15 @@ class OBA_Plugin {
 		);
 
 		$q = new WP_Query( $args );
+		$scanned = 0;
 		if ( $q->have_posts() ) {
 			foreach ( $q->posts as $auction_id ) {
 				$engine->end_auction_if_expired( $auction_id );
+				$scanned++;
 			}
+		}
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log( 'expiry_check_ran', array( 'scanned' => $scanned ), 0 );
 		}
 	}
 
@@ -138,7 +158,7 @@ class OBA_Plugin {
 
 	public function maybe_schedule_cron() {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'minute', 'oba_run_expiry_check' );
+			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
 		}
 		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
 			wp_schedule_event( time() + 5, 'oba_fifteen_seconds', 'oba_run_autobid_guard' );
