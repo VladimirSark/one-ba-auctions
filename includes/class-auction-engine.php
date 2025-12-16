@@ -162,6 +162,20 @@ class OBA_Auction_Engine {
 
 		update_post_meta( $auction_id, '_live_expires_at', gmdate( 'Y-m-d H:i:s', $animated_timer ) );
 
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'bid_placed',
+				array(
+					'auction_id'   => $auction_id,
+					'user_id'      => $user_id,
+					'sequence'     => $sequence,
+					'is_autobid'   => $is_autobid,
+					'expires_at'   => gmdate( 'Y-m-d H:i:s', $animated_timer ),
+				),
+				$auction_id
+			);
+		}
+
 		return true;
 	}
 
@@ -170,6 +184,17 @@ class OBA_Auction_Engine {
 		$timer_seconds = max( 1, $timer_seconds );
 		$expires       = time() + $timer_seconds;
 		update_post_meta( $auction_id, '_live_expires_at', gmdate( 'Y-m-d H:i:s', $expires ) );
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'timer_extended',
+				array(
+					'auction_id' => $auction_id,
+					'expires_at' => gmdate( 'Y-m-d H:i:s', $expires ),
+					'seconds'    => $timer_seconds,
+				),
+				$auction_id
+			);
+		}
 	}
 
 	public function end_auction_if_expired( $auction_id ) {
@@ -212,7 +237,15 @@ class OBA_Auction_Engine {
 				update_post_meta( $auction_id, '_oba_ended_at', current_time( 'mysql', 1 ) );
 				update_post_meta( $auction_id, '_auction_status', 'ended' );
 				if ( class_exists( 'OBA_Audit_Log' ) ) {
-					OBA_Audit_Log::log( 'auction_end', array( 'trigger' => 'timer', 'auction_id' => $auction_id ), $auction_id );
+					OBA_Audit_Log::log(
+						'auction_end',
+						array(
+							'trigger'       => 'timer',
+							'auction_id'    => $auction_id,
+							'expires_at'    => $meta['live_expires_at'],
+						),
+						$auction_id
+					);
 				}
 			} finally {
 				delete_post_meta( $auction_id, '_oba_finalizing' );
