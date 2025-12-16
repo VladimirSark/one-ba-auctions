@@ -298,8 +298,24 @@ class OBA_Autobid_Service {
 				if ( $current_winner && (int) $candidate['user_id'] === (int) $current_winner ) {
 					continue;
 				}
-				$this->engine->process_bid( $auction_id, (int) $candidate['user_id'], true );
+				$bid_user_id = (int) $candidate['user_id'];
+				$result      = $this->engine->process_bid( $auction_id, $bid_user_id, true );
 				$placed++;
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					$meta_after = $this->repo->get_auction_meta( $auction_id );
+					OBA_Audit_Log::log(
+						'autobid_bid_placed',
+						array(
+							'auction_id'   => $auction_id,
+							'user_id'      => $bid_user_id,
+							'bid_result'   => is_wp_error( $result ) ? $result->get_error_code() : 'ok',
+							'expires_at'   => isset( $meta_after['live_expires_at'] ) ? $meta_after['live_expires_at'] : null,
+							'max_bids'     => (int) $candidate['max_bids'],
+							'limitless'    => (int) $candidate['max_bids'] === 0,
+						),
+						$auction_id
+					);
+				}
 				if ( $placed >= 2 ) {
 					break;
 				}
