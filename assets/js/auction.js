@@ -59,7 +59,12 @@
 				clearAlert();
 				render();
 			}
-		);
+		).always(() => {
+			// Ensure polling keeps going even if auction hits 0; no early stop.
+			if (typeof obaAuction.poll_interval === 'number') {
+				setTimeout(poll, obaAuction.poll_interval);
+			}
+		});
 	}
 
 	function render() {
@@ -558,7 +563,6 @@
 		closeInfoModal();
 	});
 
-	setInterval(poll, obaAuction.poll_interval);
 	$(poll);
 
 	function buildPackLinks() {
