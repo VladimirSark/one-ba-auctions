@@ -173,22 +173,41 @@ class OBA_Auction_Engine {
 	}
 
 	public function end_auction_if_expired( $auction_id ) {
-		$meta = $this->repo->get_auction_meta( $auction_id );
-
-		if ( $meta['auction_status'] !== 'live' ) {
+		$lock_key = 'oba:auction:' . $auction_id;
+		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'end_auction_if_expired' ), $auction_id );
+			}
 			return;
 		}
+		try {
+			$meta = $this->repo->get_auction_meta( $auction_id );
 
-		$winner_row = $this->repo->get_winner_row( $auction_id );
-		if ( $winner_row ) {
-			update_post_meta( $auction_id, '_auction_status', 'ended' );
-			return;
-		}
+			$already_ended = ( 'ended' === $meta['auction_status'] ) || get_post_meta( $auction_id, '_oba_ended_at', true );
+			if ( $already_ended ) {
+				return;
+			}
 
-		$expires = strtotime( $meta['live_expires_at'] );
+			$expires = strtotime( $meta['live_expires_at'] );
+			if ( ! $expires || $expires > time() ) {
+				return;
+			}
 
-		if ( $expires && $expires <= time() ) {
-			$this->calculate_winner_and_resolve_credits( $auction_id, 'timer' );
+			// Mark finalizing to prevent duplicate endings.
+			update_post_meta( $auction_id, '_oba_finalizing', 1 );
+
+			try {
+				$this->calculate_winner_and_resolve_credits( $auction_id, 'timer' );
+				update_post_meta( $auction_id, '_oba_ended_at', current_time( 'mysql', 1 ) );
+				update_post_meta( $auction_id, '_auction_status', 'ended' );
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					OBA_Audit_Log::log( 'auction_end', array( 'trigger' => 'timer', 'auction_id' => $auction_id ), $auction_id );
+				}
+			} finally {
+				delete_post_meta( $auction_id, '_oba_finalizing' );
+			}
+		} finally {
+			OBA_Lock::release( $lock_key );
 		}
 	}
 
@@ -199,6 +218,18 @@ class OBA_Auction_Engine {
 		if ( $existing_winner ) {
 			update_post_meta( $auction_id, '_auction_status', 'ended' );
 			return;
+		}
+
+		$finalizing_set_at = get_post_meta( $auction_id, '_oba_finalizing', true );
+		if ( $finalizing_set_at ) {
+			$ts = strtotime( $finalizing_set_at );
+			if ( $ts && ( time() - $ts ) > 30 && ! get_post_meta( $auction_id, '_oba_ended_at', true ) ) {
+				// Stale finalizing; clear and retry.
+				delete_post_meta( $auction_id, '_oba_finalizing' );
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					OBA_Audit_Log::log( 'finalizing_stale_reset', array( 'auction_id' => $auction_id ), $auction_id );
+				}
+			}
 		}
 
 		$meta  = $this->repo->get_auction_meta( $auction_id );

@@ -1013,21 +1013,31 @@ class OBA_Admin {
 			exit;
 		}
 
-		switch ( $action ) {
-			case 'pre_live':
-				update_post_meta( $auction_id, '_auction_status', 'pre_live' );
-				update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
-				break;
-			case 'live':
-				update_post_meta( $auction_id, '_auction_status', 'live' );
-				update_post_meta( $auction_id, '_live_expires_at', '' );
-				OBA_Audit_Log::log( 'start_live', array(), $auction_id );
-				break;
-			case 'force_end':
-				update_post_meta( $auction_id, '_auction_status', 'live' );
-				$this->engine->calculate_winner_and_resolve_credits( $auction_id, 'admin_force_end' );
-				OBA_Audit_Log::log( 'force_end', array(), $auction_id );
-				break;
+		$lock_key = 'oba:auction:' . $auction_id;
+		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
+			wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions&notice=lock' ) );
+			exit;
+		}
+
+		try {
+			switch ( $action ) {
+				case 'pre_live':
+					update_post_meta( $auction_id, '_auction_status', 'pre_live' );
+					update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
+					break;
+				case 'live':
+					update_post_meta( $auction_id, '_auction_status', 'live' );
+					update_post_meta( $auction_id, '_live_expires_at', '' );
+					OBA_Audit_Log::log( 'start_live', array(), $auction_id );
+					break;
+				case 'force_end':
+					update_post_meta( $auction_id, '_auction_status', 'live' );
+					$this->engine->calculate_winner_and_resolve_credits( $auction_id, 'admin_force_end' );
+					OBA_Audit_Log::log( 'force_end', array(), $auction_id );
+					break;
+			}
+		} finally {
+			OBA_Lock::release( $lock_key );
 		}
 
 		wp_redirect( admin_url( 'admin.php?page=oba-1ba-auctions' ) );

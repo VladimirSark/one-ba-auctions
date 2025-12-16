@@ -105,28 +105,43 @@ class OBA_Ajax_Controller {
 			);
 		}
 
-		if ( isset( $_POST['force_end'] ) && current_user_can( 'manage_woocommerce' ) ) {
-			$this->engine->calculate_winner_and_resolve_credits( $auction_id, 'admin_force_end' );
-			wp_send_json_success( $this->serialize_state( $auction_id ) );
-		}
-
-		$result = $this->engine->process_bid( $auction_id, $user_id );
-
-		if ( is_wp_error( $result ) ) {
+		$lock_key = 'oba:auction:' . $auction_id;
+		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
 			wp_send_json(
 				array(
 					'success' => false,
-					'code'    => $result->get_error_code(),
-					'message' => $result->get_error_message(),
+					'code'    => 'lock_timeout',
+					'message' => __( 'System is busy, please try again.', 'one-ba-auctions' ),
 				)
 			);
 		}
 
-		$this->autobid->maybe_run_autobids( $auction_id );
+		try {
+			if ( isset( $_POST['force_end'] ) && current_user_can( 'manage_woocommerce' ) ) {
+				$this->engine->calculate_winner_and_resolve_credits( $auction_id, 'admin_force_end' );
+				wp_send_json_success( $this->serialize_state( $auction_id ) );
+			}
 
-		$state                    = $this->serialize_state( $auction_id );
-		$state['success_message'] = __( 'Bid placed.', 'one-ba-auctions' );
-		wp_send_json_success( $state );
+			$result = $this->engine->process_bid( $auction_id, $user_id );
+
+			if ( is_wp_error( $result ) ) {
+				wp_send_json(
+					array(
+						'success' => false,
+						'code'    => $result->get_error_code(),
+						'message' => $result->get_error_message(),
+					)
+				);
+			}
+
+			$this->autobid->maybe_run_autobids( $auction_id );
+
+			$state                    = $this->serialize_state( $auction_id );
+			$state['success_message'] = __( 'Bid placed.', 'one-ba-auctions' );
+			wp_send_json_success( $state );
+		} finally {
+			OBA_Lock::release( $lock_key );
+		}
 	}
 
 	public function auction_set_autobid() {

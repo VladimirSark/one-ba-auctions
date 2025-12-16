@@ -205,88 +205,111 @@ class OBA_Autobid_Service {
 			return;
 		}
 
-		$meta = $this->repo->get_auction_meta( $auction_id );
-
-		if ( $meta['auction_status'] !== 'live' ) {
-			return;
-		}
-
-		$live_left = $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'] );
-		if ( $live_left > self::TRIGGER_THRESHOLD ) {
-			return;
-		}
-
-		$current_winner = $this->repo->get_current_winner( $auction_id );
-		global $wpdb;
-		$table = $wpdb->prefix . 'auction_autobid';
-		$rows  = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY max_bids DESC, user_id ASC",
-				$auction_id
-			),
-			ARRAY_A
-		);
-
-		if ( empty( $rows ) ) {
-			return;
-		}
-
-		$candidates = array();
-		foreach ( $rows as $row ) {
-			$user_id = (int) $row['user_id'];
-			if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
-				continue;
+		$lock_key = 'oba:auction:' . $auction_id;
+		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'maybe_run_autobids' ), $auction_id );
 			}
-			$this->maybe_send_autobid_reminder( $auction_id, $row );
-			$bids = $this->repo->get_user_bids( $auction_id, $user_id );
-			$limitless = (int) $row['max_bids'] === 0;
-			if ( ! $limitless && $bids >= (int) $row['max_bids'] ) {
-				continue;
-			}
-			$candidates[] = $row + array( 'bids' => $bids );
-		}
-
-		if ( empty( $candidates ) ) {
 			return;
 		}
 
-		usort(
-			$candidates,
-			function ( $a, $b ) {
-				$ma = (int) $a['max_bids'] === 0 ? PHP_INT_MAX : (int) $a['max_bids'];
-				$mb = (int) $b['max_bids'] === 0 ? PHP_INT_MAX : (int) $b['max_bids'];
-				if ( $ma === $mb ) {
-					return $a['user_id'] <=> $b['user_id'];
+		try {
+			$meta = $this->repo->get_auction_meta( $auction_id );
+
+			if ( $meta['auction_status'] !== 'live' ) {
+				return;
+			}
+
+			$live_left = $this->calculate_seconds_left( $meta['live_expires_at'], $meta['live_timer_seconds'] );
+			if ( $live_left > self::TRIGGER_THRESHOLD ) {
+				return;
+			}
+
+			// Idempotency per second per auction (after confirming live + time window).
+			$tick     = (int) floor( time() );
+			$last_run = (int) get_post_meta( $auction_id, '_oba_last_autobid_tick', true );
+			if ( $last_run === $tick ) {
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					OBA_Audit_Log::log( 'autobid_skip_tick', array( 'auction_id' => $auction_id, 'tick' => $tick ), $auction_id );
 				}
-				return $mb <=> $ma;
+				return;
 			}
-		);
+			update_post_meta( $auction_id, '_oba_last_autobid_tick', $tick );
 
-		// Round-robin rotation so every autobidder gets a turn.
-		$pointer_key = '_oba_autobid_pointer_' . $auction_id;
-		$pointer     = (int) get_transient( $pointer_key );
-		if ( $pointer > 0 ) {
-			$pointer = $pointer % count( $candidates );
+			$current_winner = $this->repo->get_current_winner( $auction_id );
+			global $wpdb;
+			$table = $wpdb->prefix . 'auction_autobid';
+			$rows  = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY max_bids DESC, user_id ASC",
+					$auction_id
+				),
+				ARRAY_A
+			);
+
+			if ( empty( $rows ) ) {
+				return;
+			}
+
+			$candidates = array();
+			foreach ( $rows as $row ) {
+				$user_id = (int) $row['user_id'];
+				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
+					continue;
+				}
+				$this->maybe_send_autobid_reminder( $auction_id, $row );
+				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
+				$limitless = (int) $row['max_bids'] === 0;
+				if ( ! $limitless && $bids >= (int) $row['max_bids'] ) {
+					continue;
+				}
+				$candidates[] = $row + array( 'bids' => $bids );
+			}
+
+			if ( empty( $candidates ) ) {
+				return;
+			}
+
+			usort(
+				$candidates,
+				function ( $a, $b ) {
+					$ma = (int) $a['max_bids'] === 0 ? PHP_INT_MAX : (int) $a['max_bids'];
+					$mb = (int) $b['max_bids'] === 0 ? PHP_INT_MAX : (int) $b['max_bids'];
+					if ( $ma === $mb ) {
+						return $a['user_id'] <=> $b['user_id'];
+					}
+					return $mb <=> $ma;
+				}
+			);
+
+			// Round-robin rotation so every autobidder gets a turn.
+			$pointer_key = '_oba_autobid_pointer_' . $auction_id;
+			$pointer     = (int) get_transient( $pointer_key );
 			if ( $pointer > 0 ) {
-				$head = array_splice( $candidates, 0, $pointer );
-				$candidates = array_merge( $candidates, $head );
+				$pointer = $pointer % count( $candidates );
+				if ( $pointer > 0 ) {
+					$head = array_splice( $candidates, 0, $pointer );
+					$candidates = array_merge( $candidates, $head );
+				}
 			}
-		}
 
-		$placed = 0;
-		foreach ( $candidates as $candidate ) {
-			if ( $current_winner && (int) $candidate['user_id'] === (int) $current_winner ) {
-				continue;
+			$placed = 0;
+			foreach ( $candidates as $candidate ) {
+				if ( $current_winner && (int) $candidate['user_id'] === (int) $current_winner ) {
+					continue;
+				}
+				$this->engine->process_bid( $auction_id, (int) $candidate['user_id'], true );
+				$placed++;
+				if ( $placed >= 2 ) {
+					break;
+				}
 			}
-			$this->engine->process_bid( $auction_id, (int) $candidate['user_id'], true );
-			$placed++;
-			if ( $placed >= 2 ) {
-				break;
-			}
-		}
 
-		$next_pointer = $pointer + max( 1, $placed );
-		set_transient( $pointer_key, $next_pointer, MINUTE_IN_SECONDS );
+			$next_pointer = $pointer + max( 1, $placed );
+			set_transient( $pointer_key, $next_pointer, MINUTE_IN_SECONDS );
+		} finally {
+			OBA_Lock::release( $lock_key );
+		}
 	}
 
 	private function calculate_seconds_left( $expires_at, $timer_seconds ) {

@@ -341,3 +341,11 @@
 - **DB:** None (reminders tracked in user meta).
 - **Constraints/Assumptions:** Limitless mode sends reminder every 10 minutes while enabled; max_bids=0 treated as infinite and prioritized in tie-break; expiring emails removed from UI/tests.
 - **How to test:** Enable autobid with “stay on top” checked → UI shows limitless text, autobid card shows no-limit value; receive autobid on/off emails; while limitless remains on for >10 minutes, reminder email sends; legacy expiring email no longer appears in settings/tests or sends.
+
+## 2025-11-21 — Autobid fairness + background guard
+- **Summary:** Added round-robin autobid selection (rotating pointer, up to 2 auto-bids per tick) so all enabled users get turns, and introduced a server-side autobid guard cron (now every ~1s with loopback pings) to keep autobids and expiry checks running even when no tabs are open. Moved live action buttons above history for better visibility.
+- **Why:** Prevent only the first autobidders from firing and avoid auctions ending when no users are polling.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-plugin.php`, `templates/oba-single-auction.php`.
+- **DB:** None (round-robin pointer stored as transient).
+- **Constraints/Assumptions:** WP loopback to `wp-cron.php` must be allowed; otherwise, configure an external cron to hit `wp-cron.php` every second.
+- **How to test:** Start a live auction with multiple autobidders (including limitless); verify bids rotate across users. Close all tabs—cron should continue bidding and end the auction correctly without premature timeout.
