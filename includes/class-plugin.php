@@ -95,11 +95,14 @@ class OBA_Plugin {
 		$args = array(
 			'post_type'      => 'product',
 			'posts_per_page' => 20,
-			'meta_query'     => array(
+			'tax_query'      => array(
 				array(
-					'key'   => '_product_type',
-					'value' => 'auction',
+					'taxonomy' => 'product_type',
+					'field'    => 'slug',
+					'terms'    => array( 'auction' ),
 				),
+			),
+			'meta_query'     => array(
 				array(
 					'key'   => '_auction_status',
 					'value' => 'live',
@@ -125,6 +128,21 @@ class OBA_Plugin {
 		}
 		if ( $q->have_posts() ) {
 			foreach ( $q->posts as $auction_id ) {
+				if ( class_exists( 'OBA_Audit_Log' ) ) {
+					$status = get_post_meta( $auction_id, '_auction_status', true );
+					$expires = get_post_meta( $auction_id, '_live_expires_at', true );
+					$type_terms = wp_get_post_terms( $auction_id, 'product_type', array( 'fields' => 'slugs' ) );
+					OBA_Audit_Log::log(
+						'expiry_check_meta',
+						array(
+							'auction_id'     => $auction_id,
+							'status'         => $status,
+							'live_expires_at'=> $expires,
+							'product_types'  => $type_terms,
+						),
+						$auction_id
+					);
+				}
 				$engine->end_auction_if_expired( $auction_id );
 				$scanned++;
 			}
