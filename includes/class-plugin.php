@@ -57,9 +57,9 @@ class OBA_Plugin {
 		add_filter(
 			'cron_schedules',
 			function ( $schedules ) {
-				$schedules['oba_one_second'] = array(
-					'interval' => 1,
-					'display'  => __( 'Every 1 second (OBA)', 'one-ba-auctions' ),
+				$schedules['oba_fifteen_seconds'] = array(
+					'interval' => 15,
+					'display'  => __( 'Every 15 seconds (OBA)', 'one-ba-auctions' ),
 				);
 				return $schedules;
 			}
@@ -141,7 +141,7 @@ class OBA_Plugin {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'minute', 'oba_run_expiry_check' );
 		}
 		if ( ! wp_next_scheduled( 'oba_run_autobid_guard' ) ) {
-			wp_schedule_event( time() + 1, 'oba_one_second', 'oba_run_autobid_guard' );
+			wp_schedule_event( time() + 5, 'oba_fifteen_seconds', 'oba_run_autobid_guard' );
 		}
 	}
 
