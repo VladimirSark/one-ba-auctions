@@ -26,8 +26,8 @@ class OBA_Plugin {
 
 	public function init() {
 		OBA_Activator::maybe_upgrade();
-		$this->register_schedules();
 		$this->register_hooks();
+		$this->register_schedules();
 		$this->maybe_schedule_cron();
 	}
 
@@ -78,13 +78,7 @@ class OBA_Plugin {
 	private function register_schedules() {
 		// Remove legacy autobid guard if it was scheduled.
 		wp_clear_scheduled_hook( 'oba_run_autobid_guard' );
-		if ( ! wp_next_scheduled( 'oba_run_autobid_check' ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_autobid_check' );
-		}
-
-		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
-		}
+		$this->maybe_schedule_cron();
 	}
 
 	public function check_expired_auctions() {
@@ -173,7 +167,8 @@ class OBA_Plugin {
 				),
 				array(
 					'key'     => '_oba_autobid_enabled',
-					'compare' => 'EXISTS',
+					'value'   => 'yes',
+					'compare' => '=',
 				),
 			),
 			'post_status'    => 'publish',
@@ -184,9 +179,7 @@ class OBA_Plugin {
 		$ids = $q->have_posts() ? $q->posts : array();
 		OBA_Audit_Log::log( 'autobid_check_candidates', array( 'count' => count( $ids ), 'ids' => $ids ), 0 );
 		foreach ( $ids as $auction_id ) {
-			if ( get_post_meta( $auction_id, '_oba_autobid_enabled', true ) ) {
-				$service->maybe_run_autobids( $auction_id );
-			}
+			$service->maybe_run_autobids( $auction_id );
 		}
 	}
 
@@ -195,6 +188,9 @@ class OBA_Plugin {
 	public function maybe_schedule_cron() {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
+		}
+		if ( ! wp_next_scheduled( 'oba_run_autobid_check' ) ) {
+			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_autobid_check' );
 		}
 	}
 
