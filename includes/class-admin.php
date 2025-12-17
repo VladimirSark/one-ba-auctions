@@ -1894,6 +1894,34 @@ class OBA_Admin {
 					<?php endif; ?>
 				</tbody>
 			</table>
+
+			<?php $audit_entries = OBA_Audit_Log::latest_for_auction( $auction_id, 20 ); ?>
+			<h2><?php esc_html_e( 'Recent audit events (last 20)', 'one-ba-auctions' ); ?></h2>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Time', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Actor', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Action', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Details', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $audit_entries ) ) : ?>
+						<tr><td colspan="4"><?php esc_html_e( 'No audit entries yet.', 'one-ba-auctions' ); ?></td></tr>
+					<?php else : ?>
+						<?php foreach ( $audit_entries as $entry ) : ?>
+							<?php $user = $entry['actor_id'] ? get_user_by( 'id', $entry['actor_id'] ) : null; ?>
+							<tr>
+								<td><?php echo esc_html( $entry['created_at'] ); ?></td>
+								<td><?php echo esc_html( $user ? $user->display_name : '-' ); ?></td>
+								<td><?php echo esc_html( $entry['action'] ); ?></td>
+								<td><code><?php echo esc_html( is_serialized( $entry['details'] ) ? wp_json_encode( maybe_unserialize( $entry['details'] ) ) : $entry['details'] ); ?></code></td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</tbody>
+			</table>
 		</div>
 		<?php
 	}

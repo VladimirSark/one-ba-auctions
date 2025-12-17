@@ -43,4 +43,17 @@ class OBA_Audit_Log {
 
 		return $wpdb->get_results( call_user_func_array( array( $wpdb, 'prepare' ), array_merge( array( $sql ), $args ) ), ARRAY_A );
 	}
+
+	public static function latest_for_auction( $auction_id, $limit = 50 ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'auction_audit_log';
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE auction_id = %d ORDER BY id DESC LIMIT %d",
+				$auction_id,
+				$limit
+			),
+			ARRAY_A
+		);
+	}
 }
