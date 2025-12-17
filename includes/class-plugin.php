@@ -131,7 +131,8 @@ class OBA_Plugin {
 						array(
 							'auction_id'     => $auction_id,
 							'status'         => $status,
-							'live_expires_at'=> $expires,
+							'live_expires_at'=> $expires, // UTC (storage format).
+							'live_expires_at_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $expires ) : '',
 							'product_types'  => $type_terms,
 						),
 						$auction_id

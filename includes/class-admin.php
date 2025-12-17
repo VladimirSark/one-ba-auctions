@@ -1808,11 +1808,16 @@ class OBA_Admin {
 				'required_participants'=> (int) $meta['required_participants'],
 				'live_timer_seconds'   => (int) $meta['live_timer_seconds'],
 				'prelive_timer_seconds'=> (int) $meta['prelive_timer_seconds'],
-				'pre_live_start'       => $meta['pre_live_start'],
-				'live_expires_at'      => $meta['live_expires_at'],
+				'pre_live_start'       => $meta['pre_live_start'], // UTC (storage format).
+				'pre_live_start_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['pre_live_start'] ) : '',
+				'live_expires_at'      => $meta['live_expires_at'], // UTC (storage format).
+				'live_expires_at_local'=> class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['live_expires_at'] ) : '',
 				'registration_points'  => (float) $meta['registration_points'],
 				'bid_product_id'       => (int) $meta['bid_product_id'],
 				'autobid_enabled_for_auction' => (bool) get_post_meta( $auction_id, '_oba_autobid_enabled', true ),
+				'site_timezone'        => function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : '',
+				'now_utc'              => gmdate( 'Y-m-d H:i:s' ),
+				'now_local'            => function_exists( 'wp_date' ) && function_exists( 'wp_timezone' ) ? wp_date( 'Y-m-d H:i:s', time(), wp_timezone() ) : '',
 			);
 			?>
 			<h2><?php esc_html_e( 'Auction settings snapshot (copy)', 'one-ba-auctions' ); ?></h2>

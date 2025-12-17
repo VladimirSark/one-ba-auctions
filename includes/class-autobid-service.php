@@ -200,7 +200,8 @@ class OBA_Autobid_Service {
 					'auction_id' => $auction_id,
 					'user_id'    => $user_id,
 					'result'     => is_wp_error( $res ) ? $res->get_error_code() : 'ok',
-					'expires_at' => get_post_meta( $auction_id, '_live_expires_at', true ),
+					'expires_at' => get_post_meta( $auction_id, '_live_expires_at', true ), // UTC (storage format).
+					'expires_at_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( get_post_meta( $auction_id, '_live_expires_at', true ) ) : '',
 				),
 				$auction_id
 			);

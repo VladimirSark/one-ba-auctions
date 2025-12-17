@@ -24,5 +24,20 @@ class OBA_Time {
 			return 0;
 		}
 	}
-}
 
+	public static function format_timestamp_local_mysql( $ts ) {
+		$ts = (int) $ts;
+		if ( $ts <= 0 ) {
+			return '';
+		}
+		if ( function_exists( 'wp_date' ) && function_exists( 'wp_timezone' ) ) {
+			return wp_date( 'Y-m-d H:i:s', $ts, wp_timezone() );
+		}
+		return gmdate( 'Y-m-d H:i:s', $ts );
+	}
+
+	public static function format_utc_mysql_datetime_as_local_mysql( $value ) {
+		$ts = self::parse_utc_mysql_datetime_to_timestamp( $value );
+		return self::format_timestamp_local_mysql( $ts );
+	}
+}

@@ -13,6 +13,10 @@ class OBA_Auction_Engine {
 		return class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $mysql_utc ) : 0;
 	}
 
+	private function format_local_mysql( $ts ) {
+		return class_exists( 'OBA_Time' ) ? OBA_Time::format_timestamp_local_mysql( $ts ) : '';
+	}
+
 	public function __construct() {
 		$this->credits = new OBA_Credits_Service();
 		$this->points  = new OBA_Points_Service();
@@ -219,7 +223,8 @@ class OBA_Auction_Engine {
 					'user_id'      => $user_id,
 					'sequence'     => $sequence,
 					'is_autobid'   => $is_autobid,
-					'expires_at'   => gmdate( 'Y-m-d H:i:s', $animated_timer ),
+					'expires_at'   => gmdate( 'Y-m-d H:i:s', $animated_timer ), // UTC (storage format).
+					'expires_at_local' => $this->format_local_mysql( $animated_timer ),
 				),
 				$auction_id
 			);
@@ -241,7 +246,8 @@ class OBA_Auction_Engine {
 				'timer_extended',
 				array(
 					'auction_id' => $auction_id,
-					'expires_at' => gmdate( 'Y-m-d H:i:s', $expires ),
+					'expires_at' => gmdate( 'Y-m-d H:i:s', $expires ), // UTC (storage format).
+					'expires_at_local' => $this->format_local_mysql( $expires ),
 					'seconds'    => $timer_seconds,
 				),
 				$auction_id
@@ -283,7 +289,8 @@ class OBA_Auction_Engine {
 						array(
 							'trigger'       => 'timer',
 							'auction_id'    => $auction_id,
-							'expires_at'    => $meta['live_expires_at'],
+							'expires_at'    => $meta['live_expires_at'], // UTC (storage format).
+							'expires_at_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['live_expires_at'] ) : '',
 							'caller'        => $caller,
 						),
 						$auction_id
