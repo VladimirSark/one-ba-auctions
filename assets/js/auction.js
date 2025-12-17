@@ -221,6 +221,21 @@
 		}
 
 		updateCreditPill(pointsBalance, state.data.membership_active);
+
+		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
+		const setup = $('.oba-autobid-setup');
+		if (setup.length) {
+			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
+			if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
+				setup.show();
+				const enabled = !!state.data.autobid_enabled;
+				setup.find('.oba-autobid-state').text(enabled ? `ON (max ${state.data.autobid_max_bids || ''})` : 'OFF');
+				setup.find('.oba-autobid-enable').prop('disabled', enabled);
+				setup.find('.oba-autobid-disable').prop('disabled', !enabled);
+			} else {
+				setup.hide();
+			}
+		}
 	}
 
 	function updatePhaseCards(status) {
@@ -500,6 +515,56 @@
 	$(document).on('click', '.oba-bid', (e) => {
 		e.preventDefault();
 		bid();
+	});
+
+	$(document).on('click', '.oba-autobid-enable', function (e) {
+		e.preventDefault();
+		const maxBids = parseInt($('.oba-autobid-max').val(), 10) || 0;
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_toggle_autobid',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+				enable: 1,
+				max_bids: maxBids,
+			},
+			(response) => {
+				if (response && response.success) {
+					state.data.autobid_enabled = response.data.autobid_enabled;
+					state.data.autobid_max_bids = response.data.autobid_max_bids;
+					state.data.user_points_balance = response.data.user_points_balance;
+					showToast('Autobid enabled');
+					render();
+				} else if (response && response.data && response.data.message) {
+					showToast(response.data.message, true);
+				}
+			}
+		);
+	});
+
+	$(document).on('click', '.oba-autobid-disable', function (e) {
+		e.preventDefault();
+		$.post(
+			obaAuction.ajax_url,
+			{
+				action: 'auction_toggle_autobid',
+				auction_id: obaAuction.auction_id,
+				nonce: obaAuction.nonce,
+				enable: 0,
+			},
+			(response) => {
+				if (response && response.success) {
+					state.data.autobid_enabled = response.data.autobid_enabled;
+					state.data.autobid_max_bids = response.data.autobid_max_bids;
+					state.data.user_points_balance = response.data.user_points_balance;
+					showToast('Autobid disabled');
+					render();
+				} else if (response && response.data && response.data.message) {
+					showToast(response.data.message, true);
+				}
+			}
+		);
 	});
 
 	$(document).on('click', '.oba-admin-end-now', (e) => {

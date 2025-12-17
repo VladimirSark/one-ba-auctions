@@ -23,6 +23,7 @@ class OBA_Ajax_Controller {
 		add_action( 'wp_ajax_auction_register_for_auction', array( $this, 'auction_register_for_auction' ) );
 		add_action( 'wp_ajax_auction_place_bid', array( $this, 'auction_place_bid' ) );
 		add_action( 'wp_ajax_auction_claim_prize', array( $this, 'auction_claim_prize' ) );
+		add_action( 'wp_ajax_auction_toggle_autobid', array( $this, 'auction_toggle_autobid' ) );
 	}
 
 	private function validate_nonce() {
@@ -143,7 +144,66 @@ class OBA_Ajax_Controller {
 	}
 
 	public function auction_toggle_autobid() {
-		wp_send_json_error( array( 'code' => 'autobid_disabled', 'message' => __( 'Autobid is disabled.', 'one-ba-auctions' ) ) );
+		$this->validate_nonce();
+		$auction_id = $this->get_request_auction_id();
+		$user_id    = get_current_user_id();
+
+		if ( ! $user_id ) {
+			wp_send_json_error( array( 'code' => 'not_logged_in', 'message' => __( 'You must be logged in.', 'one-ba-auctions' ) ) );
+		}
+
+		$service = new OBA_Autobid_Service();
+		if ( ! $service->is_globally_enabled() ) {
+			wp_send_json_error( array( 'code' => 'autobid_disabled', 'message' => __( 'Autobid is disabled.', 'one-ba-auctions' ) ) );
+		}
+		if ( ! $service->is_enabled_for_auction( $auction_id ) ) {
+			wp_send_json_error( array( 'code' => 'autobid_disabled_for_auction', 'message' => __( 'Autobid is disabled for this auction.', 'one-ba-auctions' ) ) );
+		}
+
+		$meta   = $this->repo->get_auction_meta( $auction_id );
+		$status = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
+		if ( 'ended' === $status ) {
+			wp_send_json_error( array( 'code' => 'AUCTION_ENDED', 'message' => __( 'Autobid settings are not available after the auction ends.', 'one-ba-auctions' ) ) );
+		}
+
+		if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
+			wp_send_json_error( array( 'code' => 'not_registered', 'message' => __( 'You must register before enabling autobid.', 'one-ba-auctions' ) ) );
+		}
+
+		$enable   = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
+		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
+
+		if ( $enable ) {
+			if ( $max_bids < 1 ) {
+				wp_send_json_error( array( 'code' => 'invalid_max_bids', 'message' => __( 'Please set max autobids (1 or more).', 'one-ba-auctions' ) ) );
+			}
+			if ( ! $service->can_user_pay( $user_id ) ) {
+				wp_send_json_error( array( 'code' => 'NOT_ENOUGH_POINTS', 'message' => __( 'Not enough points to enable autobid.', 'one-ba-auctions' ) ) );
+			}
+			if ( ! $service->charge_user( $user_id ) ) {
+				wp_send_json_error( array( 'code' => 'CHARGE_FAILED', 'message' => __( 'Could not charge points for autobid.', 'one-ba-auctions' ) ) );
+			}
+		}
+
+		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids );
+		OBA_Audit_Log::log(
+			'autobid_toggle',
+			array(
+				'auction_id' => $auction_id,
+				'user_id'    => $user_id,
+				'enabled'    => (bool) $settings['enabled'],
+				'max_bids'   => (int) $settings['max_bids'],
+			),
+			$auction_id
+		);
+
+		wp_send_json_success(
+			array(
+				'autobid_enabled' => (bool) $settings['enabled'],
+				'autobid_max_bids'=> (int) $settings['max_bids'],
+				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
+			)
+		);
 	}
 
 	public function auction_claim_prize() {
@@ -245,6 +305,10 @@ class OBA_Ajax_Controller {
 		$user_bid_total     = $user_bids * $bid_fee_amount;
 		$registration_pending = $user_id ? $this->has_pending_registration_order( $auction_id, $user_id ) : false;
 
+		$autobid_service = class_exists( 'OBA_Autobid_Service' ) ? new OBA_Autobid_Service() : null;
+		$autobid_allowed = $autobid_service ? ( $autobid_service->is_globally_enabled() && $autobid_service->is_enabled_for_auction( $auction_id ) ) : false;
+		$autobid_user    = ( $autobid_allowed && $user_id ) ? $autobid_service->get_user_settings( $auction_id, $user_id ) : array( 'enabled' => 0, 'max_bids' => 0 );
+
 		if ( $winner_row ) {
 			$current_winner  = (int) $winner_row['winner_user_id'];
 			$user_is_winning = $user_id && $current_winner === $user_id;
@@ -305,6 +369,9 @@ class OBA_Ajax_Controller {
 			'total_bids_value_plain'    => $total_bids_all ? wp_strip_all_tags( wc_price( $total_bids_all * $bid_fee_amount ) ) : '',
 			'registration_pending'      => $registration_pending,
 			'claim_pending'             => $claim_pending,
+			'autobid_allowed_for_auction' => $autobid_allowed,
+			'autobid_enabled'             => $autobid_allowed ? (bool) $autobid_user['enabled'] : false,
+			'autobid_max_bids'            => $autobid_allowed ? (int) $autobid_user['max_bids'] : 0,
 		);
 	}
 

@@ -117,6 +117,15 @@ $stage_tips = array(
 							<a class="oba-share-btn oba-share-copy" href="#" data-network="copy"><?php esc_html_e( 'Copy link', 'one-ba-auctions' ); ?></a>
 						</div>
 					</div>
+					<div class="oba-autobid-setup" style="display:none;margin-top:12px;padding:10px;border:1px solid #e5e7eb;border-radius:10px;">
+						<h4 style="margin:0 0 6px;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
+						<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+							<input type="number" min="1" class="oba-autobid-max" style="width:120px;" placeholder="<?php esc_attr_e( 'Max bids', 'one-ba-auctions' ); ?>" />
+							<button type="button" class="button button-secondary oba-autobid-enable"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
+							<button type="button" class="button oba-autobid-disable"><?php esc_html_e( 'Disable', 'one-ba-auctions' ); ?></button>
+							<span class="oba-autobid-state" style="font-size:12px;color:#475569;"></span>
+						</div>
+					</div>
 				</div>
 			</div>
 

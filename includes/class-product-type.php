@@ -106,6 +106,14 @@ class OBA_Product_Type {
 			)
 		);
 
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => '_oba_autobid_enabled',
+				'label'       => __( 'Enable autobid for this auction', 'one-ba-auctions' ),
+				'description' => __( 'If enabled, live timer will be forced to at least 60 seconds (cron-safe).', 'one-ba-auctions' ),
+			)
+		);
+
 		woocommerce_wp_select(
 			array(
 				'id'          => '_bid_product_id',
@@ -187,6 +195,7 @@ class OBA_Product_Type {
 			'_live_timer_seconds',
 			'_prelive_timer_seconds',
 			'_auction_status',
+			'_oba_autobid_enabled',
 			'_bid_product_id',
 			'_registration_points',
 			'_product_cost',
@@ -202,6 +211,15 @@ class OBA_Product_Type {
 
 			if ( '' !== $value || in_array( $field, array( '_live_timer_seconds', '_prelive_timer_seconds' ), true ) ) {
 				update_post_meta( $product_id, $field, $value );
+			}
+		}
+
+		// Enforce cron-safe live timer if autobid enabled for this auction.
+		$autobid_enabled = get_post_meta( $product_id, '_oba_autobid_enabled', true );
+		if ( $autobid_enabled ) {
+			$live_timer = (int) get_post_meta( $product_id, '_live_timer_seconds', true );
+			if ( $live_timer > 0 && $live_timer < 60 ) {
+				update_post_meta( $product_id, '_live_timer_seconds', 60 );
 			}
 		}
 	}
