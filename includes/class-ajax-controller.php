@@ -46,7 +46,7 @@ class OBA_Ajax_Controller {
 		$auction_id = $this->get_request_auction_id();
 
 		$this->engine->maybe_move_to_live( $auction_id );
-		$this->engine->end_auction_if_expired( $auction_id );
+		$this->engine->end_auction_if_expired( $auction_id, 'ajax_get_state' );
 
 		wp_send_json_success( $this->serialize_state( $auction_id ) );
 	}
@@ -452,7 +452,10 @@ class OBA_Ajax_Controller {
 			return (int) $duration;
 		}
 
-		$start = strtotime( $start_time );
+		$start = class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $start_time ) : 0;
+		if ( ! $start ) {
+			return (int) $duration;
+		}
 
 		$end = $absolute ? $start : $start + (int) $duration;
 

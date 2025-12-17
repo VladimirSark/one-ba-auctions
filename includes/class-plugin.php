@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once OBA_PLUGIN_DIR . 'includes/class-settings.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-credits-service.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-points-service.php';
+require_once OBA_PLUGIN_DIR . 'includes/class-time.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-repository.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-auction-engine.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-lock.php';
@@ -136,7 +137,7 @@ class OBA_Plugin {
 						$auction_id
 					);
 				}
-				$engine->end_auction_if_expired( $auction_id );
+				$engine->end_auction_if_expired( $auction_id, 'cron_expiry_check' );
 				$scanned++;
 			}
 		}

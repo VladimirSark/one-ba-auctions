@@ -9,6 +9,10 @@ class OBA_Auction_Engine {
 	private $points;
 	private $repo;
 
+	private function parse_utc_ts( $mysql_utc ) {
+		return class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $mysql_utc ) : 0;
+	}
+
 	public function __construct() {
 		$this->credits = new OBA_Credits_Service();
 		$this->points  = new OBA_Points_Service();
@@ -139,7 +143,12 @@ class OBA_Auction_Engine {
 			return;
 		}
 
-		$deadline = strtotime( $meta['pre_live_start'] ) + (int) $meta['prelive_timer_seconds'];
+		$pre_live_start = $this->parse_utc_ts( $meta['pre_live_start'] );
+		if ( ! $pre_live_start ) {
+			return;
+		}
+
+		$deadline = $pre_live_start + (int) $meta['prelive_timer_seconds'];
 
 		if ( time() >= $deadline ) {
 			update_post_meta( $auction_id, '_auction_status', 'live' );
@@ -240,11 +249,11 @@ class OBA_Auction_Engine {
 		}
 	}
 
-	public function end_auction_if_expired( $auction_id ) {
+	public function end_auction_if_expired( $auction_id, $caller = 'unknown' ) {
 		$lock_key = 'oba:auction:' . $auction_id;
 		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
 			if ( class_exists( 'OBA_Audit_Log' ) ) {
-				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'end_auction_if_expired' ), $auction_id );
+				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'end_auction_if_expired:' . $caller ), $auction_id );
 			}
 			return;
 		}
@@ -256,24 +265,13 @@ class OBA_Auction_Engine {
 				return;
 			}
 
-			$expires = strtotime( $meta['live_expires_at'] );
+			$expires = $this->parse_utc_ts( $meta['live_expires_at'] );
 			if ( ! $expires || $expires > time() ) {
-				if ( class_exists( 'OBA_Audit_Log' ) ) {
-					OBA_Audit_Log::log(
-						'expiry_check_status',
-						array(
-							'auction_id'     => $auction_id,
-							'status'         => $meta['auction_status'],
-							'live_expires_at'=> $meta['live_expires_at'],
-						),
-						$auction_id
-					);
-				}
 				return;
 			}
 
 			// Mark finalizing to prevent duplicate endings.
-			update_post_meta( $auction_id, '_oba_finalizing', 1 );
+			update_post_meta( $auction_id, '_oba_finalizing', current_time( 'mysql', 1 ) );
 
 			try {
 				$this->calculate_winner_and_resolve_credits( $auction_id, 'timer' );
@@ -286,6 +284,7 @@ class OBA_Auction_Engine {
 							'trigger'       => 'timer',
 							'auction_id'    => $auction_id,
 							'expires_at'    => $meta['live_expires_at'],
+							'caller'        => $caller,
 						),
 						$auction_id
 					);
@@ -309,7 +308,7 @@ class OBA_Auction_Engine {
 
 		$finalizing_set_at = get_post_meta( $auction_id, '_oba_finalizing', true );
 		if ( $finalizing_set_at ) {
-			$ts = strtotime( $finalizing_set_at );
+			$ts = $this->parse_utc_ts( $finalizing_set_at );
 			if ( $ts && ( time() - $ts ) > 30 && ! get_post_meta( $auction_id, '_oba_ended_at', true ) ) {
 				// Stale finalizing; clear and retry.
 				delete_post_meta( $auction_id, '_oba_finalizing' );

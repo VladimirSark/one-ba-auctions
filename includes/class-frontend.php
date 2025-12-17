@@ -423,7 +423,10 @@ class OBA_Frontend {
 		if ( ! $start_time ) {
 			return (int) $duration;
 		}
-		$start = strtotime( $start_time );
+		$start = class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $start_time ) : 0;
+		if ( ! $start ) {
+			return (int) $duration;
+		}
 		return max( 0, $start - time() );
 	}
 
