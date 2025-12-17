@@ -137,6 +137,13 @@ class OBA_Autobid_Service {
 			return;
 		}
 
+		// With 1-minute cron, the live timer must be at least 60 seconds to allow repeated autobids.
+		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : 0;
+		if ( $timer_seconds && $timer_seconds < 60 ) {
+			OBA_Audit_Log::log( 'autobid_skipped_short_timer', array( 'auction_id' => $auction_id, 'live_timer_seconds' => $timer_seconds ), $auction_id );
+			return;
+		}
+
 		$lock_key = 'oba:auction:' . $auction_id;
 		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
 			OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'autobid_cron' ), $auction_id );
@@ -204,4 +211,3 @@ class OBA_Autobid_Service {
 		}
 	}
 }
-

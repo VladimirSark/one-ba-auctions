@@ -223,8 +223,8 @@
 		updateCreditPill(pointsBalance, state.data.membership_active);
 
 		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
-		const setup = $('.oba-autobid-setup');
-		if (setup.length) {
+		$('.oba-autobid-setup').each(function () {
+			const setup = $(this);
 			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
 			if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
 				setup.show();
@@ -235,7 +235,7 @@
 			} else {
 				setup.hide();
 			}
-		}
+		});
 	}
 
 	function updatePhaseCards(status) {
