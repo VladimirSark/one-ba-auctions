@@ -181,6 +181,22 @@ class OBA_Plugin {
 		$ids = $q->have_posts() ? $q->posts : array();
 		OBA_Audit_Log::log( 'autobid_check_candidates', array( 'count' => count( $ids ), 'ids' => $ids ), 0 );
 		foreach ( $ids as $auction_id ) {
+			$expires = get_post_meta( $auction_id, '_live_expires_at', true );
+			$seconds_left = 0;
+			if ( class_exists( 'OBA_Time' ) ) {
+				$ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $expires );
+				$seconds_left = $ts ? max( 0, $ts - time() ) : 0;
+			}
+			OBA_Audit_Log::log(
+				'autobid_check_tick',
+				array(
+					'auction_id'           => $auction_id,
+					'live_expires_at'      => $expires,
+					'live_expires_at_local'=> class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $expires ) : '',
+					'live_seconds_left'    => $seconds_left,
+				),
+				$auction_id
+			);
 			$service->maybe_run_autobids( $auction_id );
 		}
 	}

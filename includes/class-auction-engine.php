@@ -280,22 +280,16 @@ class OBA_Auction_Engine {
 			update_post_meta( $auction_id, '_oba_finalizing', current_time( 'mysql', 1 ) );
 
 			try {
-				$this->calculate_winner_and_resolve_credits( $auction_id, 'timer' );
+				$this->calculate_winner_and_resolve_credits(
+					$auction_id,
+					'timer',
+					array(
+						'caller'     => $caller,
+						'expires_at' => $meta['live_expires_at'],
+					)
+				);
 				update_post_meta( $auction_id, '_oba_ended_at', current_time( 'mysql', 1 ) );
 				update_post_meta( $auction_id, '_auction_status', 'ended' );
-				if ( class_exists( 'OBA_Audit_Log' ) ) {
-					OBA_Audit_Log::log(
-						'auction_end',
-						array(
-							'trigger'       => 'timer',
-							'auction_id'    => $auction_id,
-							'expires_at'    => $meta['live_expires_at'], // UTC (storage format).
-							'expires_at_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['live_expires_at'] ) : '',
-							'caller'        => $caller,
-						),
-						$auction_id
-					);
-				}
 			} finally {
 				delete_post_meta( $auction_id, '_oba_finalizing' );
 			}
@@ -304,7 +298,7 @@ class OBA_Auction_Engine {
 		}
 	}
 
-	public function calculate_winner_and_resolve_credits( $auction_id, $trigger = 'timer' ) {
+	public function calculate_winner_and_resolve_credits( $auction_id, $trigger = 'timer', $context = array() ) {
 		global $wpdb;
 
 		$existing_winner = $this->repo->get_winner_row( $auction_id );
@@ -338,9 +332,12 @@ class OBA_Auction_Engine {
 		if ( ! $last ) {
 			update_post_meta( $auction_id, '_auction_status', 'ended' );
 			OBA_Audit_Log::log(
-				'auction_end',
+				'auction_finalized',
 				array(
 					'trigger'                => $trigger,
+					'caller'                 => isset( $context['caller'] ) ? $context['caller'] : 'unknown',
+					'expires_at'             => isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'],
+					'expires_at_local'       => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'] ) : '',
 					'winner_id'              => 0,
 					'total_bids'             => 0,
 					'total_credits_consumed' => 0,
@@ -398,9 +395,12 @@ class OBA_Auction_Engine {
 		);
 
 		OBA_Audit_Log::log(
-			'auction_end',
+			'auction_finalized',
 			array(
 				'trigger'                => $trigger,
+				'caller'                 => isset( $context['caller'] ) ? $context['caller'] : 'unknown',
+				'expires_at'             => isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'],
+				'expires_at_local'       => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'] ) : '',
 				'winner_id'              => $winner_id,
 				'total_bids'             => $winner_totals['total_bids'],
 				'total_credits_consumed' => $winner_totals['total_credits'],

@@ -30,8 +30,8 @@ class OBA_Audit_Log {
 	public static function ended_logs( $limit = 200, $auction_id = 0 ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'auction_audit_log';
-		$sql   = "SELECT * FROM {$table} WHERE action = %s";
-		$args  = array( 'auction_end' );
+		$sql   = "SELECT * FROM {$table} WHERE action IN (%s, %s)";
+		$args  = array( 'auction_end', 'auction_finalized' );
 
 		if ( $auction_id ) {
 			$sql   .= ' AND auction_id = %d';
