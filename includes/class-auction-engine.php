@@ -65,6 +65,19 @@ class OBA_Auction_Engine {
 		if ( $count >= (int) $meta['required_participants'] ) {
 			update_post_meta( $auction_id, '_auction_status', 'pre_live' );
 			update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'stage_change',
+					array(
+						'auction_id' => $auction_id,
+						'from'       => 'registration',
+						'to'         => 'pre_live',
+						'reason'     => 'required_participants_reached',
+						'participants' => $count,
+					),
+					$auction_id
+				);
+			}
 			$this->notify_pre_live( $auction_id, $meta );
 		}
 	}
@@ -97,6 +110,17 @@ class OBA_Auction_Engine {
 			),
 			array( '%d', '%d', '%f', '%s' )
 		);
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'user_registered',
+				array(
+					'auction_id' => $auction_id,
+					'user_id'    => $user_id,
+					'fee'        => (float) $fee,
+				),
+				$auction_id
+			);
+		}
 		$this->maybe_start_pre_live( $auction_id );
 	}
 
@@ -120,6 +144,18 @@ class OBA_Auction_Engine {
 		if ( time() >= $deadline ) {
 			update_post_meta( $auction_id, '_auction_status', 'live' );
 			update_post_meta( $auction_id, '_live_expires_at', '' );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'stage_change',
+					array(
+						'auction_id' => $auction_id,
+						'from'       => 'pre_live',
+						'to'         => 'live',
+						'reason'     => 'pre_live_timer_elapsed',
+					),
+					$auction_id
+				);
+			}
 			$this->notify_live( $auction_id, $meta );
 		}
 	}

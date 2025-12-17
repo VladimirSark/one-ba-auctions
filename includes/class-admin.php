@@ -1022,13 +1022,17 @@ class OBA_Admin {
 		try {
 			switch ( $action ) {
 				case 'pre_live':
+					$prev = get_post_meta( $auction_id, '_auction_status', true );
 					update_post_meta( $auction_id, '_auction_status', 'pre_live' );
 					update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
+					OBA_Audit_Log::log( 'stage_change', array( 'auction_id' => $auction_id, 'from' => $prev, 'to' => 'pre_live', 'reason' => 'admin' ), $auction_id );
 					break;
 				case 'live':
+					$prev = get_post_meta( $auction_id, '_auction_status', true );
 					update_post_meta( $auction_id, '_auction_status', 'live' );
 					update_post_meta( $auction_id, '_live_expires_at', '' );
 					OBA_Audit_Log::log( 'start_live', array(), $auction_id );
+					OBA_Audit_Log::log( 'stage_change', array( 'auction_id' => $auction_id, 'from' => $prev, 'to' => 'live', 'reason' => 'admin' ), $auction_id );
 					break;
 				case 'force_end':
 					update_post_meta( $auction_id, '_auction_status', 'live' );
@@ -1797,6 +1801,23 @@ class OBA_Admin {
 				<a class="button" href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Edit auction product', 'one-ba-auctions' ); ?></a>
 			</p>
 
+			<?php
+			$settings_snapshot = array(
+				'auction_id'           => $auction_id,
+				'status'              => $meta['auction_status'],
+				'required_participants'=> (int) $meta['required_participants'],
+				'live_timer_seconds'   => (int) $meta['live_timer_seconds'],
+				'prelive_timer_seconds'=> (int) $meta['prelive_timer_seconds'],
+				'pre_live_start'       => $meta['pre_live_start'],
+				'live_expires_at'      => $meta['live_expires_at'],
+				'registration_points'  => (float) $meta['registration_points'],
+				'bid_product_id'       => (int) $meta['bid_product_id'],
+				'autobid_enabled_for_auction' => (bool) get_post_meta( $auction_id, '_oba_autobid_enabled', true ),
+			);
+			?>
+			<h2><?php esc_html_e( 'Auction settings snapshot (copy)', 'one-ba-auctions' ); ?></h2>
+			<textarea readonly style="width:100%;max-width:920px;height:140px;" onclick="this.select();"><?php echo esc_textarea( wp_json_encode( $settings_snapshot, JSON_PRETTY_PRINT ) ); ?></textarea>
+
 			<h2><?php esc_html_e( 'Actions', 'one-ba-auctions' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
 				<input type="hidden" name="action" value="oba_set_status" />
@@ -1895,8 +1916,23 @@ class OBA_Admin {
 				</tbody>
 			</table>
 
-			<?php $audit_entries = OBA_Audit_Log::latest_for_auction( $auction_id, 20 ); ?>
-			<h2><?php esc_html_e( 'Recent audit events (last 20)', 'one-ba-auctions' ); ?></h2>
+			<?php
+			$audit_entries = OBA_Audit_Log::all_for_auction( $auction_id, 200 );
+			$audit_export  = array();
+			foreach ( $audit_entries as $entry ) {
+				$user = $entry['actor_id'] ? get_user_by( 'id', $entry['actor_id'] ) : null;
+				$audit_export[] = array(
+					'time'    => $entry['created_at'],
+					'actor'   => $user ? $user->display_name : '-',
+					'action'  => $entry['action'],
+					'details' => is_serialized( $entry['details'] ) ? maybe_unserialize( $entry['details'] ) : $entry['details'],
+				);
+			}
+			?>
+			<h2><?php esc_html_e( 'Auction audit log (last 200)', 'one-ba-auctions' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Click inside to select and copy.', 'one-ba-auctions' ); ?></p>
+			<textarea readonly style="width:100%;max-width:920px;height:220px;" onclick="this.select();"><?php echo esc_textarea( wp_json_encode( $audit_export, JSON_PRETTY_PRINT ) ); ?></textarea>
+			<h3 style="margin-top:18px;"><?php esc_html_e( 'Table view', 'one-ba-auctions' ); ?></h3>
 			<table class="widefat fixed striped">
 				<thead>
 					<tr>

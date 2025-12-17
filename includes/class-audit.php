@@ -56,4 +56,8 @@ class OBA_Audit_Log {
 			ARRAY_A
 		);
 	}
+
+	public static function all_for_auction( $auction_id, $limit = 500 ) {
+		return self::latest_for_auction( $auction_id, $limit );
+	}
 }
