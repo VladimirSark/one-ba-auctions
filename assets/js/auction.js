@@ -519,7 +519,9 @@
 
 	$(document).on('click', '.oba-autobid-enable', function (e) {
 		e.preventDefault();
-		const maxBids = parseInt($('.oba-autobid-max').val(), 10) || 0;
+		// Use the input closest to this button to avoid grabbing an empty field from another stage block.
+		const maxInput = $(this).closest('.oba-autobid-setup').find('.oba-autobid-max');
+		const maxBids = parseInt(maxInput.val(), 10) || 0;
 		$.post(
 			obaAuction.ajax_url,
 			{
