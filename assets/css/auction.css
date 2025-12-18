@@ -371,17 +371,6 @@
 	border-radius: 10px;
 }
 
-@media (min-width: 900px) {
-	.oba-legend {
-		grid-template-columns: repeat(2, 1fr);
-		grid-auto-flow: row dense;
-	}
-	.oba-legend .oba-card:nth-child(1) { order: 1; }
-	.oba-legend .oba-card:nth-child(2) { order: 2; }
-	.oba-legend .oba-card:nth-child(3) { order: 3; }
-	.oba-legend .oba-card:nth-child(4) { order: 4; }
-}
-
 .oba-legend .oba-card {
 	padding: 12px;
 }
