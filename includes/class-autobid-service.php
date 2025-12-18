@@ -210,5 +210,60 @@ class OBA_Autobid_Service {
 		} finally {
 			OBA_Lock::release( $lock_key );
 		}
+
+		$this->maybe_send_reminders( $auction_id, $meta );
+	}
+
+	private function maybe_send_reminders( $auction_id, $meta ) {
+		if ( ! class_exists( 'OBA_Email' ) ) {
+			return;
+		}
+		// Compute live start (approx): pre_live_start + prelive_timer_seconds.
+		$live_start = 0;
+		if ( ! empty( $meta['pre_live_start'] ) && isset( $meta['prelive_timer_seconds'] ) ) {
+			$start_ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $meta['pre_live_start'] );
+			if ( $start_ts ) {
+				$live_start = $start_ts + (int) $meta['prelive_timer_seconds'];
+			}
+		}
+		if ( ! $live_start || time() < $live_start ) {
+			return;
+		}
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'auction_autobid';
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT user_id, max_bids FROM {$table} WHERE auction_id = %d AND enabled = 1",
+				$auction_id
+			),
+			ARRAY_A
+		);
+		if ( empty( $rows ) ) {
+			return;
+		}
+
+		$mailer = new OBA_Email();
+		foreach ( $rows as $row ) {
+			$user_id = (int) $row['user_id'];
+			// Rate limit: once every 10 minutes per user+auction.
+			$key           = '_oba_autobid_reminder_' . $auction_id;
+			$last_reminded = (int) get_user_meta( $user_id, $key, true );
+			if ( $last_reminded && ( time() - $last_reminded ) < MINUTE_IN_SECONDS * 10 ) {
+				continue;
+			}
+
+			$used = $this->repo->get_user_bids( $auction_id, $user_id );
+
+			$mailer->notify_autobid_on_reminder(
+				$user_id,
+				$auction_id,
+				array(
+					'autobid_max_bids'  => (int) $row['max_bids'],
+					'autobid_bids_used' => (int) $used,
+				)
+			);
+			update_user_meta( $user_id, $key, time() );
+		}
 	}
 }
