@@ -357,6 +357,17 @@ class OBA_Auction_Engine {
 		$winners_table = $wpdb->prefix . 'auction_winners';
 
 		$totals = $this->repo->get_bid_totals_by_user( $auction_id );
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'auction_finalize_totals',
+				array(
+					'auction_id' => $auction_id,
+					'totals'     => $totals,
+					'context'    => $context,
+				),
+				$auction_id
+			);
+		}
 		$winner_totals = array(
 			'total_bids'    => 0,
 			'total_credits' => 0,
