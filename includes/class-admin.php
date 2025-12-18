@@ -2438,5 +2438,30 @@ class OBA_Admin {
 				WP_CLI\Utils\format_items( 'table', $rows, array( 'id', 'user_id', 'amount', 'balance_after', 'reason', 'reference_id', 'created_at' ) );
 			}
 		);
+
+		// Per-second/autonomous tick helper: runs autobids + expiry once.
+		WP_CLI::add_command(
+			'oba tick',
+			function ( $args, $assoc_args ) {
+				$engine  = new OBA_Auction_Engine();
+				$service = new OBA_Autobid_Service();
+				$plugin  = new OBA_Plugin();
+
+				$auction_id = isset( $assoc_args['auction'] ) ? (int) $assoc_args['auction'] : 0;
+
+				if ( $auction_id ) {
+					if ( $service->is_globally_enabled() && $service->is_enabled_for_auction( $auction_id ) ) {
+						$service->maybe_run_autobids( $auction_id );
+					}
+					$engine->end_auction_if_expired( $auction_id, 'wpcli_tick_single' );
+					WP_CLI::success( "Tick processed for auction {$auction_id}." );
+					return;
+				}
+
+				$plugin->run_autobid_check();
+				$plugin->check_expired_auctions();
+				WP_CLI::success( 'Tick processed for all live auctions.' );
+			}
+		);
 	}
 }
