@@ -1122,6 +1122,7 @@ class OBA_Admin {
 				'autobid_enabled'         => isset( $_POST['autobid_enabled'] ),
 				'autobid_window_seconds'  => isset( $_POST['autobid_window_seconds'] ) ? wp_unslash( $_POST['autobid_window_seconds'] ) : null,
 				'autobid_activation_cost_points' => isset( $_POST['autobid_activation_cost_points'] ) ? wp_unslash( $_POST['autobid_activation_cost_points'] ) : null,
+				'autobid_reminder_minutes'=> isset( $_POST['autobid_reminder_minutes'] ) ? wp_unslash( $_POST['autobid_reminder_minutes'] ) : null,
 			)
 		);
 
@@ -1455,9 +1456,19 @@ class OBA_Admin {
 		}
 		$auction_id     = isset( $_POST['auction_id'] ) ? absint( $_POST['auction_id'] ) : 0;
 		$winner_user_id = isset( $_POST['winner_user_id'] ) ? absint( $_POST['winner_user_id'] ) : 0;
+		$use_last_bidder = isset( $_POST['use_last_bidder'] ) ? (bool) $_POST['use_last_bidder'] : false;
 		check_admin_referer( 'oba_manual_winner_' . $auction_id );
 
-		if ( ! $auction_id || ! $winner_user_id ) {
+		if ( ! $auction_id ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&error=1' ) );
+			exit;
+		}
+
+		if ( $use_last_bidder ) {
+			$winner_user_id = $this->repo->get_current_winner( $auction_id );
+		}
+
+		if ( ! $winner_user_id ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&error=1' ) );
 			exit;
 		}
@@ -1850,6 +1861,10 @@ class OBA_Admin {
 				<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
 				<?php wp_nonce_field( 'oba_manual_winner_' . $auction_id ); ?>
 				<input type="number" name="winner_user_id" placeholder="<?php esc_attr_e( 'User ID', 'one-ba-auctions' ); ?>" />
+				<label style="margin-left:8px;">
+					<input type="checkbox" name="use_last_bidder" value="1" />
+					<?php esc_html_e( 'Use last bidder', 'one-ba-auctions' ); ?>
+				</label>
 				<button class="button"><?php esc_html_e( 'Set manual winner', 'one-ba-auctions' ); ?></button>
 			</form>
 
