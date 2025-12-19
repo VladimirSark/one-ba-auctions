@@ -911,6 +911,13 @@ class OBA_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Autobid reminder interval (minutes)', 'one-ba-auctions' ); ?></th>
+						<td>
+							<input type="number" name="autobid_reminder_minutes" min="1" step="1" value="<?php echo esc_attr( $settings['autobid_reminder_minutes'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'How often to email users that their autobid is ON (includes bids placed so far).', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Point value', 'one-ba-auctions' ); ?></th>
 						<td>
 							<input type="text" name="points_value" value="<?php echo esc_attr( $settings['points_value'] ); ?>" placeholder="<?php esc_attr_e( '1.00', 'one-ba-auctions' ); ?>" />

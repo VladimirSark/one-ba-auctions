@@ -240,12 +240,13 @@ class OBA_Autobid_Service {
 		}
 
 		$mailer = new OBA_Email();
+		$interval = isset( $this->settings['autobid_reminder_minutes'] ) ? max( 1, (int) $this->settings['autobid_reminder_minutes'] ) : 10;
 		foreach ( $rows as $row ) {
 			$user_id = (int) $row['user_id'];
 			// Rate limit: once every 10 minutes per user+auction.
 			$key           = '_oba_autobid_reminder_' . $auction_id;
 			$last_reminded = (int) get_user_meta( $user_id, $key, true );
-			if ( $last_reminded && ( time() - $last_reminded ) < MINUTE_IN_SECONDS * 10 ) {
+			if ( $last_reminded && ( time() - $last_reminded ) < MINUTE_IN_SECONDS * $interval ) {
 				continue;
 			}
 

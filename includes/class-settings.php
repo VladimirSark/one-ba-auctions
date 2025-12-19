@@ -24,6 +24,7 @@ class OBA_Settings {
 			'autobid_enabled'         => true,
 			'autobid_window_seconds'  => 300,
 			'autobid_activation_cost_points' => 5,
+			'autobid_reminder_minutes'=> 10,
 			'translations'            => array(),
 			'email_templates'         => array(),
 		);
@@ -54,6 +55,7 @@ class OBA_Settings {
 			'autobid_enabled'         => isset( $data['autobid_enabled'] ) ? (bool) $data['autobid_enabled'] : $defaults['autobid_enabled'],
 			'autobid_window_seconds'  => isset( $data['autobid_window_seconds'] ) ? max( 30, (int) $data['autobid_window_seconds'] ) : $defaults['autobid_window_seconds'],
 			'autobid_activation_cost_points' => isset( $data['autobid_activation_cost_points'] ) ? max( 0, (int) $data['autobid_activation_cost_points'] ) : $defaults['autobid_activation_cost_points'],
+			'autobid_reminder_minutes'=> isset( $data['autobid_reminder_minutes'] ) ? max( 1, (int) $data['autobid_reminder_minutes'] ) : $defaults['autobid_reminder_minutes'],
 			'translations'            => isset( $data['translations'] ) && is_array( $data['translations'] ) ? array_map( 'sanitize_text_field', $data['translations'] ) : ( isset( $stored['translations'] ) ? $stored['translations'] : array() ),
 			'email_templates'         => isset( $data['email_templates'] ) && is_array( $data['email_templates'] ) ? self::sanitize_email_templates( $data['email_templates'] ) : ( isset( $stored['email_templates'] ) ? $stored['email_templates'] : array() ),
 		);
