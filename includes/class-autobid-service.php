@@ -137,6 +137,13 @@ class OBA_Autobid_Service {
 			return;
 		}
 
+		// If timer already hit zero, finalize instead of looping autobid attempts.
+		$expires_ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $meta['live_expires_at'] );
+		if ( $expires_ts && $expires_ts <= time() ) {
+			$this->engine->end_auction_if_expired( $auction_id, 'autobid_check' );
+			return;
+		}
+
 		// With 1-minute cron, the live timer must be at least 60 seconds to allow repeated autobids.
 		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : 0;
 		if ( $timer_seconds && $timer_seconds < 60 ) {
