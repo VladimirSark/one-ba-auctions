@@ -266,8 +266,24 @@ class OBA_Auction_Engine {
 		try {
 			$meta = $this->repo->get_auction_meta( $auction_id );
 
-			$already_ended = ( 'ended' === $meta['auction_status'] ) || get_post_meta( $auction_id, '_oba_ended_at', true );
+			$ended_at = get_post_meta( $auction_id, '_oba_ended_at', true );
+			$already_ended = ( 'ended' === $meta['auction_status'] ) || $ended_at;
 			if ( $already_ended ) {
+				// Self-heal in case status is stale but ended_at exists.
+				if ( $ended_at && 'ended' !== $meta['auction_status'] ) {
+					update_post_meta( $auction_id, '_auction_status', 'ended' );
+					if ( class_exists( 'OBA_Audit_Log' ) ) {
+						OBA_Audit_Log::log(
+							'auction_status_synced',
+							array(
+								'auction_id' => $auction_id,
+								'caller'     => $caller,
+								'ended_at'   => $ended_at,
+							),
+							$auction_id
+						);
+					}
+				}
 				return;
 			}
 

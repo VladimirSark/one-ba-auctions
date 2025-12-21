@@ -172,10 +172,15 @@ class OBA_Autobid_Service {
 			}
 
 			$candidates     = array();
+			$current_winner = $this->repo->get_current_winner( $auction_id );
 
 			foreach ( $rows as $row ) {
 				$user_id = (int) $row['user_id'];
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
+					continue;
+				}
+				// Skip current winner to avoid endless already_leading loops; expiry check will finalize when timer hits 0.
+				if ( $current_winner && (int) $current_winner === $user_id ) {
 					continue;
 				}
 				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
