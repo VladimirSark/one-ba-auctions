@@ -185,7 +185,8 @@ class OBA_Auction_Engine {
 		}
 
 		$current_winner = $this->repo->get_current_winner( $auction_id );
-		if ( $current_winner && (int) $current_winner === (int) $user_id ) {
+		// Manual bids cannot outbid yourself; autobids may place even if currently winning (for round-robin fairness).
+		if ( ! $is_autobid && $current_winner && (int) $current_winner === (int) $user_id ) {
 			return new WP_Error( 'already_leading', __( 'You are already the leading bidder.', 'one-ba-auctions' ) );
 		}
 

@@ -179,10 +179,6 @@ class OBA_Autobid_Service {
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 					continue;
 				}
-				// Skip current winner to avoid endless already_leading loops; expiry check will finalize when timer hits 0.
-				if ( $current_winner && (int) $current_winner === $user_id ) {
-					continue;
-				}
 				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
 				if ( $bids >= (int) $row['max_bids'] ) {
 					continue;
@@ -191,6 +187,19 @@ class OBA_Autobid_Service {
 			}
 
 			if ( empty( $candidates ) ) {
+				return;
+			}
+
+			// If only the current winner remains, let the timer expire (do not self-bid forever).
+			if ( 1 === count( $candidates ) && $current_winner && (int) $current_winner === (int) $candidates[0] ) {
+				OBA_Audit_Log::log(
+					'autobid_skip_only_leader',
+					array(
+						'auction_id' => $auction_id,
+						'user_id'    => $current_winner,
+					),
+					$auction_id
+				);
 				return;
 			}
 
