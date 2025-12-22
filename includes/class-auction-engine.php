@@ -156,7 +156,8 @@ class OBA_Auction_Engine {
 
 		if ( time() >= $deadline ) {
 			update_post_meta( $auction_id, '_auction_status', 'live' );
-			update_post_meta( $auction_id, '_live_expires_at', '' );
+			// Start live timer immediately so cron/autobid have a valid expiry.
+			$this->reset_live_timer( $auction_id, $meta );
 			if ( class_exists( 'OBA_Audit_Log' ) ) {
 				OBA_Audit_Log::log(
 					'stage_change',
@@ -347,25 +348,18 @@ class OBA_Auction_Engine {
 		);
 
 		if ( ! $last ) {
-			update_post_meta( $auction_id, '_auction_status', 'ended' );
-			OBA_Audit_Log::log(
-				'auction_finalized',
-				array(
-					'trigger'                => $trigger,
-					'caller'                 => isset( $context['caller'] ) ? $context['caller'] : 'unknown',
-					'expires_at'             => isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'],
-					'expires_at_local'       => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'] ) : '',
-					'winner_id'              => 0,
-					'total_bids'             => 0,
-					'total_credits_consumed' => 0,
-					'refund_total'           => 0,
-					'claim_price'            => isset( $meta['claim_price_credits'] ) ? (float) $meta['claim_price_credits'] : 0,
-					'last_bid_user_id'       => null,
-					'last_bid_amount'        => 0,
-					'last_bid_time'          => null,
-				),
-				$auction_id
-			);
+			// No bids yet: keep auction live and restart timer instead of ending without a winner.
+			$this->reset_live_timer( $auction_id, $meta );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'live_restart_no_bids',
+					array(
+						'auction_id' => $auction_id,
+						'caller'     => isset( $context['caller'] ) ? $context['caller'] : $trigger,
+					),
+					$auction_id
+				);
+			}
 			return;
 		}
 

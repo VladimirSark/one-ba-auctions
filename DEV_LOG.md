@@ -2,6 +2,18 @@
 
 # Developer Log
 
+## 2025-12-21 — Autobid spend-based config & fairness tweaks
+- **Summary:** Autobid setup now takes a spend amount (converted to max bids via bid cost) and shows “€X = N bids” in UI; editing while enabled no longer recharges points. Autobid auto-disables when max is consumed (users can re-enable with new spend). Autobids may place even if currently leading; if only the leading autobidder remains, autobid stops so the timer can expire. Backend returns `autobid_max_spend` in state/AJAX.
+- **Why:** Make configuration clearer in currency terms, ensure bids distribute across autobidders, and prevent infinite self-bidding while still ending auctions.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `includes/class-auction-engine.php`, `assets/js/auction.js`.
+- **How to test:** Set bid price > 0; open auction, enter spend (e.g., €5 at €0.5/bid → 10 bids). Enable autobid, observe inline calculation. Let bids consume max; autobid should disable automatically and allow reconfigure. Run live auction with multiple autobidders and confirm round-robin bids place even when a user is leading, and auction ends when only the leader remains.
+
+## 2025-12-19 — Autobid reminders, hardening, and stuck-live fallback
+- **Summary:** Added configurable autobid reminder interval (minutes) with reminder email (`autobid_on_reminder`); reminders rate-limited per user/auction. Autobid check now skips current winner “already_leading” spam but finalizes if timer hit zero; `run_autobid_check` falls back to resolve winner if status stays live at 0s; added CLI `wp oba tick` to trigger autobid/expiry. Added self-heal to sync status to ended when `_oba_ended_at` exists.
+- **Why:** Improve reliability when cron/polling is sparse and keep users informed about active autobid usage.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-plugin.php`, `includes/class-email.php`, `includes/class-settings.php`, `includes/class-admin.php`, `includes/class-auction-engine.php`, `assets/js/auction.js`.
+- **How to test:** Set reminder minutes in settings; enable autobid before live, let cron run—check reminder emails show current bids/max. Force auctions to expiry with no clients; ensure `autobid_check_tick` or `wp oba tick` ends auction and logs `auction_finalized`/`auction_finalized_fallback`.
+
 ## 2025-12-12 — Autobid time-window with points cost & UI polish
 - **Summary:** Autobid can be armed in registration/pre-live/live (blocked after ended); enabling charges a points cost and starts a window that begins at live; auto-disables when window expires; manual bids disabled while on; non-registered users cannot toggle after registration closes; history marks autobids; duplicate controls removed and status pill highlighted.
 - **Why:** Prevent last-moment lockout for final registrants, monetize autobid activation, and clarify status.

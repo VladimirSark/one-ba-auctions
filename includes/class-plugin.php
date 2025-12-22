@@ -198,12 +198,28 @@ class OBA_Plugin {
 				$auction_id
 			);
 			if ( 0 === $seconds_left ) {
-				// Force finalize if timer elapsed. If still live after attempt, run a fallback finalize.
+				// If expiry missing, try to initialize timer once; otherwise finalize.
 				$engine = new OBA_Auction_Engine();
+				if ( empty( $expires ) ) {
+					$meta = ( new OBA_Auction_Repository() )->get_auction_meta( $auction_id );
+					$engine->reset_live_timer( $auction_id, $meta );
+					$expires = get_post_meta( $auction_id, '_live_expires_at', true );
+					if ( $expires ) {
+						OBA_Audit_Log::log(
+							'autobid_started_live_timer',
+							array(
+								'auction_id' => $auction_id,
+								'expires_at' => $expires,
+							),
+							$auction_id
+						);
+						continue;
+					}
+				}
+				// Force finalize if timer elapsed or still missing after attempt.
 				$engine->end_auction_if_expired( $auction_id, 'autobid_cron_pre' );
 				$meta_after = get_post_meta( $auction_id, '_auction_status', true );
 				if ( 'live' === $meta_after ) {
-					$meta_full = ( new OBA_Auction_Repository() )->get_auction_meta( $auction_id );
 					$engine->calculate_winner_and_resolve_credits(
 						$auction_id,
 						'fallback',
