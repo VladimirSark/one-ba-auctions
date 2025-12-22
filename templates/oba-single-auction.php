@@ -61,11 +61,6 @@ $stage_tips = array(
 	.oba-autobid-card .oba-autobid-toggle-btn {
 		width: 140px;
 	}
-	.oba-autobid-card .oba-autobid-status {
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 4px;
-	}
 	@media (max-width: 600px) {
 		.oba-autobid-card {
 			flex-direction: column;
