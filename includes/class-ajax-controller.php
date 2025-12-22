@@ -170,18 +170,32 @@ class OBA_Ajax_Controller {
 			wp_send_json_error( array( 'code' => 'not_registered', 'message' => __( 'You must register before enabling autobid.', 'one-ba-auctions' ) ) );
 		}
 
-		$enable   = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
-		$max_bids = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
+		$enable    = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
+		$max_bids  = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
+		$max_spend = isset( $_POST['max_spend'] ) ? (float) $_POST['max_spend'] : 0;
+		$current   = $service->get_user_settings( $auction_id, $user_id );
+
+		// Convert spend -> bids if provided.
+		if ( $enable && $max_spend > 0 ) {
+			$bid_cost = $this->get_bid_fee_amount( $meta );
+			if ( $bid_cost <= 0 ) {
+				wp_send_json_error( array( 'code' => 'invalid_bid_cost', 'message' => __( 'Bid price is not set.', 'one-ba-auctions' ) ) );
+			}
+			$max_bids = (int) floor( $max_spend / $bid_cost );
+		}
 
 		if ( $enable ) {
 			if ( $max_bids < 1 ) {
 				wp_send_json_error( array( 'code' => 'invalid_max_bids', 'message' => __( 'Please set max autobids (1 or more).', 'one-ba-auctions' ) ) );
 			}
-			if ( ! $service->can_user_pay( $user_id ) ) {
-				wp_send_json_error( array( 'code' => 'NOT_ENOUGH_POINTS', 'message' => __( 'Not enough points to enable autobid.', 'one-ba-auctions' ) ) );
-			}
-			if ( ! $service->charge_user( $user_id ) ) {
-				wp_send_json_error( array( 'code' => 'CHARGE_FAILED', 'message' => __( 'Could not charge points for autobid.', 'one-ba-auctions' ) ) );
+			// Charge only when toggling from off -> on.
+			if ( empty( $current['enabled'] ) ) {
+				if ( ! $service->can_user_pay( $user_id ) ) {
+					wp_send_json_error( array( 'code' => 'NOT_ENOUGH_POINTS', 'message' => __( 'Not enough points to enable autobid.', 'one-ba-auctions' ) ) );
+				}
+				if ( ! $service->charge_user( $user_id ) ) {
+					wp_send_json_error( array( 'code' => 'CHARGE_FAILED', 'message' => __( 'Could not charge points for autobid.', 'one-ba-auctions' ) ) );
+				}
 			}
 		}
 
@@ -201,6 +215,7 @@ class OBA_Ajax_Controller {
 			array(
 				'autobid_enabled' => (bool) $settings['enabled'],
 				'autobid_max_bids'=> (int) $settings['max_bids'],
+				'autobid_max_spend'=> isset( $settings['max_spend'] ) ? (float) $settings['max_spend'] : ( (int) $settings['max_bids'] * $this->get_bid_fee_amount( $meta ) ),
 				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
 			)
 		);
@@ -372,6 +387,7 @@ class OBA_Ajax_Controller {
 			'autobid_allowed_for_auction' => $autobid_allowed,
 			'autobid_enabled'             => $autobid_allowed ? (bool) $autobid_user['enabled'] : false,
 			'autobid_max_bids'            => $autobid_allowed ? (int) $autobid_user['max_bids'] : 0,
+			'autobid_max_spend'           => $autobid_allowed ? ( (int) $autobid_user['max_bids'] * $bid_fee_amount ) : 0,
 		);
 	}
 

@@ -229,7 +229,10 @@
 		if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
 			setup.show();
 			const enabled = !!state.data.autobid_enabled;
-			setup.find('.oba-autobid-state').text(enabled ? `ON (max ${state.data.autobid_max_bids || ''})` : 'OFF');
+			const labelVal = state.data.autobid_max_spend
+				? formatMoney(state.data.autobid_max_spend)
+				: `${state.data.autobid_max_bids || ''} bids`;
+			setup.find('.oba-autobid-state').text(enabled ? `ON (max ${labelVal})` : 'OFF');
 			setup.find('.oba-autobid-enable').prop('disabled', enabled);
 			setup.find('.oba-autobid-disable').prop('disabled', !enabled);
 			renderInlineAutobidTotal(setup);
@@ -522,7 +525,9 @@ $(document).on('click', '.oba-autobid-enable', function (e) {
 	e.preventDefault();
 	// Use the input closest to this button to avoid grabbing an empty field from another stage block.
 	const maxInput = $(this).closest('.oba-autobid-setup').find('.oba-autobid-max');
-	const maxBids = parseInt(maxInput.val(), 10) || 0;
+	const bidCost = Number(state.data?.bid_cost || 0);
+	const spend = parseFloat(maxInput.val()) || 0;
+	const maxBids = bidCost ? Math.floor(spend / bidCost) : 0;
 	const cost = obaAuction.autobid_cost_points || 0;
 	const message = obaAuction.i18n?.autobid_confirm
 		|| `Autobid will charge ${cost} points. Proceed?`;
@@ -532,17 +537,19 @@ $(document).on('click', '.oba-autobid-enable', function (e) {
 	}
 	$.post(
 		obaAuction.ajax_url,
-		{
-			action: 'auction_toggle_autobid',
-			auction_id: obaAuction.auction_id,
+			{
+				action: 'auction_toggle_autobid',
+				auction_id: obaAuction.auction_id,
 				nonce: obaAuction.nonce,
 				enable: 1,
 				max_bids: maxBids,
+				max_spend: spend,
 			},
 			(response) => {
 				if (response && response.success) {
 					state.data.autobid_enabled = response.data.autobid_enabled;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
+					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.user_points_balance = response.data.user_points_balance;
 					showToast('Autobid enabled');
 					render();
@@ -721,30 +728,21 @@ function renderInlineAutobidTotal($block) {
 	const totalEl = $block.find('.oba-autobid-total-inline');
 	if (!input.length || !totalEl.length) return;
 
-	const rawCount = parseInt(input.val(), 10);
-	const count = Number.isFinite(rawCount) && rawCount > 0 ? rawCount : (state.data?.autobid_max_bids || 1);
 	const bidCost = Number(state.data?.bid_cost || 0);
 	if (!bidCost) {
 		totalEl.text('');
 		return;
 	}
-	const total = count * bidCost;
-	totalEl.text(`${count} × ${formatMoney(bidCost)} = ${formatMoney(total || bidCost)}`);
-}
-function renderInlineAutobidTotal($block) {
-	const input = $block.find('.oba-autobid-max');
-	const totalEl = $block.find('.oba-autobid-total-inline');
-	if (!input.length || !totalEl.length) return;
 
-	const rawCount = parseInt(input.val(), 10);
-	const count = Number.isFinite(rawCount) && rawCount > 0 ? rawCount : (state.data?.autobid_max_bids || 1);
-	const bidCost = Number(state.data?.bid_cost || 0);
-	if (!bidCost) {
+	const rawAmount = parseFloat(input.val());
+	const fallbackAmount = Number(state.data?.autobid_max_spend || 0) || Number(state.data?.autobid_max_bids || 0) * bidCost;
+	const amount = Number.isFinite(rawAmount) && rawAmount > 0 ? rawAmount : fallbackAmount;
+	const count = Math.max(0, Math.floor(amount / bidCost));
+	if (!amount || !count) {
 		totalEl.text('');
 		return;
 	}
-	const total = count * bidCost;
-	totalEl.text(`${count} × ${formatMoney(bidCost)} = ${formatMoney(total || bidCost)}`);
+	totalEl.text(`${formatMoney(amount)} = ${count} bids`);
 }
 
 function toggleAutobid(enable) {
@@ -757,15 +755,25 @@ function toggleAutobid(enable) {
 			return;
 		}
 	}
-		let maxBids = parseInt($('#oba-autobid-max-amount').val(), 10);
-		if (!Number.isFinite(maxBids) || maxBids < 1) {
-			maxBids = state.data.autobid_max_bids || 1;
+		const bidCost = Number(state.data?.bid_cost || 0);
+		let spend = parseFloat($('#oba-autobid-max-amount').val());
+		if (!Number.isFinite(spend) || spend <= 0) {
+			spend = state.data.autobid_max_spend || (state.data.autobid_max_bids || 1) * bidCost;
+		}
+		if (!bidCost || !Number.isFinite(spend) || spend <= 0) {
+			showToast(obaAuction.i18n?.autobid_error || 'Please enter a valid amount', true);
+			return;
+		}
+		let maxBids = Math.floor(spend / bidCost);
+		if (maxBids < 1) {
+			showToast(obaAuction.i18n?.autobid_error || 'Please enter a higher amount', true);
+			return;
 		}
 		const limitless = $('#oba-autobid-limitless').is(':checked');
 		if (limitless) {
 			maxBids = 0;
 		}
-		$('#oba-autobid-max-amount').val(maxBids).data('dirty', true);
+		$('#oba-autobid-max-amount').val(spend).data('dirty', true);
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -774,6 +782,7 @@ function toggleAutobid(enable) {
 				nonce: obaAuction.nonce,
 				enable: enable ? 1 : 0,
 				max_bids: maxBids,
+				max_spend: spend,
 				limitless: limitless ? 1 : 0,
 			},
 			(response) => {
@@ -810,7 +819,9 @@ function toggleAutobid(enable) {
 		const maxInput = $('#oba-autobid-max-amount');
 		if (maxInput.length) {
 			maxInput.data('dirty', false);
-			const val = state.data?.autobid_max_bids || 1;
+			const bidCost = Number(state.data?.bid_cost || 0);
+			const val = state.data?.autobid_max_spend
+				|| ((state.data?.autobid_max_bids || 1) * bidCost);
 			maxInput.val(val);
 			maxInput.trigger('input');
 		}
@@ -851,16 +862,20 @@ $(document).on('input change', '.oba-autobid-max', function () {
 });
 
 $(document).on('input change', '#oba-autobid-max-amount', function () {
-	const count = parseInt($(this).val(), 10) || 0;
-	const total = count * Number(state.data?.bid_cost || 0);
+	const amount = parseFloat($(this).val()) || 0;
+	const bidCost = Number(state.data?.bid_cost || 0);
+	const count = bidCost ? Math.floor(amount / bidCost) : 0;
+	const total = count * bidCost;
 	const totalEl = $('.oba-autobid-total-modal');
 	$(this).data('dirty', true);
-		if (totalEl.length) {
-			const appliedCount = count || 1;
-			const appliedTotal = appliedCount * Number(state.data?.bid_cost || 0);
-			totalEl.text(count ? `${count} × ${formatMoney(state.data.bid_cost)} = ${formatMoney(total)}` : `${formatMoney(appliedTotal)}`);
+	if (totalEl.length) {
+		if (!bidCost || !amount || !count) {
+			totalEl.text('');
+		} else {
+			totalEl.text(`${formatMoney(amount)} = ${count} bids`);
 		}
-	});
+	}
+});
 
 	$(document).on('change', '#oba-autobid-limitless', function () {
 		const checked = $(this).is(':checked');
@@ -870,7 +885,10 @@ $(document).on('input change', '#oba-autobid-max-amount', function () {
 		} else {
 			input.prop('disabled', false);
 			if (!input.val()) {
-				input.val(state.data?.autobid_max_bids || 1);
+				const bidCost = Number(state.data?.bid_cost || 0);
+				const fallback = state.data?.autobid_max_spend
+					|| ((state.data?.autobid_max_bids || 1) * bidCost);
+				input.val(fallback || '');
 			}
 		}
 		updateAutobidUI();

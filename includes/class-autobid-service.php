@@ -23,6 +23,18 @@ class OBA_Autobid_Service {
 		$this->points   = new OBA_Points_Service();
 		$this->settings = OBA_Settings::get_settings();
 	}
+	
+	private function get_bid_cost( $auction_id ) {
+		$meta = $this->repo->get_auction_meta( $auction_id );
+		if ( empty( $meta['bid_product_id'] ) ) {
+			return 0;
+		}
+		$product = function_exists( 'wc_get_product' ) ? wc_get_product( $meta['bid_product_id'] ) : null;
+		if ( $product && '' !== $product->get_price() ) {
+			return (float) $product->get_price();
+		}
+		return 0;
+	}
 
 	public function is_globally_enabled() {
 		return ! empty( $this->settings['autobid_enabled'] );
@@ -64,17 +76,20 @@ class OBA_Autobid_Service {
 			),
 			ARRAY_A
 		);
+		$bid_cost = $this->get_bid_cost( $auction_id );
 		if ( ! $row ) {
 			return array(
-				'enabled'   => 0,
-				'max_bids'  => 0,
-				'enabled_at'=> null,
+				'enabled'    => 0,
+				'max_bids'   => 0,
+				'enabled_at' => null,
+				'max_spend'  => 0,
 			);
 		}
 		return array(
 			'enabled'    => (int) $row['enabled'],
 			'max_bids'   => (int) $row['max_bids'],
 			'enabled_at' => $row['enabled_at'],
+			'max_spend'  => $bid_cost ? (float) $row['max_bids'] * (float) $bid_cost : 0,
 		);
 	}
 
@@ -181,6 +196,27 @@ class OBA_Autobid_Service {
 				}
 				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
 				if ( $bids >= (int) $row['max_bids'] ) {
+					// Auto-disable when quota is reached so user can reconfigure.
+					$wpdb->update(
+						$table,
+						array( 'enabled' => 0 ),
+						array(
+							'auction_id' => $auction_id,
+							'user_id'    => $user_id,
+						),
+						array( '%d' ),
+						array( '%d', '%d' )
+					);
+					OBA_Audit_Log::log(
+						'autobid_max_reached',
+						array(
+							'auction_id' => $auction_id,
+							'user_id'    => $user_id,
+							'bids'       => $bids,
+							'max_bids'   => (int) $row['max_bids'],
+						),
+						$auction_id
+					);
 					continue;
 				}
 				$candidates[] = $user_id;
