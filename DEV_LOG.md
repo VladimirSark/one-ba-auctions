@@ -2,6 +2,11 @@
 
 # Developer Log
 
+## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish
+- **Summary:** Live timer now starts when entering live (no empty `_live_expires_at`); autobid cron will initialize a missing expiry once before finalizing. If a live auction hits expiry with zero bids, the live timer is restarted instead of ending without a winner. Autobid card UI simplified to a 3-column layout with a single toggle button (Enable/Disable) and a clear “Autobid set to” value display, aligned with other cards.
+- **Files/Classes:** `includes/class-auction-engine.php`, `includes/class-plugin.php`, `templates/oba-single-auction.php`, `assets/js/auction.js`.
+- **How to test:** Start auction → confirm live timer populated immediately; let live expire with no bids → timer restarts (logs `live_restart_no_bids`), auction stays live. Remove `_live_expires_at` and run autobid cron → it sets expiry once, otherwise finalizes. In UI, check autobid card shows amount/bid calc on left, single toggle in center, and “Autobid set to” value on right.
+
 ## 2025-12-21 — Autobid spend-based config & fairness tweaks
 - **Summary:** Autobid setup now takes a spend amount (converted to max bids via bid cost) and shows “€X = N bids” in UI; editing while enabled no longer recharges points. Autobid auto-disables when max is consumed (users can re-enable with new spend). Autobids may place even if currently leading; if only the leading autobidder remains, autobid stops so the timer can expire. Backend returns `autobid_max_spend` in state/AJAX.
 - **Why:** Make configuration clearer in currency terms, ensure bids distribute across autobidders, and prevent infinite self-bidding while still ending auctions.
