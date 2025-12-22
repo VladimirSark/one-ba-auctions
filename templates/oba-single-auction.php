@@ -119,7 +119,7 @@ $stage_tips = array(
 					</div>
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-card" style="padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:center;">
-							<div style="display:flex;flex-direction:column;gap:6px;text-align:right;">
+							<div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
 								<h4 style="margin:0;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" style="width:100%;max-width:220px;" placeholder="<?php esc_attr_e( 'Enter amount to spend', 'one-ba-auctions' ); ?>" />
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
@@ -127,7 +127,7 @@ $stage_tips = array(
 							<div style="display:flex;align-items:center;justify-content:center;">
 								<button type="button" class="button oba-autobid-toggle-btn" style="width:140px;"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
-							<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:right;">
+							<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:left;">
 								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
 								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
 							</div>
@@ -188,7 +188,7 @@ $stage_tips = array(
 					</div>
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-card" style="padding:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:center;">
-							<div style="display:flex;flex-direction:column;gap:6px;text-align:right;">
+							<div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
 								<h4 style="margin:0;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" style="width:100%;max-width:220px;" placeholder="<?php esc_attr_e( 'Enter amount to spend', 'one-ba-auctions' ); ?>" />
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
@@ -196,7 +196,7 @@ $stage_tips = array(
 							<div style="display:flex;align-items:center;justify-content:center;">
 								<button type="button" class="button oba-autobid-toggle-btn" style="width:140px;"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
-							<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:right;">
+							<div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;text-align:left;">
 								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
 								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
 							</div>
