@@ -187,6 +187,8 @@
 			const endedText = winnerBlock.ended_at ? (obaAuction.i18n?.ended_at || 'Ended') + ': ' + winnerBlock.ended_at : '';
 			$('.oba-claimed-ended').text(endedText);
 			claimedSummary.show();
+			$('.oba-winner-claim').hide();
+			$('.oba-loser').hide();
 		} else {
 			claimedSummary.hide();
 		}
