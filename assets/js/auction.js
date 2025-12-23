@@ -174,6 +174,23 @@
 			$('.oba-claim').prop('disabled', false);
 		}
 
+		// Claimed summary (global view when winner has claimed)
+		const winnerBlock = state.data.winner || {};
+		const claimedSummary = $('.oba-claimed-summary');
+		if (status === 'ended' && winnerBlock.claimed) {
+			$('.oba-claimed-winner').text(winnerBlock.anonymous_name || '—');
+			$('.oba-claimed-bids').text(winnerBlock.total_bids || 0);
+			const valText = (winnerBlock.total_value_fmt || winnerBlock.total_value || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			$('.oba-claimed-value').text(valText || '—');
+			const savedText = (winnerBlock.saved_amount_fmt || winnerBlock.saved_amount || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			$('.oba-claimed-saved').text(savedText || '—');
+			const endedText = winnerBlock.ended_at ? (obaAuction.i18n?.ended_at || 'Ended') + ': ' + winnerBlock.ended_at : '';
+			$('.oba-claimed-ended').text(endedText);
+			claimedSummary.show();
+		} else {
+			claimedSummary.hide();
+		}
+
 		if (state.data.current_user_is_winner) {
 			$('.oba-winner-claim').show();
 			const claimText = (state.data.claim_amount || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
@@ -203,7 +220,9 @@
 		} else {
 			$('.oba-winner-claim').hide();
 			if (status === 'ended') {
-				$('.oba-loser').show();
+				if (!winnerBlock.claimed) {
+					$('.oba-loser').show();
+				}
 				$('.oba-lose-bids-count').text(state.data.user_bids_count || 0);
 				const loseValue = (state.data.user_cost_plain || state.data.user_cost_formatted || state.data.user_cost || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
 				$('.oba-lose-bids-value').text(loseValue || '0');

@@ -344,6 +344,18 @@ $stage_tips = array(
 					</span>
 				</div>
 				<div class="oba-phase-body">
+					<div class="oba-claimed-summary" style="display:none;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:12px;">
+						<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+							<div style="font-weight:700;font-size:16px;"><?php esc_html_e( 'Prize claimed', 'one-ba-auctions' ); ?></div>
+							<div class="oba-claimed-ended" style="font-size:13px;color:#0f172a;"></div>
+						</div>
+						<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:14px;">
+							<div><strong><?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-winner">—</span></div>
+							<div><strong><?php esc_html_e( 'Bids placed', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-bids">—</span></div>
+							<div><strong><?php esc_html_e( 'Bids value', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-value">—</span></div>
+							<div><strong><?php esc_html_e( 'Saved vs cost', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-saved">—</span></div>
+						</div>
+					</div>
 					<div class="oba-winner-claim" style="display:none;">
 						<div class="oba-outcome oba-outcome--win">
 							<h4 class="oba-win-title"><?php echo esc_html( $get( 'winner_msg', __( 'You won!', 'one-ba-auctions' ) ) ); ?></h4>
