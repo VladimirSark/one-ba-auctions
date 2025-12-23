@@ -327,6 +327,14 @@
 - **Constraints/Assumptions:** Uses `wp_login_url` pointing back to current product page.
 - **How to test:** While logged out, click Register; you should be sent to login and returned after authenticating.
 
+## 2025-12-22 — Autobid UI cleanup (inline spend, toggle-only)
+- **Summary:** Simplified autobid cards (registration + live): compact layout, removed gradient/status pill backgrounds, removed calculation text, and rely on a single toggle switch with inline EUR input. The inline amount now feeds the enable call so user-entered spend is honored instead of defaulting to 1 bid.
+- **Why:** UI was cramped and misleading (status styling conflicting, value ignored on enable).
+- **Files/Classes:** `templates/oba-single-auction.php`, `assets/js/auction.js`.
+- **DB:** None.
+- **Constraints/Assumptions:** User enters spend (EUR) not bid count; toggle sends that amount; status shows clean text without pill styling.
+- **How to test:** Register, enter a spend in the inline field, toggle autobid ON → confirm state shows correct € value and server stores that amount; toggle OFF and ON again with a different amount to verify updates; check status text has no background/shadow.
+
 ## 2025-11-21 — Custom login/account link
 - **Summary:** Added settings field for custom login/account URL used in logged-out registration prompts.
 - **Why:** Let sites direct users to a specific login/signup page.
