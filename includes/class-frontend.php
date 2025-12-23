@@ -231,6 +231,9 @@ class OBA_Frontend {
 		$status_label = ucfirst( str_replace( '_', ' ', $status ) );
 		$prelive_left = $this->seconds_left( $meta['pre_live_start'], $meta['prelive_timer_seconds'] );
 		$live_left    = $this->seconds_left( $meta['live_expires_at'], 0, true );
+		$history      = $repo->get_last_bids( $auction_id, 1 );
+		$last_bidder  = $history ? $this->mask_user_name( (int) $history[0]['user_id'] ) : '';
+		$last_value   = $history ? wp_strip_all_tags( wc_price( (float) $history[0]['credits_reserved'] ) ) : '';
 		$winner_row   = $repo->get_winner_row( $auction_id );
 		$winner_name  = $winner_row ? $this->mask_user_name( (int) $winner_row['winner_user_id'] ) : '';
 		$winner_value = $winner_row ? wp_strip_all_tags( wc_price( (float) $winner_row['total_credits_consumed'] ) ) : '';
@@ -246,6 +249,12 @@ class OBA_Frontend {
 				<span class="oba-loop-lobby"><?php printf( esc_html__( 'Lobby: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></span>
 			<?php elseif ( 'live' === $status ) : ?>
 				<span class="oba-loop-live"><?php printf( esc_html__( 'Time left: %ss', 'one-ba-auctions' ), esc_html( max( 0, $live_left ) ) ); ?></span>
+				<?php if ( $last_bidder ) : ?>
+					<span class="oba-loop-lastbidder"><?php printf( esc_html__( 'Last: %s', 'one-ba-auctions' ), esc_html( $last_bidder ) ); ?></span>
+				<?php endif; ?>
+				<?php if ( $last_value ) : ?>
+					<span class="oba-loop-lastvalue"><?php printf( esc_html__( 'Bid: %s', 'one-ba-auctions' ), esc_html( $last_value ) ); ?></span>
+				<?php endif; ?>
 			<?php elseif ( 'ended' === $status && $winner_row ) : ?>
 				<span class="oba-loop-winner"><?php printf( esc_html__( 'Winner: %s', 'one-ba-auctions' ), esc_html( $winner_name ) ); ?></span>
 				<span class="oba-loop-value"><?php printf( esc_html__( 'Bids: %s', 'one-ba-auctions' ), esc_html( $winner_value ) ); ?></span>
