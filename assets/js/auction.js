@@ -826,6 +826,14 @@ $(document).on('click', '.oba-autobid-toggle-btn', function (e) {
 
 $(document).on('change', '.oba-autobid-switch', function () {
 	const enable = $(this).is(':checked');
+	const setup = $(this).closest('.oba-autobid-setup');
+	const inlineVal = parseFloat(setup.find('.oba-autobid-max').val());
+	if (Number.isFinite(inlineVal) && inlineVal > 0) {
+		const modalInput = $('#oba-autobid-max-amount');
+		if (modalInput.length) {
+			modalInput.val(inlineVal).data('dirty', true);
+		}
+	}
 	toggleAutobid(enable);
 });
 

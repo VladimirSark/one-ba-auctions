@@ -66,6 +66,11 @@ $stage_tips = array(
 		align-items: center;
 		gap: 6px;
 	}
+	.oba-autobid-card .oba-autobid-status .oba-legend-value {
+		background: transparent;
+		box-shadow: none;
+		padding: 0;
+	}
 	.oba-toggle {
 		display: inline-flex;
 		align-items: center;
