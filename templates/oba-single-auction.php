@@ -40,7 +40,7 @@ $stage_tips = array(
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		gap: 16px;
+		gap: 12px;
 		padding: 16px;
 		background: #ffffff;
 		border-radius: 12px;
@@ -50,7 +50,7 @@ $stage_tips = array(
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 10px;
+		gap: 8px;
 	}
 	.oba-autobid-card h4 {
 		margin: 0;
@@ -58,13 +58,23 @@ $stage_tips = array(
 		font-size: 15px;
 	}
 	.oba-autobid-card .oba-autobid-max {
-		width: 120px;
+		width: 110px;
 	}
 	.oba-autobid-card .oba-autobid-status {
 		margin-left: auto;
 		display: flex;
 		align-items: center;
 		gap: 6px;
+	}
+	.oba-autobid-presets {
+		display: flex;
+		gap: 6px;
+		align-items: center;
+	}
+	.oba-autobid-presets .button {
+		padding: 4px 8px;
+		font-size: 12px;
+		min-width: 0;
 	}
 	.oba-toggle {
 		display: inline-flex;
@@ -129,6 +139,9 @@ $stage_tips = array(
 		}
 		.oba-autobid-card .oba-toggle-slider {
 			width: 50px;
+		}
+		.oba-autobid-presets {
+			display: none;
 		}
 	}
 	</style>
@@ -221,7 +234,7 @@ $stage_tips = array(
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-									<div style="display:flex;gap:6px;align-items:center;">
+									<div class="oba-autobid-presets">
 										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
 										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
 										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
