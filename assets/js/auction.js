@@ -25,6 +25,16 @@
 		return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 	}
 
+	function cleanMoney(val) {
+		if (!val) return '';
+		return val
+			.toString()
+			.replace(/<[^>]+>/g, '')
+			.replace(/&nbsp;/g, ' ')
+			.replace(/&euro;/gi, '€')
+			.trim();
+	}
+
 	function showAlert(message) {
 		if (!message) return;
 		$('.oba-alert-error').text(message).show();
@@ -180,9 +190,9 @@
 		if (status === 'ended' && winnerBlock.claimed) {
 			$('.oba-claimed-winner').text(winnerBlock.anonymous_name || '—');
 			$('.oba-claimed-bids').text(winnerBlock.total_bids || 0);
-			const valText = (winnerBlock.total_value_fmt || winnerBlock.total_value || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			const valText = cleanMoney(winnerBlock.total_value_fmt || winnerBlock.total_value || '');
 			$('.oba-claimed-value').text(valText || '—');
-			const savedText = (winnerBlock.saved_amount_fmt || winnerBlock.saved_amount || '').toString().replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€');
+			const savedText = cleanMoney(winnerBlock.saved_amount_fmt || winnerBlock.saved_amount || '');
 			$('.oba-claimed-saved').text(savedText || '—');
 			const endedText = winnerBlock.ended_at ? (obaAuction.i18n?.ended_at || 'Ended') + ': ' + winnerBlock.ended_at : '';
 			$('.oba-claimed-ended').text(endedText);
