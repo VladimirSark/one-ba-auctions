@@ -3,6 +3,7 @@
 ## 2025-12-22
 ### Changed
 - Autobid cards (registration/live) simplified: compact inline spend input, single toggle switch, clean status text (no gradient/shadow), removed preset calc text, and enable now uses the user-entered EUR amount instead of defaulting to 1 bid.
+- Auction products now expose WooCommerce inventory + shipping tabs and allow virtual/downloadable flags, using core stock/meta handling.
 
 ## 2025-12-09
 ### Added

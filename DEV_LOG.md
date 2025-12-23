@@ -335,6 +335,14 @@
 - **Constraints/Assumptions:** User enters spend (EUR) not bid count; toggle sends that amount; status shows clean text without pill styling.
 - **How to test:** Register, enter a spend in the inline field, toggle autobid ON → confirm state shows correct € value and server stores that amount; toggle OFF and ON again with a different amount to verify updates; check status text has no background/shadow.
 
+## 2025-12-22 — Auction product supports inventory/virtual/downloadable
+- **Summary:** Enabled WooCommerce inventory and shipping tabs for auction products and re-enabled virtual/downloadable flags (with core downloadable fields) by adding `show_if_auction` to relevant tabs/fields via filters + admin JS helper.
+- **Why:** Auctions need stock management and virtual/downloadable behaviors like simple products.
+- **Files/Classes:** `includes/class-product-type.php`.
+- **DB:** None.
+- **Constraints/Assumptions:** Woo core saves stock/virtual/downloadable meta; auction products inherit simple product stock semantics (typically stock=1, manage stock on).
+- **How to test:** Edit an auction product → Inventory tab visible; set “Manage stock” + qty, save; toggle Virtual/Downloadable, add a file, save; confirm values persist and shipping behaves accordingly on checkout/claim.
+
 ## 2025-11-21 — Custom login/account link
 - **Summary:** Added settings field for custom login/account URL used in logged-out registration prompts.
 - **Why:** Let sites direct users to a specific login/signup page.
