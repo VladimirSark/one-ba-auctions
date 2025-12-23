@@ -174,10 +174,19 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div>
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" placeholder="<?php esc_attr_e( 'Enter amount to spend', 'one-ba-auctions' ); ?>" />
+								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
+								<div style="display:flex;gap:6px;align-items:center;">
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
+								</div>
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
 							</div>
-							<div>
+							<div style="display:flex;align-items:center;gap:8px;">
+								<label style="display:flex;align-items:center;gap:6px;">
+									<input type="checkbox" class="oba-autobid-switch" />
+									<span><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></span>
+								</label>
 								<button type="button" class="button oba-autobid-toggle-btn"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
 							<div class="oba-autobid-status">
@@ -243,10 +252,19 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div>
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" placeholder="<?php esc_attr_e( 'Enter amount to spend', 'one-ba-auctions' ); ?>" />
+								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
+								<div style="display:flex;gap:6px;align-items:center;">
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
+									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
+								</div>
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
 							</div>
-							<div>
+							<div style="display:flex;align-items:center;gap:8px;">
+								<label style="display:flex;align-items:center;gap:6px;">
+									<input type="checkbox" class="oba-autobid-switch" />
+									<span><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></span>
+								</label>
 								<button type="button" class="button oba-autobid-toggle-btn"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
 							<div class="oba-autobid-status">
