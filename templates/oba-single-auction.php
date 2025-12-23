@@ -66,16 +66,6 @@ $stage_tips = array(
 		align-items: center;
 		gap: 6px;
 	}
-	.oba-autobid-presets {
-		display: flex;
-		gap: 6px;
-		align-items: center;
-	}
-	.oba-autobid-presets .button {
-		padding: 4px 8px;
-		font-size: 12px;
-		min-width: 0;
-	}
 	.oba-toggle {
 		display: inline-flex;
 		align-items: center;
@@ -139,9 +129,6 @@ $stage_tips = array(
 		}
 		.oba-autobid-card .oba-toggle-slider {
 			width: 50px;
-		}
-		.oba-autobid-presets {
-			display: none;
 		}
 	}
 	</style>
@@ -234,11 +221,6 @@ $stage_tips = array(
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-									<div class="oba-autobid-presets">
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
-									</div>
 								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">
@@ -313,11 +295,6 @@ $stage_tips = array(
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-									<div style="display:flex;gap:6px;align-items:center;">
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
-										<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
-									</div>
 								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">

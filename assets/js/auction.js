@@ -810,14 +810,6 @@ $(document).on('click', '.oba-autobid-toggle-btn', function (e) {
 	toggleAutobid(enable);
 });
 
-$(document).on('click', '.oba-autobid-preset', function (e) {
-	e.preventDefault();
-	const amount = parseFloat($(this).data('amount')) || 0;
-	if (!amount) return;
-	const setup = $(this).closest('.oba-autobid-setup');
-	setup.find('.oba-autobid-max').val(amount).trigger('input');
-});
-
 	$(document).on('click', '.oba-autobid-overlay, .oba-autobid-close', (e) => {
 		e.preventDefault();
 		closeAutobidModal();
