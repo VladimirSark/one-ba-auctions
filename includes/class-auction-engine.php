@@ -9,6 +9,14 @@ class OBA_Auction_Engine {
 	private $points;
 	private $repo;
 
+	private function parse_utc_ts( $mysql_utc ) {
+		return class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $mysql_utc ) : 0;
+	}
+
+	private function format_local_mysql( $ts ) {
+		return class_exists( 'OBA_Time' ) ? OBA_Time::format_timestamp_local_mysql( $ts ) : '';
+	}
+
 	public function __construct() {
 		$this->credits = new OBA_Credits_Service();
 		$this->points  = new OBA_Points_Service();
@@ -65,6 +73,19 @@ class OBA_Auction_Engine {
 		if ( $count >= (int) $meta['required_participants'] ) {
 			update_post_meta( $auction_id, '_auction_status', 'pre_live' );
 			update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'stage_change',
+					array(
+						'auction_id' => $auction_id,
+						'from'       => 'registration',
+						'to'         => 'pre_live',
+						'reason'     => 'required_participants_reached',
+						'participants' => $count,
+					),
+					$auction_id
+				);
+			}
 			$this->notify_pre_live( $auction_id, $meta );
 		}
 	}
@@ -97,6 +118,17 @@ class OBA_Auction_Engine {
 			),
 			array( '%d', '%d', '%f', '%s' )
 		);
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'user_registered',
+				array(
+					'auction_id' => $auction_id,
+					'user_id'    => $user_id,
+					'fee'        => (float) $fee,
+				),
+				$auction_id
+			);
+		}
 		$this->maybe_start_pre_live( $auction_id );
 	}
 
@@ -115,11 +147,29 @@ class OBA_Auction_Engine {
 			return;
 		}
 
-		$deadline = strtotime( $meta['pre_live_start'] ) + (int) $meta['prelive_timer_seconds'];
+		$pre_live_start = $this->parse_utc_ts( $meta['pre_live_start'] );
+		if ( ! $pre_live_start ) {
+			return;
+		}
+
+		$deadline = $pre_live_start + (int) $meta['prelive_timer_seconds'];
 
 		if ( time() >= $deadline ) {
 			update_post_meta( $auction_id, '_auction_status', 'live' );
-			update_post_meta( $auction_id, '_live_expires_at', '' );
+			// Start live timer immediately so cron/autobid have a valid expiry.
+			$this->reset_live_timer( $auction_id, $meta );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'stage_change',
+					array(
+						'auction_id' => $auction_id,
+						'from'       => 'pre_live',
+						'to'         => 'live',
+						'reason'     => 'pre_live_timer_elapsed',
+					),
+					$auction_id
+				);
+			}
 			$this->notify_live( $auction_id, $meta );
 		}
 	}
@@ -136,7 +186,8 @@ class OBA_Auction_Engine {
 		}
 
 		$current_winner = $this->repo->get_current_winner( $auction_id );
-		if ( $current_winner && (int) $current_winner === (int) $user_id ) {
+		// Manual bids cannot outbid yourself; autobids may place even if currently winning (for round-robin fairness).
+		if ( ! $is_autobid && $current_winner && (int) $current_winner === (int) $user_id ) {
 			return new WP_Error( 'already_leading', __( 'You are already the leading bidder.', 'one-ba-auctions' ) );
 		}
 
@@ -146,7 +197,11 @@ class OBA_Auction_Engine {
 
 		$table          = $wpdb->prefix . 'auction_bids';
 		$sequence       = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(MAX(sequence_number),0) FROM {$table} WHERE auction_id = %d", $auction_id ) ) + 1;
-		$animated_timer = time() + (int) $meta['live_timer_seconds'];
+		$timer_seconds  = (int) $meta['live_timer_seconds'];
+		if ( get_post_meta( $auction_id, '_oba_autobid_enabled', true ) && $timer_seconds > 0 ) {
+			$timer_seconds = max( 60, $timer_seconds );
+		}
+		$animated_timer = time() + max( 1, $timer_seconds );
 
 		$wpdb->insert(
 			$table,
@@ -170,7 +225,8 @@ class OBA_Auction_Engine {
 					'user_id'      => $user_id,
 					'sequence'     => $sequence,
 					'is_autobid'   => $is_autobid,
-					'expires_at'   => gmdate( 'Y-m-d H:i:s', $animated_timer ),
+					'expires_at'   => gmdate( 'Y-m-d H:i:s', $animated_timer ), // UTC (storage format).
+					'expires_at_local' => $this->format_local_mysql( $animated_timer ),
 				),
 				$auction_id
 			);
@@ -182,6 +238,9 @@ class OBA_Auction_Engine {
 	private function reset_live_timer( $auction_id, $meta ) {
 		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : (int) get_post_meta( $auction_id, '_live_timer_seconds', true );
 		$timer_seconds = max( 1, $timer_seconds );
+		if ( get_post_meta( $auction_id, '_oba_autobid_enabled', true ) ) {
+			$timer_seconds = max( 60, $timer_seconds );
+		}
 		$expires       = time() + $timer_seconds;
 		update_post_meta( $auction_id, '_live_expires_at', gmdate( 'Y-m-d H:i:s', $expires ) );
 		if ( class_exists( 'OBA_Audit_Log' ) ) {
@@ -189,7 +248,8 @@ class OBA_Auction_Engine {
 				'timer_extended',
 				array(
 					'auction_id' => $auction_id,
-					'expires_at' => gmdate( 'Y-m-d H:i:s', $expires ),
+					'expires_at' => gmdate( 'Y-m-d H:i:s', $expires ), // UTC (storage format).
+					'expires_at_local' => $this->format_local_mysql( $expires ),
 					'seconds'    => $timer_seconds,
 				),
 				$auction_id
@@ -197,56 +257,57 @@ class OBA_Auction_Engine {
 		}
 	}
 
-	public function end_auction_if_expired( $auction_id ) {
+	public function end_auction_if_expired( $auction_id, $caller = 'unknown' ) {
 		$lock_key = 'oba:auction:' . $auction_id;
 		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
 			if ( class_exists( 'OBA_Audit_Log' ) ) {
-				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'end_auction_if_expired' ), $auction_id );
+				OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'end_auction_if_expired:' . $caller ), $auction_id );
 			}
 			return;
 		}
 		try {
 			$meta = $this->repo->get_auction_meta( $auction_id );
 
-			$already_ended = ( 'ended' === $meta['auction_status'] ) || get_post_meta( $auction_id, '_oba_ended_at', true );
+			$ended_at = get_post_meta( $auction_id, '_oba_ended_at', true );
+			$already_ended = ( 'ended' === $meta['auction_status'] ) || $ended_at;
 			if ( $already_ended ) {
+				// Self-heal in case status is stale but ended_at exists.
+				if ( $ended_at && 'ended' !== $meta['auction_status'] ) {
+					update_post_meta( $auction_id, '_auction_status', 'ended' );
+					if ( class_exists( 'OBA_Audit_Log' ) ) {
+						OBA_Audit_Log::log(
+							'auction_status_synced',
+							array(
+								'auction_id' => $auction_id,
+								'caller'     => $caller,
+								'ended_at'   => $ended_at,
+							),
+							$auction_id
+						);
+					}
+				}
 				return;
 			}
 
-			$expires = strtotime( $meta['live_expires_at'] );
+			$expires = $this->parse_utc_ts( $meta['live_expires_at'] );
 			if ( ! $expires || $expires > time() ) {
-				if ( class_exists( 'OBA_Audit_Log' ) ) {
-					OBA_Audit_Log::log(
-						'expiry_check_status',
-						array(
-							'auction_id'     => $auction_id,
-							'status'         => $meta['auction_status'],
-							'live_expires_at'=> $meta['live_expires_at'],
-						),
-						$auction_id
-					);
-				}
 				return;
 			}
 
 			// Mark finalizing to prevent duplicate endings.
-			update_post_meta( $auction_id, '_oba_finalizing', 1 );
+			update_post_meta( $auction_id, '_oba_finalizing', current_time( 'mysql', 1 ) );
 
 			try {
-				$this->calculate_winner_and_resolve_credits( $auction_id, 'timer' );
+				$this->calculate_winner_and_resolve_credits(
+					$auction_id,
+					'timer',
+					array(
+						'caller'     => $caller,
+						'expires_at' => $meta['live_expires_at'],
+					)
+				);
 				update_post_meta( $auction_id, '_oba_ended_at', current_time( 'mysql', 1 ) );
 				update_post_meta( $auction_id, '_auction_status', 'ended' );
-				if ( class_exists( 'OBA_Audit_Log' ) ) {
-					OBA_Audit_Log::log(
-						'auction_end',
-						array(
-							'trigger'       => 'timer',
-							'auction_id'    => $auction_id,
-							'expires_at'    => $meta['live_expires_at'],
-						),
-						$auction_id
-					);
-				}
 			} finally {
 				delete_post_meta( $auction_id, '_oba_finalizing' );
 			}
@@ -255,7 +316,7 @@ class OBA_Auction_Engine {
 		}
 	}
 
-	public function calculate_winner_and_resolve_credits( $auction_id, $trigger = 'timer' ) {
+	public function calculate_winner_and_resolve_credits( $auction_id, $trigger = 'timer', $context = array() ) {
 		global $wpdb;
 
 		$existing_winner = $this->repo->get_winner_row( $auction_id );
@@ -266,7 +327,7 @@ class OBA_Auction_Engine {
 
 		$finalizing_set_at = get_post_meta( $auction_id, '_oba_finalizing', true );
 		if ( $finalizing_set_at ) {
-			$ts = strtotime( $finalizing_set_at );
+			$ts = $this->parse_utc_ts( $finalizing_set_at );
 			if ( $ts && ( time() - $ts ) > 30 && ! get_post_meta( $auction_id, '_oba_ended_at', true ) ) {
 				// Stale finalizing; clear and retry.
 				delete_post_meta( $auction_id, '_oba_finalizing' );
@@ -287,22 +348,18 @@ class OBA_Auction_Engine {
 		);
 
 		if ( ! $last ) {
-			update_post_meta( $auction_id, '_auction_status', 'ended' );
-			OBA_Audit_Log::log(
-				'auction_end',
-				array(
-					'trigger'                => $trigger,
-					'winner_id'              => 0,
-					'total_bids'             => 0,
-					'total_credits_consumed' => 0,
-					'refund_total'           => 0,
-					'claim_price'            => isset( $meta['claim_price_credits'] ) ? (float) $meta['claim_price_credits'] : 0,
-					'last_bid_user_id'       => null,
-					'last_bid_amount'        => 0,
-					'last_bid_time'          => null,
-				),
-				$auction_id
-			);
+			// No bids yet: keep auction live and restart timer instead of ending without a winner.
+			$this->reset_live_timer( $auction_id, $meta );
+			if ( class_exists( 'OBA_Audit_Log' ) ) {
+				OBA_Audit_Log::log(
+					'live_restart_no_bids',
+					array(
+						'auction_id' => $auction_id,
+						'caller'     => isset( $context['caller'] ) ? $context['caller'] : $trigger,
+					),
+					$auction_id
+				);
+			}
 			return;
 		}
 
@@ -311,6 +368,17 @@ class OBA_Auction_Engine {
 		$winners_table = $wpdb->prefix . 'auction_winners';
 
 		$totals = $this->repo->get_bid_totals_by_user( $auction_id );
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'auction_finalize_totals',
+				array(
+					'auction_id' => $auction_id,
+					'totals'     => $totals,
+					'context'    => $context,
+				),
+				$auction_id
+			);
+		}
 		$winner_totals = array(
 			'total_bids'    => 0,
 			'total_credits' => 0,
@@ -349,9 +417,12 @@ class OBA_Auction_Engine {
 		);
 
 		OBA_Audit_Log::log(
-			'auction_end',
+			'auction_finalized',
 			array(
 				'trigger'                => $trigger,
+				'caller'                 => isset( $context['caller'] ) ? $context['caller'] : 'unknown',
+				'expires_at'             => isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'],
+				'expires_at_local'       => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( isset( $context['expires_at'] ) ? $context['expires_at'] : $meta['live_expires_at'] ) : '',
 				'winner_id'              => $winner_id,
 				'total_bids'             => $winner_totals['total_bids'],
 				'total_credits_consumed' => $winner_totals['total_credits'],

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2025-12-22
+### Changed
+- Autobid cards (registration/live) simplified: compact inline spend input, single toggle switch, clean status text (no gradient/shadow), removed preset calc text, and enable now uses the user-entered EUR amount instead of defaulting to 1 bid.
+
 ## 2025-12-09
 ### Added
 - Points-based registration: auctions define a registration points cost; membership products grant points on order completion (stored in `wp_auction_user_points`); membership flag required to view/participate.

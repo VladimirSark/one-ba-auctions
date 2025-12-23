@@ -911,6 +911,13 @@ class OBA_Admin {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Autobid reminder interval (minutes)', 'one-ba-auctions' ); ?></th>
+						<td>
+							<input type="number" name="autobid_reminder_minutes" min="1" step="1" value="<?php echo esc_attr( $settings['autobid_reminder_minutes'] ); ?>" />
+							<p class="description"><?php esc_html_e( 'How often to email users that their autobid is ON (includes bids placed so far).', 'one-ba-auctions' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Point value', 'one-ba-auctions' ); ?></th>
 						<td>
 							<input type="text" name="points_value" value="<?php echo esc_attr( $settings['points_value'] ); ?>" placeholder="<?php esc_attr_e( '1.00', 'one-ba-auctions' ); ?>" />
@@ -1022,13 +1029,17 @@ class OBA_Admin {
 		try {
 			switch ( $action ) {
 				case 'pre_live':
+					$prev = get_post_meta( $auction_id, '_auction_status', true );
 					update_post_meta( $auction_id, '_auction_status', 'pre_live' );
 					update_post_meta( $auction_id, '_pre_live_start', gmdate( 'Y-m-d H:i:s' ) );
+					OBA_Audit_Log::log( 'stage_change', array( 'auction_id' => $auction_id, 'from' => $prev, 'to' => 'pre_live', 'reason' => 'admin' ), $auction_id );
 					break;
 				case 'live':
+					$prev = get_post_meta( $auction_id, '_auction_status', true );
 					update_post_meta( $auction_id, '_auction_status', 'live' );
 					update_post_meta( $auction_id, '_live_expires_at', '' );
 					OBA_Audit_Log::log( 'start_live', array(), $auction_id );
+					OBA_Audit_Log::log( 'stage_change', array( 'auction_id' => $auction_id, 'from' => $prev, 'to' => 'live', 'reason' => 'admin' ), $auction_id );
 					break;
 				case 'force_end':
 					update_post_meta( $auction_id, '_auction_status', 'live' );
@@ -1111,6 +1122,7 @@ class OBA_Admin {
 				'autobid_enabled'         => isset( $_POST['autobid_enabled'] ),
 				'autobid_window_seconds'  => isset( $_POST['autobid_window_seconds'] ) ? wp_unslash( $_POST['autobid_window_seconds'] ) : null,
 				'autobid_activation_cost_points' => isset( $_POST['autobid_activation_cost_points'] ) ? wp_unslash( $_POST['autobid_activation_cost_points'] ) : null,
+				'autobid_reminder_minutes'=> isset( $_POST['autobid_reminder_minutes'] ) ? wp_unslash( $_POST['autobid_reminder_minutes'] ) : null,
 			)
 		);
 
@@ -1444,9 +1456,19 @@ class OBA_Admin {
 		}
 		$auction_id     = isset( $_POST['auction_id'] ) ? absint( $_POST['auction_id'] ) : 0;
 		$winner_user_id = isset( $_POST['winner_user_id'] ) ? absint( $_POST['winner_user_id'] ) : 0;
+		$use_last_bidder = isset( $_POST['use_last_bidder'] ) ? (bool) $_POST['use_last_bidder'] : false;
 		check_admin_referer( 'oba_manual_winner_' . $auction_id );
 
-		if ( ! $auction_id || ! $winner_user_id ) {
+		if ( ! $auction_id ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&error=1' ) );
+			exit;
+		}
+
+		if ( $use_last_bidder ) {
+			$winner_user_id = $this->repo->get_current_winner( $auction_id );
+		}
+
+		if ( ! $winner_user_id ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=oba-1ba-auction&auction_id=' . $auction_id . '&error=1' ) );
 			exit;
 		}
@@ -1797,6 +1819,28 @@ class OBA_Admin {
 				<a class="button" href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Edit auction product', 'one-ba-auctions' ); ?></a>
 			</p>
 
+			<?php
+			$settings_snapshot = array(
+				'auction_id'           => $auction_id,
+				'status'              => $meta['auction_status'],
+				'required_participants'=> (int) $meta['required_participants'],
+				'live_timer_seconds'   => (int) $meta['live_timer_seconds'],
+				'prelive_timer_seconds'=> (int) $meta['prelive_timer_seconds'],
+				'pre_live_start'       => $meta['pre_live_start'], // UTC (storage format).
+				'pre_live_start_local' => class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['pre_live_start'] ) : '',
+				'live_expires_at'      => $meta['live_expires_at'], // UTC (storage format).
+				'live_expires_at_local'=> class_exists( 'OBA_Time' ) ? OBA_Time::format_utc_mysql_datetime_as_local_mysql( $meta['live_expires_at'] ) : '',
+				'registration_points'  => (float) $meta['registration_points'],
+				'bid_product_id'       => (int) $meta['bid_product_id'],
+				'autobid_enabled_for_auction' => (bool) get_post_meta( $auction_id, '_oba_autobid_enabled', true ),
+				'site_timezone'        => function_exists( 'wp_timezone_string' ) ? wp_timezone_string() : '',
+				'now_utc'              => gmdate( 'Y-m-d H:i:s' ),
+				'now_local'            => function_exists( 'wp_date' ) && function_exists( 'wp_timezone' ) ? wp_date( 'Y-m-d H:i:s', time(), wp_timezone() ) : '',
+			);
+			?>
+			<h2><?php esc_html_e( 'Auction settings snapshot (copy)', 'one-ba-auctions' ); ?></h2>
+			<textarea readonly style="width:100%;max-width:920px;height:140px;" onclick="this.select();"><?php echo esc_textarea( wp_json_encode( $settings_snapshot, JSON_PRETTY_PRINT ) ); ?></textarea>
+
 			<h2><?php esc_html_e( 'Actions', 'one-ba-auctions' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline-block;margin-right:8px;">
 				<input type="hidden" name="action" value="oba_set_status" />
@@ -1817,6 +1861,10 @@ class OBA_Admin {
 				<input type="hidden" name="auction_id" value="<?php echo esc_attr( $auction_id ); ?>" />
 				<?php wp_nonce_field( 'oba_manual_winner_' . $auction_id ); ?>
 				<input type="number" name="winner_user_id" placeholder="<?php esc_attr_e( 'User ID', 'one-ba-auctions' ); ?>" />
+				<label style="margin-left:8px;">
+					<input type="checkbox" name="use_last_bidder" value="1" />
+					<?php esc_html_e( 'Use last bidder', 'one-ba-auctions' ); ?>
+				</label>
 				<button class="button"><?php esc_html_e( 'Set manual winner', 'one-ba-auctions' ); ?></button>
 			</form>
 
@@ -1895,8 +1943,23 @@ class OBA_Admin {
 				</tbody>
 			</table>
 
-			<?php $audit_entries = OBA_Audit_Log::latest_for_auction( $auction_id, 20 ); ?>
-			<h2><?php esc_html_e( 'Recent audit events (last 20)', 'one-ba-auctions' ); ?></h2>
+			<?php
+			$audit_entries = OBA_Audit_Log::all_for_auction( $auction_id, 200 );
+			$audit_export  = array();
+			foreach ( $audit_entries as $entry ) {
+				$user = $entry['actor_id'] ? get_user_by( 'id', $entry['actor_id'] ) : null;
+				$audit_export[] = array(
+					'time'    => $entry['created_at'],
+					'actor'   => $user ? $user->display_name : '-',
+					'action'  => $entry['action'],
+					'details' => is_serialized( $entry['details'] ) ? maybe_unserialize( $entry['details'] ) : $entry['details'],
+				);
+			}
+			?>
+			<h2><?php esc_html_e( 'Auction audit log (last 200)', 'one-ba-auctions' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Click inside to select and copy.', 'one-ba-auctions' ); ?></p>
+			<textarea readonly style="width:100%;max-width:920px;height:220px;" onclick="this.select();"><?php echo esc_textarea( wp_json_encode( $audit_export, JSON_PRETTY_PRINT ) ); ?></textarea>
+			<h3 style="margin-top:18px;"><?php esc_html_e( 'Table view', 'one-ba-auctions' ); ?></h3>
 			<table class="widefat fixed striped">
 				<thead>
 					<tr>
@@ -2395,6 +2458,31 @@ class OBA_Admin {
 					return;
 				}
 				WP_CLI\Utils\format_items( 'table', $rows, array( 'id', 'user_id', 'amount', 'balance_after', 'reason', 'reference_id', 'created_at' ) );
+			}
+		);
+
+		// Per-second/autonomous tick helper: runs autobids + expiry once.
+		WP_CLI::add_command(
+			'oba tick',
+			function ( $args, $assoc_args ) {
+				$engine  = new OBA_Auction_Engine();
+				$service = new OBA_Autobid_Service();
+				$plugin  = new OBA_Plugin();
+
+				$auction_id = isset( $assoc_args['auction'] ) ? (int) $assoc_args['auction'] : 0;
+
+				if ( $auction_id ) {
+					if ( $service->is_globally_enabled() && $service->is_enabled_for_auction( $auction_id ) ) {
+						$service->maybe_run_autobids( $auction_id );
+					}
+					$engine->end_auction_if_expired( $auction_id, 'wpcli_tick_single' );
+					WP_CLI::success( "Tick processed for auction {$auction_id}." );
+					return;
+				}
+
+				$plugin->run_autobid_check();
+				$plugin->check_expired_auctions();
+				WP_CLI::success( 'Tick processed for all live auctions.' );
 			}
 		);
 	}

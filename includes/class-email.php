@@ -232,6 +232,14 @@ class OBA_Email {
 					$tokens_base
 				);
 				break;
+			case 'autobid_on_reminder':
+				list( $subject, $body ) = $this->resolve_template(
+					'autobid_on_reminder',
+					__( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					$tokens_base
+				);
+				break;
 			case 'autobid_off':
 				list( $subject, $body ) = $this->resolve_template(
 					'autobid_off',
@@ -298,6 +306,24 @@ class OBA_Email {
 				'auction_title'    => $this->auction_title( $auction_id ),
 				'auction_link'     => $this->product_link( $auction_id ),
 				'autobid_max_bids' => $max_bids ? $max_bids : __( 'No limit', 'one-ba-auctions' ),
+			)
+		);
+		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
+	}
+
+	public function notify_autobid_on_reminder( $user_id, $auction_id, $data ) {
+		$max_bids  = isset( $data['autobid_max_bids'] ) ? (int) $data['autobid_max_bids'] : 0;
+		$bids_used = isset( $data['autobid_bids_used'] ) ? (int) $data['autobid_bids_used'] : 0;
+		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
+			'autobid_on_reminder',
+			__( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			array(
+				'user_name'          => $this->get_user_name( $user_id ),
+				'auction_title'      => $this->auction_title( $auction_id ),
+				'auction_link'       => $this->product_link( $auction_id ),
+				'autobid_max_bids'   => $max_bids ? $max_bids : __( 'No limit', 'one-ba-auctions' ),
+				'autobid_bids_used'  => $bids_used,
 			)
 		);
 		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
