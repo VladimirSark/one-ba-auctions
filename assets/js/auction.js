@@ -670,11 +670,11 @@ $(document).on('click', '.oba-autobid-disable', function (e) {
 
 function updateAutobidUI() {
 	const enabled = !!state.data?.autobid_enabled;
-	const btn = $('.oba-autobid-toggle-btn');
-	if (btn.length) {
-		btn.text(enabled ? (obaAuction.i18n?.autobid_disable || 'Disable') : (obaAuction.i18n?.autobid_enable || 'Enable'));
-	}
 	$('.oba-autobid-switch').prop('checked', enabled);
+	const toggleText = $('.oba-toggle-text');
+	if (toggleText.length) {
+		toggleText.text(enabled ? (obaAuction.i18n?.on || 'On') : (obaAuction.i18n?.off || 'Off'));
+	}
 	const bidCost = Number(state.data?.bid_cost || 0);
 	const amount = Number(state.data?.autobid_max_spend || 0) || ((state.data?.autobid_max_bids || 0) * bidCost);
 	const count = bidCost ? Math.floor(amount / bidCost) : 0;
@@ -684,7 +684,7 @@ function updateAutobidUI() {
 			const valText = count ? `${formatMoney(amount)} (${count} bids)` : formatMoney(amount);
 			stateLabel.text(valText);
 		} else {
-			stateLabel.text('—');
+			stateLabel.text(obaAuction.i18n?.off || 'OFF');
 		}
 	}
 }

@@ -39,7 +39,8 @@ $stage_tips = array(
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 24px;
+		justify-content: space-between;
+		gap: 16px;
 		padding: 16px;
 		background: #ffffff;
 		border-radius: 12px;
@@ -49,17 +50,61 @@ $stage_tips = array(
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
 	}
 	.oba-autobid-card h4 {
 		margin: 0;
 		font-weight: 700;
+		font-size: 15px;
 	}
 	.oba-autobid-card .oba-autobid-max {
-		width: 180px;
+		width: 120px;
 	}
-	.oba-autobid-card .oba-autobid-toggle-btn {
-		width: 140px;
+	.oba-autobid-card .oba-autobid-status {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.oba-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		cursor: pointer;
+		user-select: none;
+	}
+	.oba-toggle input {
+		display: none;
+	}
+	.oba-toggle-slider {
+		width: 46px;
+		height: 24px;
+		background: #cbd5e1;
+		border-radius: 999px;
+		position: relative;
+		transition: background 0.2s ease;
+	}
+	.oba-toggle-slider:after {
+		content: '';
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 18px;
+		height: 18px;
+		background: #ffffff;
+		border-radius: 50%;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+		transition: transform 0.2s ease;
+	}
+	.oba-toggle input:checked + .oba-toggle-slider {
+		background: #22c55e;
+	}
+	.oba-toggle input:checked + .oba-toggle-slider:after {
+		transform: translateX(22px);
+	}
+	.oba-toggle-text {
+		font-weight: 600;
+		color: #0f172a;
 	}
 	@media (max-width: 600px) {
 		.oba-autobid-card {
@@ -74,16 +119,16 @@ $stage_tips = array(
 			gap: 8px;
 		}
 		.oba-autobid-card .oba-autobid-status {
-			flex-direction: row;
-			align-items: center;
-			gap: 4px;
 			width: 100%;
 			justify-content: flex-start;
 		}
 		.oba-autobid-card .oba-autobid-max,
-		.oba-autobid-card .oba-autobid-toggle-btn {
+		.oba-autobid-card .oba-toggle {
 			width: 100%;
 			max-width: none;
+		}
+		.oba-autobid-card .oba-toggle-slider {
+			width: 50px;
 		}
 	}
 	</style>
@@ -172,22 +217,17 @@ $stage_tips = array(
 					</div>
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-autobid-card">
-							<div>
+							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								<div style="display:flex;gap:6px;align-items:center;">
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
-								</div>
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
 							</div>
-							<div style="display:flex;align-items:center;gap:8px;">
-								<label style="display:flex;align-items:center;gap:6px;">
+							<div class="oba-autobid-toggle-col">
+								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
-									<span><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></span>
+									<span class="oba-toggle-slider"></span>
+									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-								<button type="button" class="button oba-autobid-toggle-btn"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
 							<div class="oba-autobid-status">
 								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
@@ -250,22 +290,17 @@ $stage_tips = array(
 					</div>
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-autobid-card">
-							<div>
+							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 								<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								<div style="display:flex;gap:6px;align-items:center;">
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="10"><?php esc_html_e( '10', 'one-ba-auctions' ); ?></button>
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="20"><?php esc_html_e( '20', 'one-ba-auctions' ); ?></button>
-									<button type="button" class="button button-secondary oba-autobid-preset" data-amount="50"><?php esc_html_e( '50', 'one-ba-auctions' ); ?></button>
-								</div>
 								<span class="oba-autobid-total-inline" style="font-size:12px;color:#475569;"></span>
 							</div>
-							<div style="display:flex;align-items:center;gap:8px;">
-								<label style="display:flex;align-items:center;gap:6px;">
+							<div class="oba-autobid-toggle-col">
+								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
-									<span><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></span>
+									<span class="oba-toggle-slider"></span>
+									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-								<button type="button" class="button oba-autobid-toggle-btn"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
 							</div>
 							<div class="oba-autobid-status">
 								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
