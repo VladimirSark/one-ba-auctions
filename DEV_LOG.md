@@ -12,6 +12,11 @@
 - **Files/Classes:** `templates/oba-single-auction.php` (inline styles/layout).
 - **How to test:** Register and view the autobid card in registration/live phases: no input box is present; toggle still enables/disables autobid and status text updates.
 
+## 2025-12-29 — Settings cleanup (remove autobid master/window)
+- **Summary:** Removed the unused “Enable autobid” master switch and “Autobid window” fields from Settings → General; autobid is always on when allowed per-auction.
+- **Files/Classes:** `includes/class-admin.php`, `includes/class-settings.php`.
+- **How to test:** Open 1BA Auctions → Settings → General; the autobid master/window fields are gone; saving settings still works and autobid toggles remain per auction.
+
 ## 2025-12-27 — Faster autobid cadence + shorter live extension
 - **Summary:** Autobid cron now scheduled every ~10 seconds (self-heals any old 60s schedule); autobid-enabled auctions no longer force a 60s live timer—minimum live extension is 15s per bid. Removed the “skip if timer < 60s” guard so short timers work with frequent polling/cron.
 - **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.
