@@ -64,6 +64,10 @@ class OBA_Plugin {
 					'interval' => MINUTE_IN_SECONDS,
 					'display'  => __( 'Every 1 minute (OBA)', 'one-ba-auctions' ),
 				);
+				$schedules['oba_every_ten_seconds'] = array(
+					'interval' => 10,
+					'display'  => __( 'Every 10 seconds (OBA)', 'one-ba-auctions' ),
+				);
 				return $schedules;
 			}
 		);
@@ -255,8 +259,17 @@ class OBA_Plugin {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
 			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_expiry_check' );
 		}
-		if ( ! wp_next_scheduled( 'oba_run_autobid_check' ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_run_autobid_check' );
+		$autobid_ts = wp_next_scheduled( 'oba_run_autobid_check' );
+		if ( $autobid_ts ) {
+			$crons             = _get_cron_array();
+			$current_schedule  = isset( $crons[ $autobid_ts ]['oba_run_autobid_check']['schedule'] ) ? $crons[ $autobid_ts ]['oba_run_autobid_check']['schedule'] : '';
+			if ( 'oba_every_ten_seconds' !== $current_schedule ) {
+				wp_unschedule_event( $autobid_ts, 'oba_run_autobid_check' );
+				$autobid_ts = false;
+			}
+		}
+		if ( ! $autobid_ts ) {
+			wp_schedule_event( time() + 10, 'oba_every_ten_seconds', 'oba_run_autobid_check' );
 		}
 	}
 

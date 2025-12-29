@@ -2,6 +2,13 @@
 
 # Developer Log
 
+## 2025-12-27 — Faster autobid cadence + shorter live extension
+- **Summary:** Autobid cron now scheduled every ~10 seconds (self-heals any old 60s schedule); autobid-enabled auctions no longer force a 60s live timer—minimum live extension is 15s per bid. Removed the “skip if timer < 60s” guard so short timers work with frequent polling/cron.
+- **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.
+- **How to test:** Ensure WP-Cron shows `oba_run_autobid_check` with “Every 10 seconds (OBA)”. Run a live auction with autobid enabled and a 10–20s live timer: verify bids still reset the timer to at least ~15s, autobids fire via cron/polling, and no “autobid_skipped_short_timer” logs appear.
+
+# Developer Log
+
 ## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish
 - **Summary:** Live timer now starts when entering live (no empty `_live_expires_at`); autobid cron will initialize a missing expiry once before finalizing. If a live auction hits expiry with zero bids, the live timer is restarted instead of ending without a winner. Autobid card UI simplified to a 3-column layout with a single toggle button (Enable/Disable) and a clear “Autobid set to” value display, aligned with other cards.
 - **Files/Classes:** `includes/class-auction-engine.php`, `includes/class-plugin.php`, `templates/oba-single-auction.php`, `assets/js/auction.js`.

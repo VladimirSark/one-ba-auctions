@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Users configure max bids (max_bids).
  * - Allowed only after user registration.
  * - Charges points per enable.
- * - Runs from cron (every minute); places at most 1 autobid per run (round-robin).
+ * - Runs from cron/polling frequently; places at most 1 autobid per run (round-robin).
  */
 class OBA_Autobid_Service {
 
@@ -156,13 +156,6 @@ class OBA_Autobid_Service {
 		$expires_ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $meta['live_expires_at'] );
 		if ( $expires_ts && $expires_ts <= time() ) {
 			$this->engine->end_auction_if_expired( $auction_id, 'autobid_check' );
-			return;
-		}
-
-		// With 1-minute cron, the live timer must be at least 60 seconds to allow repeated autobids.
-		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : 0;
-		if ( $timer_seconds && $timer_seconds < 60 ) {
-			OBA_Audit_Log::log( 'autobid_skipped_short_timer', array( 'auction_id' => $auction_id, 'live_timer_seconds' => $timer_seconds ), $auction_id );
 			return;
 		}
 

@@ -199,7 +199,7 @@ class OBA_Auction_Engine {
 		$sequence       = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(MAX(sequence_number),0) FROM {$table} WHERE auction_id = %d", $auction_id ) ) + 1;
 		$timer_seconds  = (int) $meta['live_timer_seconds'];
 		if ( get_post_meta( $auction_id, '_oba_autobid_enabled', true ) && $timer_seconds > 0 ) {
-			$timer_seconds = max( 60, $timer_seconds );
+			$timer_seconds = max( 15, $timer_seconds );
 		}
 		$animated_timer = time() + max( 1, $timer_seconds );
 
@@ -239,7 +239,7 @@ class OBA_Auction_Engine {
 		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : (int) get_post_meta( $auction_id, '_live_timer_seconds', true );
 		$timer_seconds = max( 1, $timer_seconds );
 		if ( get_post_meta( $auction_id, '_oba_autobid_enabled', true ) ) {
-			$timer_seconds = max( 60, $timer_seconds );
+			$timer_seconds = max( 15, $timer_seconds );
 		}
 		$expires       = time() + $timer_seconds;
 		update_post_meta( $auction_id, '_live_expires_at', gmdate( 'Y-m-d H:i:s', $expires ) );
