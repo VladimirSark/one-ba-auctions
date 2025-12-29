@@ -7,6 +7,11 @@
 - **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `assets/js/auction.js`, `includes/class-product-type.php`.
 - **How to test:** Edit an auction, enable autobid, set a short live timer (<60s) and save—value stays unchanged. On frontend, toggle autobid ON (no amount required) and confirm points charge prompt appears; state/labels show “unlimited” and autobids fire normally; toggling OFF re-enables manual bidding.
 
+## 2025-12-29 — Autobid UI toggle-only (removed max input)
+- **Summary:** Streamlined autobid cards in registration and live steps to show only the Autobid title, toggle switch, and status text—removed the unused max spend input now that autobid is unlimited.
+- **Files/Classes:** `templates/oba-single-auction.php` (inline styles/layout).
+- **How to test:** Register and view the autobid card in registration/live phases: no input box is present; toggle still enables/disables autobid and status text updates.
+
 ## 2025-12-27 — Faster autobid cadence + shorter live extension
 - **Summary:** Autobid cron now scheduled every ~10 seconds (self-heals any old 60s schedule); autobid-enabled auctions no longer force a 60s live timer—minimum live extension is 15s per bid. Removed the “skip if timer < 60s” guard so short timers work with frequent polling/cron.
 - **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.

@@ -57,9 +57,6 @@ $stage_tips = array(
 		font-weight: 700;
 		font-size: 15px;
 	}
-	.oba-autobid-card .oba-autobid-max {
-		width: 110px;
-	}
 	.oba-autobid-card .oba-autobid-status {
 		margin-left: auto;
 		display: flex;
@@ -133,7 +130,6 @@ $stage_tips = array(
 			width: 100%;
 			justify-content: flex-start;
 		}
-		.oba-autobid-card .oba-autobid-max,
 		.oba-autobid-card .oba-toggle {
 			width: 100%;
 			max-width: none;
@@ -230,9 +226,6 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -304,9 +297,6 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
