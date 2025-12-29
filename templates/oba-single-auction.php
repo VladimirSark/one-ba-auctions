@@ -57,23 +57,7 @@ $stage_tips = array(
 		font-weight: 700;
 		font-size: 15px;
 	}
-	.oba-autobid-card .oba-autobid-status {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		background: transparent !important;
-		box-shadow: none !important;
-		padding: 0 !important;
-		border-radius: 0 !important;
-		color: inherit;
-	}
-	.oba-autobid-card .oba-autobid-status .oba-legend-value,
-	.oba-autobid-card .oba-autobid-state {
-		background: transparent;
-		box-shadow: none;
-		padding: 0;
-	}
+	.oba-autobid-toggle-col { margin-left: auto; }
 	.oba-toggle {
 		display: inline-flex;
 		align-items: center;
@@ -113,30 +97,6 @@ $stage_tips = array(
 	.oba-toggle-text {
 		font-weight: 600;
 		color: #0f172a;
-	}
-	@media (max-width: 600px) {
-		.oba-autobid-card {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 16px;
-		}
-		.oba-autobid-card > div {
-			flex-direction: column;
-			align-items: flex-start;
-			width: 100%;
-			gap: 8px;
-		}
-		.oba-autobid-card .oba-autobid-status {
-			width: 100%;
-			justify-content: flex-start;
-		}
-		.oba-autobid-card .oba-toggle {
-			width: 100%;
-			max-width: none;
-		}
-		.oba-autobid-card .oba-toggle-slider {
-			width: 50px;
-		}
 	}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
@@ -234,10 +194,6 @@ $stage_tips = array(
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
 							</div>
-							<div class="oba-autobid-status">
-								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
-								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
-							</div>
 						</div>
 					</div>
 				</div>
@@ -304,10 +260,6 @@ $stage_tips = array(
 									<span class="oba-toggle-slider"></span>
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-							</div>
-							<div class="oba-autobid-status">
-								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
-								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
 							</div>
 						</div>
 					</div>
