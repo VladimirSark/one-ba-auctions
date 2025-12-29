@@ -17,6 +17,11 @@
 - **Files/Classes:** `includes/class-autobid-service.php`.
 - **How to test:** Run live auction with autobid enabled and active polling; confirm autobids only appear when `live_seconds_left` ≤ 4, and audit logs show `autobid_skip_time_window`/`autobid_skip_tick_guard` when applicable.
 
+## 2025-12-29 — Autobid window widened to 15s, skip logs muted
+- **Summary:** Autobids now fire in the final 15s (was 4s) to avoid missing bids when timer is extended; skip logging for the time window was removed to reduce log noise.
+- **Files/Classes:** `includes/class-autobid-service.php`.
+- **How to test:** Run live auction with autobid enabled; with polls/cron, autobids should place when `live_seconds_left` ≤ 15. Skip logs for time-window should no longer flood audit.
+
 # Developer Log
 
 ## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish

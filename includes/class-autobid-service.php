@@ -161,17 +161,8 @@ class OBA_Autobid_Service {
 
 		// Only fire near the end of the timer to avoid machine-gun bidding from polling.
 		$seconds_left     = $expires_ts ? max( 0, $expires_ts - time() ) : 0;
-		$fire_threshold   = 4; // seconds
+		$fire_threshold   = 15; // seconds; allow bids in the final 15s window.
 		if ( $seconds_left > $fire_threshold ) {
-			OBA_Audit_Log::log(
-				'autobid_skip_time_window',
-				array(
-					'auction_id'    => $auction_id,
-					'seconds_left'  => $seconds_left,
-					'threshold_sec' => $fire_threshold,
-				),
-				$auction_id
-			);
 			return;
 		}
 
