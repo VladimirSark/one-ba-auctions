@@ -2,6 +2,11 @@
 
 # Developer Log
 
+## 2025-12-29 — Unlimited autobid toggle + no forced 60s timer
+- **Summary:** Autobid now uses a simple ON/OFF toggle with “unlimited” mode (no max bids entry). Enabling still charges the configured points cost; backend treats `max_bids = 0` as limitless and state exposes `autobid_limitless`. The product editor keeps the per-auction autobid checkbox but no longer forces live timers up to 60s when enabled.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `assets/js/auction.js`, `includes/class-product-type.php`.
+- **How to test:** Edit an auction, enable autobid, set a short live timer (<60s) and save—value stays unchanged. On frontend, toggle autobid ON (no amount required) and confirm points charge prompt appears; state/labels show “unlimited” and autobids fire normally; toggling OFF re-enables manual bidding.
+
 ## 2025-12-27 — Faster autobid cadence + shorter live extension
 - **Summary:** Autobid cron now scheduled every ~10 seconds (self-heals any old 60s schedule); autobid-enabled auctions no longer force a 60s live timer—minimum live extension is 15s per bid. Removed the “skip if timer < 60s” guard so short timers work with frequent polling/cron.
 - **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.

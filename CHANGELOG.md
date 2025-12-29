@@ -1,5 +1,10 @@
 # Changelog
 
+## 2025-12-29
+### Changed
+- Autobid now uses an unlimited ON/OFF toggle: enabling still charges the configured points cost, stores `max_bids = 0` (limitless), and state responses expose `autobid_limitless`. Frontend no longer requires entering a max spend/bids and shows an “unlimited” label when active.
+- Auction editor keeps the per-auction “Enable autobid” checkbox but no longer forces the live timer up to 60s when checked; short live timers remain unchanged.
+
 ## 2025-12-27
 ### Changed
 - Autobid cron cadence increased to ~10s (self-heals legacy 60s schedule) and autobid-enabled timers now extend to a minimum of 15s instead of forcing 60s; short live timers no longer skip autobid runs.

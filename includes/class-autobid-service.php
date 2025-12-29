@@ -83,13 +83,16 @@ class OBA_Autobid_Service {
 				'max_bids'   => 0,
 				'enabled_at' => null,
 				'max_spend'  => 0,
+				'limitless'  => false,
 			);
 		}
+		$is_limitless = (int) $row['max_bids'] === 0;
 		return array(
 			'enabled'    => (int) $row['enabled'],
 			'max_bids'   => (int) $row['max_bids'],
 			'enabled_at' => $row['enabled_at'],
-			'max_spend'  => $bid_cost ? (float) $row['max_bids'] * (float) $bid_cost : 0,
+			'max_spend'  => ( ! $is_limitless && $bid_cost ) ? (float) $row['max_bids'] * (float) $bid_cost : 0,
+			'limitless'  => $is_limitless,
 		);
 	}
 
@@ -97,7 +100,8 @@ class OBA_Autobid_Service {
 		global $wpdb;
 		$table   = $wpdb->prefix . 'auction_autobid';
 		$enabled = $enabled ? 1 : 0;
-		$max_bids = max( 1, (int) $max_bids );
+		$is_limitless = (int) $max_bids === 0;
+		$max_bids = $is_limitless ? 0 : max( 1, (int) $max_bids );
 
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
@@ -211,8 +215,9 @@ class OBA_Autobid_Service {
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 					continue;
 				}
-				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
-				if ( $bids >= (int) $row['max_bids'] ) {
+				$limitless = (int) $row['max_bids'] === 0;
+				$bids      = $this->repo->get_user_bids( $auction_id, $user_id );
+				if ( ! $limitless && $bids >= (int) $row['max_bids'] ) {
 					// Auto-disable when quota is reached so user can reconfigure.
 					$wpdb->update(
 						$table,

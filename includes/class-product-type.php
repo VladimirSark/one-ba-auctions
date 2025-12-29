@@ -138,7 +138,7 @@ class OBA_Product_Type {
 			array(
 				'id'          => '_oba_autobid_enabled',
 				'label'       => __( 'Enable autobid for this auction', 'one-ba-auctions' ),
-				'description' => __( 'If enabled, live timer will be forced to at least 60 seconds (cron-safe).', 'one-ba-auctions' ),
+				'description' => __( 'Allow users to enable autobid for this auction.', 'one-ba-auctions' ),
 			)
 		);
 
@@ -243,13 +243,6 @@ class OBA_Product_Type {
 		}
 
 		// Enforce cron-safe live timer if autobid enabled for this auction.
-		$autobid_enabled = get_post_meta( $product_id, '_oba_autobid_enabled', true );
-		if ( $autobid_enabled ) {
-			$live_timer = (int) get_post_meta( $product_id, '_live_timer_seconds', true );
-			if ( $live_timer > 0 && $live_timer < 60 ) {
-				update_post_meta( $product_id, '_live_timer_seconds', 60 );
-			}
-		}
 	}
 
 	private function get_products_by_meta( $meta_key ) {
