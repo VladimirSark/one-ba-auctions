@@ -159,6 +159,22 @@ class OBA_Autobid_Service {
 			return;
 		}
 
+		// Only fire near the end of the timer to avoid machine-gun bidding from polling.
+		$seconds_left     = $expires_ts ? max( 0, $expires_ts - time() ) : 0;
+		$fire_threshold   = 4; // seconds
+		if ( $seconds_left > $fire_threshold ) {
+			OBA_Audit_Log::log(
+				'autobid_skip_time_window',
+				array(
+					'auction_id'    => $auction_id,
+					'seconds_left'  => $seconds_left,
+					'threshold_sec' => $fire_threshold,
+				),
+				$auction_id
+			);
+			return;
+		}
+
 		$lock_key = 'oba:auction:' . $auction_id;
 		if ( ! OBA_Lock::acquire( $lock_key, 2 ) ) {
 			OBA_Audit_Log::log( 'lock_fail', array( 'auction_id' => $auction_id, 'caller' => 'autobid_cron' ), $auction_id );
@@ -166,6 +182,23 @@ class OBA_Autobid_Service {
 		}
 
 		try {
+			// Per-second idempotency guard to prevent multiple runs in the same second (poll + cron overlap).
+			$current_tick = (int) floor( time() );
+			$last_tick    = (int) get_post_meta( $auction_id, '_oba_last_autobid_tick', true );
+			if ( $last_tick >= $current_tick ) {
+				OBA_Audit_Log::log(
+					'autobid_skip_tick_guard',
+					array(
+						'auction_id' => $auction_id,
+						'last_tick'  => $last_tick,
+						'tick'       => $current_tick,
+					),
+					$auction_id
+				);
+				return;
+			}
+			update_post_meta( $auction_id, '_oba_last_autobid_tick', $current_tick );
+
 			global $wpdb;
 			$table = $wpdb->prefix . 'auction_autobid';
 			$rows  = $wpdb->get_results(

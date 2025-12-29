@@ -12,6 +12,11 @@
 - **Files/Classes:** `includes/class-ajax-controller.php`.
 - **How to test:** Disable/slow cron, keep an auction page open with autobid enabled; during live phase the polling should place autobids (see `autobid_check_tick`/`bid_placed` logs) and progress the auction.
 
+## 2025-12-29 — Autobid throttling (time window + per-second guard)
+- **Summary:** Autobids now fire only when the live timer is within ~4 seconds of expiring, and a per-second tick guard prevents multiple autobid runs within the same second (covers poll + cron overlap). Reduces “machine-gun” bidding while still keeping autobids responsive near the end of the timer.
+- **Files/Classes:** `includes/class-autobid-service.php`.
+- **How to test:** Run live auction with autobid enabled and active polling; confirm autobids only appear when `live_seconds_left` ≤ 4, and audit logs show `autobid_skip_time_window`/`autobid_skip_tick_guard` when applicable.
+
 # Developer Log
 
 ## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish
