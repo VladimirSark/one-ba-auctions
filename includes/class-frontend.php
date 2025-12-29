@@ -228,20 +228,71 @@ class OBA_Frontend {
 		$lobby_pct    = $required > 0 ? round( ( $registered / max( 1, $required ) ) * 100 ) : 0;
 		$status       = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
 		$reg_points   = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
-		$status_label = ucfirst( $status );
+		$status_label = ucfirst( str_replace( '_', ' ', $status ) );
+		$prelive_left = $this->seconds_left( $meta['pre_live_start'], $meta['prelive_timer_seconds'] );
+		$live_left    = $this->seconds_left( $meta['live_expires_at'], 0, true );
+		$history      = $repo->get_last_bids( $auction_id, 1 );
+		$last_bidder  = $history ? $this->mask_user_name( (int) $history[0]['user_id'] ) : '';
+		$last_value   = $history ? wp_strip_all_tags( wc_price( (float) $history[0]['credits_reserved'] ) ) : '';
+		$winner_row   = $repo->get_winner_row( $auction_id );
+		$winner_name  = $winner_row ? $this->mask_user_name( (int) $winner_row['winner_user_id'] ) : '';
+		$winner_value = $winner_row ? wp_strip_all_tags( wc_price( (float) $winner_row['total_credits_consumed'] ) ) : '';
 		?>
 		<div class="oba-loop-teaser" aria-label="<?php esc_attr_e( 'Auction summary', 'one-ba-auctions' ); ?>">
 			<span class="oba-loop-pill"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></span>
-			<span class="oba-loop-status"><?php echo esc_html( $status_label ); ?></span>
-			<span class="oba-loop-lobby"><?php printf( esc_html__( 'Lobby: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></span>
-			<span class="oba-loop-reg"><?php printf( esc_html__( 'Reg: %s pts', 'one-ba-auctions' ), esc_html( $reg_points ) ); ?></span>
+			<span class="oba-loop-status status-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status_label ); ?></span>
+			<?php if ( 'registration' === $status ) : ?>
+				<span class="oba-loop-lobby"><?php printf( esc_html__( 'Lobby: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></span>
+				<span class="oba-loop-reg"><?php printf( esc_html__( 'Reg: %s pts', 'one-ba-auctions' ), esc_html( $reg_points ) ); ?></span>
+			<?php elseif ( 'pre_live' === $status ) : ?>
+				<span class="oba-loop-prelive"><?php printf( esc_html__( 'Starts in %ss', 'one-ba-auctions' ), esc_html( max( 0, $prelive_left ) ) ); ?></span>
+				<span class="oba-loop-lobby"><?php printf( esc_html__( 'Lobby: %s%%', 'one-ba-auctions' ), esc_html( $lobby_pct ) ); ?></span>
+			<?php elseif ( 'live' === $status ) : ?>
+				<span class="oba-loop-live"><?php printf( esc_html__( 'Time left: %ss', 'one-ba-auctions' ), esc_html( max( 0, $live_left ) ) ); ?></span>
+				<?php if ( $last_bidder ) : ?>
+					<span class="oba-loop-lastbidder"><?php printf( esc_html__( 'Last: %s', 'one-ba-auctions' ), esc_html( $last_bidder ) ); ?></span>
+				<?php endif; ?>
+				<?php if ( $last_value ) : ?>
+					<span class="oba-loop-lastvalue"><?php printf( esc_html__( 'Bid: %s', 'one-ba-auctions' ), esc_html( $last_value ) ); ?></span>
+				<?php endif; ?>
+			<?php elseif ( 'ended' === $status && $winner_row ) : ?>
+				<span class="oba-loop-winner"><?php printf( esc_html__( 'Winner: %s', 'one-ba-auctions' ), esc_html( $winner_name ) ); ?></span>
+				<span class="oba-loop-value"><?php printf( esc_html__( 'Bids: %s', 'one-ba-auctions' ), esc_html( $winner_value ) ); ?></span>
+			<?php endif; ?>
 		</div>
 		<style>
 			.oba-loop-teaser{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:12px;align-items:center;}
 			.oba-loop-teaser span{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:4px 8px;color:#111827;font-weight:600;}
 			.oba-loop-pill{background:#111827;color:#fff;border-color:#111827;}
+			.oba-loop-status.status-live{background:#ecfdf3;border-color:#bbf7d0;color:#166534;}
+			.oba-loop-status.status-pre_live{background:#e0f2fe;border-color:#bae6fd;color:#0ea5e9;}
+			.oba-loop-status.status-ended{background:#f5f3ff;border-color:#ddd6fe;color:#5b21b6;}
 		</style>
 		<?php
+	}
+
+	private function seconds_left( $start, $duration, $absolute = false ) {
+		if ( ! $start ) {
+			return (int) $duration;
+		}
+		$start_ts = strtotime( $start . ' UTC' );
+		if ( ! $start_ts ) {
+			return (int) $duration;
+		}
+		$end = $absolute ? $start_ts : ( $start_ts + (int) $duration );
+		return max( 0, $end - time() );
+	}
+
+	private function mask_user_name( $user_id ) {
+		$user = get_user_by( 'id', $user_id );
+
+		if ( ! $user ) {
+			return __( 'Anon', 'one-ba-auctions' );
+		}
+
+		$name = $user->display_name ? $user->display_name : $user->user_login;
+
+		return substr( $name, 0, 3 ) . '***' . substr( (string) $user_id, -1 );
 	}
 
 	public function shortcode_ended_auctions( $atts ) {

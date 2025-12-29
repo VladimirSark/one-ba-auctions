@@ -47,6 +47,11 @@ class OBA_Ajax_Controller {
 
 		$this->engine->maybe_move_to_live( $auction_id );
 		$this->engine->end_auction_if_expired( $auction_id, 'ajax_get_state' );
+		// Ensure autobids can fire from active polling even if cron is delayed.
+		$autobid_service = new OBA_Autobid_Service();
+		if ( $autobid_service->is_globally_enabled() && $autobid_service->is_enabled_for_auction( $auction_id ) ) {
+			$autobid_service->maybe_run_autobids( $auction_id );
+		}
 
 		wp_send_json_success( $this->serialize_state( $auction_id ) );
 	}
@@ -173,10 +178,11 @@ class OBA_Ajax_Controller {
 		$enable    = isset( $_POST['enable'] ) ? (int) $_POST['enable'] : 0;
 		$max_bids  = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
 		$max_spend = isset( $_POST['max_spend'] ) ? (float) $_POST['max_spend'] : 0;
+		$limitless = ! empty( $_POST['limitless'] );
 		$current   = $service->get_user_settings( $auction_id, $user_id );
 
 		// Convert spend -> bids if provided.
-		if ( $enable && $max_spend > 0 ) {
+		if ( $enable && ! $limitless && $max_spend > 0 ) {
 			$bid_cost = $this->get_bid_fee_amount( $meta );
 			if ( $bid_cost <= 0 ) {
 				wp_send_json_error( array( 'code' => 'invalid_bid_cost', 'message' => __( 'Bid price is not set.', 'one-ba-auctions' ) ) );
@@ -185,7 +191,7 @@ class OBA_Ajax_Controller {
 		}
 
 		if ( $enable ) {
-			if ( $max_bids < 1 ) {
+			if ( ! $limitless && $max_bids < 1 ) {
 				wp_send_json_error( array( 'code' => 'invalid_max_bids', 'message' => __( 'Please set max autobids (1 or more).', 'one-ba-auctions' ) ) );
 			}
 			// Charge only when toggling from off -> on.
@@ -199,6 +205,11 @@ class OBA_Ajax_Controller {
 			}
 		}
 
+		if ( $limitless ) {
+			$max_bids  = 0;
+			$max_spend = 0;
+		}
+
 		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids );
 		OBA_Audit_Log::log(
 			'autobid_toggle',
@@ -207,6 +218,7 @@ class OBA_Ajax_Controller {
 				'user_id'    => $user_id,
 				'enabled'    => (bool) $settings['enabled'],
 				'max_bids'   => (int) $settings['max_bids'],
+				'limitless'  => ! empty( $settings['limitless'] ),
 			),
 			$auction_id
 		);
@@ -216,6 +228,7 @@ class OBA_Ajax_Controller {
 				'autobid_enabled' => (bool) $settings['enabled'],
 				'autobid_max_bids'=> (int) $settings['max_bids'],
 				'autobid_max_spend'=> isset( $settings['max_spend'] ) ? (float) $settings['max_spend'] : ( (int) $settings['max_bids'] * $this->get_bid_fee_amount( $meta ) ),
+				'autobid_limitless'=> ! empty( $settings['limitless'] ),
 				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
 			)
 		);
@@ -302,6 +315,7 @@ class OBA_Ajax_Controller {
 
 	private function serialize_state( $auction_id ) {
 		$meta               = $this->repo->get_auction_meta( $auction_id );
+		$meta['product_cost'] = (float) get_post_meta( $auction_id, '_product_cost', true );
 		$user_id            = get_current_user_id();
 		$is_registered      = $user_id ? $this->repo->is_user_registered( $auction_id, $user_id ) : false;
 		$registration_pending = false;
@@ -328,6 +342,23 @@ class OBA_Ajax_Controller {
 			$current_winner  = (int) $winner_row['winner_user_id'];
 			$user_is_winning = $user_id && $current_winner === $user_id;
 		}
+
+		$winner_anonymous = $current_winner ? $this->mask_user_name( $current_winner ) : null;
+		$winner_claimed   = false;
+		$ended_at         = get_post_meta( $auction_id, '_oba_ended_at', true );
+		if ( $winner_row && ! empty( $winner_row['wc_order_id'] ) ) {
+			$winner_claimed = true;
+			if ( function_exists( 'wc_get_order' ) ) {
+				$order = wc_get_order( (int) $winner_row['wc_order_id'] );
+				if ( $order ) {
+					$winner_claimed = in_array( $order->get_status(), array( 'completed', 'processing', 'on-hold', 'pending' ), true );
+				}
+			}
+		}
+
+		$winner_total_bids  = $winner_row ? (int) $winner_row['total_bids'] : 0;
+		$winner_total_value = $winner_row ? (float) $winner_row['total_credits_consumed'] : 0.0;
+		$saved_amount       = $meta['product_cost'] > 0 ? max( 0, $meta['product_cost'] - $winner_total_value ) : 0;
 
 		$can_bid = 'live' === $meta['auction_status']
 			&& $is_registered
@@ -388,6 +419,18 @@ class OBA_Ajax_Controller {
 			'autobid_enabled'             => $autobid_allowed ? (bool) $autobid_user['enabled'] : false,
 			'autobid_max_bids'            => $autobid_allowed ? (int) $autobid_user['max_bids'] : 0,
 			'autobid_max_spend'           => $autobid_allowed ? ( (int) $autobid_user['max_bids'] * $bid_fee_amount ) : 0,
+			'autobid_limitless'           => $autobid_allowed ? ! empty( $autobid_user['limitless'] ) : false,
+			'winner'                     => array(
+				'anonymous_name' => $winner_anonymous,
+				'claimed'        => $winner_claimed,
+				'order_id'       => $winner_row ? (int) $winner_row['wc_order_id'] : 0,
+				'total_bids'     => $winner_total_bids,
+				'total_value'    => $winner_total_value,
+				'total_value_fmt'=> $winner_total_value ? wc_price( $winner_total_value ) : '',
+				'saved_amount'   => $saved_amount,
+				'saved_amount_fmt'=> $saved_amount ? wc_price( $saved_amount ) : '',
+				'ended_at'       => $ended_at,
+			),
 		);
 	}
 

@@ -8,11 +8,14 @@ class OBA_Product_Type {
 	public function hooks() {
 		add_filter( 'product_type_selector', array( $this, 'register_type' ) );
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'add_product_tab' ) );
+		add_filter( 'woocommerce_product_data_tabs', array( $this, 'ensure_core_tabs_visible' ), 20 );
+		add_filter( 'woocommerce_product_type_options', array( $this, 'enable_virtual_downloadable' ) );
 		add_action( 'woocommerce_product_data_panels', array( $this, 'render_fields' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_fields' ) );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_frontend_wrapper' ), 5 );
 		add_action( 'woocommerce_before_single_product', array( $this, 'render_explainer_bar' ), 1 );
 		add_action( 'init', array( $this, 'register_product_class' ) );
+		add_action( 'admin_footer', array( $this, 'admin_footer_scripts' ) );
 	}
 
 	public static function lucide_svg( $name ) {
@@ -45,6 +48,31 @@ class OBA_Product_Type {
 		);
 
 		return $tabs;
+	}
+
+	/**
+	 * Make core tabs (inventory, shipping) visible for auction products.
+	 */
+	public function ensure_core_tabs_visible( $tabs ) {
+		foreach ( array( 'inventory', 'shipping' ) as $key ) {
+			if ( isset( $tabs[ $key ]['class'] ) && is_array( $tabs[ $key ]['class'] ) ) {
+				$tabs[ $key ]['class'][] = 'show_if_auction';
+			}
+		}
+
+		return $tabs;
+	}
+
+	/**
+	 * Allow virtual/downloadable toggles for auction product type.
+	 */
+	public function enable_virtual_downloadable( $options ) {
+		foreach ( array( 'virtual', 'downloadable' ) as $field ) {
+			if ( isset( $options[ $field ]['wrapper_class'] ) ) {
+				$options[ $field ]['wrapper_class'] .= ' show_if_auction';
+			}
+		}
+		return $options;
 	}
 
 	public function render_fields() {
@@ -110,7 +138,7 @@ class OBA_Product_Type {
 			array(
 				'id'          => '_oba_autobid_enabled',
 				'label'       => __( 'Enable autobid for this auction', 'one-ba-auctions' ),
-				'description' => __( 'If enabled, live timer will be forced to at least 60 seconds (cron-safe).', 'one-ba-auctions' ),
+				'description' => __( 'Allow users to enable autobid for this auction.', 'one-ba-auctions' ),
 			)
 		);
 
@@ -215,13 +243,6 @@ class OBA_Product_Type {
 		}
 
 		// Enforce cron-safe live timer if autobid enabled for this auction.
-		$autobid_enabled = get_post_meta( $product_id, '_oba_autobid_enabled', true );
-		if ( $autobid_enabled ) {
-			$live_timer = (int) get_post_meta( $product_id, '_live_timer_seconds', true );
-			if ( $live_timer > 0 && $live_timer < 60 ) {
-				update_post_meta( $product_id, '_live_timer_seconds', 60 );
-			}
-		}
 	}
 
 	private function get_products_by_meta( $meta_key ) {
@@ -300,6 +321,29 @@ class OBA_Product_Type {
 				</div>
 			</div>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Admin inline script to show core simple-product fields for auctions.
+	 */
+	public function admin_footer_scripts() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'product' !== $screen->id ) {
+			return;
+		}
+		?>
+		<script>
+			jQuery(function($){
+				function obaShowAuctionFields() {
+					$('.show_if_simple, .show_if_grouped, .show_if_external, .show_if_variable').addClass('show_if_auction');
+				}
+				obaShowAuctionFields();
+				$(document.body).on('woocommerce-product-type-change', function() {
+					obaShowAuctionFields();
+				});
+			});
+		</script>
 		<?php
 	}
 }

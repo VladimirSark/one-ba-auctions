@@ -57,26 +57,7 @@ $stage_tips = array(
 		font-weight: 700;
 		font-size: 15px;
 	}
-	.oba-autobid-card .oba-autobid-max {
-		width: 110px;
-	}
-	.oba-autobid-card .oba-autobid-status {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		background: transparent !important;
-		box-shadow: none !important;
-		padding: 0 !important;
-		border-radius: 0 !important;
-		color: inherit;
-	}
-	.oba-autobid-card .oba-autobid-status .oba-legend-value,
-	.oba-autobid-card .oba-autobid-state {
-		background: transparent;
-		box-shadow: none;
-		padding: 0;
-	}
+	.oba-autobid-toggle-col { margin-left: auto; }
 	.oba-toggle {
 		display: inline-flex;
 		align-items: center;
@@ -116,31 +97,6 @@ $stage_tips = array(
 	.oba-toggle-text {
 		font-weight: 600;
 		color: #0f172a;
-	}
-	@media (max-width: 600px) {
-		.oba-autobid-card {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 16px;
-		}
-		.oba-autobid-card > div {
-			flex-direction: column;
-			align-items: flex-start;
-			width: 100%;
-			gap: 8px;
-		}
-		.oba-autobid-card .oba-autobid-status {
-			width: 100%;
-			justify-content: flex-start;
-		}
-		.oba-autobid-card .oba-autobid-max,
-		.oba-autobid-card .oba-toggle {
-			width: 100%;
-			max-width: none;
-		}
-		.oba-autobid-card .oba-toggle-slider {
-			width: 50px;
-		}
 	}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
@@ -230,9 +186,6 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -240,10 +193,6 @@ $stage_tips = array(
 									<span class="oba-toggle-slider"></span>
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-							</div>
-							<div class="oba-autobid-status">
-								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
-								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
 							</div>
 						</div>
 					</div>
@@ -304,9 +253,6 @@ $stage_tips = array(
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-									<input type="number" min="0.01" step="0.01" class="oba-autobid-max" />
-								</div>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -314,10 +260,6 @@ $stage_tips = array(
 									<span class="oba-toggle-slider"></span>
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-							</div>
-							<div class="oba-autobid-status">
-								<span style="font-size:12px;color:#475569;"><?php esc_html_e( 'Autobid set to', 'one-ba-auctions' ); ?></span>
-								<span class="oba-autobid-state oba-legend-value" style="font-size:16px;font-weight:700;">—</span>
 							</div>
 						</div>
 					</div>
@@ -344,6 +286,18 @@ $stage_tips = array(
 					</span>
 				</div>
 				<div class="oba-phase-body">
+					<div class="oba-claimed-summary" style="display:none;background:#ecfdf3;border:1px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:12px;">
+						<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+							<div style="font-weight:700;font-size:16px;"><?php esc_html_e( 'Prize claimed', 'one-ba-auctions' ); ?></div>
+							<div class="oba-claimed-ended" style="font-size:13px;color:#0f172a;"></div>
+						</div>
+						<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:14px;">
+							<div><strong><?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-winner">—</span></div>
+							<div><strong><?php esc_html_e( 'Bids placed', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-bids">—</span></div>
+							<div><strong><?php esc_html_e( 'Bids value', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-value">—</span></div>
+							<div><strong><?php esc_html_e( 'Saved vs cost', 'one-ba-auctions' ); ?>:</strong> <span class="oba-claimed-saved">—</span></div>
+						</div>
+					</div>
 					<div class="oba-winner-claim" style="display:none;">
 						<div class="oba-outcome oba-outcome--win">
 							<h4 class="oba-win-title"><?php echo esc_html( $get( 'winner_msg', __( 'You won!', 'one-ba-auctions' ) ) ); ?></h4>

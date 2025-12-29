@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Users configure max bids (max_bids).
  * - Allowed only after user registration.
  * - Charges points per enable.
- * - Runs from cron (every minute); places at most 1 autobid per run (round-robin).
+ * - Runs from cron/polling frequently; places at most 1 autobid per run (round-robin).
  */
 class OBA_Autobid_Service {
 
@@ -83,13 +83,16 @@ class OBA_Autobid_Service {
 				'max_bids'   => 0,
 				'enabled_at' => null,
 				'max_spend'  => 0,
+				'limitless'  => false,
 			);
 		}
+		$is_limitless = (int) $row['max_bids'] === 0;
 		return array(
 			'enabled'    => (int) $row['enabled'],
 			'max_bids'   => (int) $row['max_bids'],
 			'enabled_at' => $row['enabled_at'],
-			'max_spend'  => $bid_cost ? (float) $row['max_bids'] * (float) $bid_cost : 0,
+			'max_spend'  => ( ! $is_limitless && $bid_cost ) ? (float) $row['max_bids'] * (float) $bid_cost : 0,
+			'limitless'  => $is_limitless,
 		);
 	}
 
@@ -97,7 +100,8 @@ class OBA_Autobid_Service {
 		global $wpdb;
 		$table   = $wpdb->prefix . 'auction_autobid';
 		$enabled = $enabled ? 1 : 0;
-		$max_bids = max( 1, (int) $max_bids );
+		$is_limitless = (int) $max_bids === 0;
+		$max_bids = $is_limitless ? 0 : max( 1, (int) $max_bids );
 
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
@@ -159,10 +163,10 @@ class OBA_Autobid_Service {
 			return;
 		}
 
-		// With 1-minute cron, the live timer must be at least 60 seconds to allow repeated autobids.
-		$timer_seconds = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : 0;
-		if ( $timer_seconds && $timer_seconds < 60 ) {
-			OBA_Audit_Log::log( 'autobid_skipped_short_timer', array( 'auction_id' => $auction_id, 'live_timer_seconds' => $timer_seconds ), $auction_id );
+		// Only fire near the end of the timer to avoid machine-gun bidding from polling.
+		$seconds_left     = $expires_ts ? max( 0, $expires_ts - time() ) : 0;
+		$fire_threshold   = 15; // seconds; allow bids in the final 15s window.
+		if ( $seconds_left > $fire_threshold ) {
 			return;
 		}
 
@@ -173,6 +177,23 @@ class OBA_Autobid_Service {
 		}
 
 		try {
+			// Per-second idempotency guard to prevent multiple runs in the same second (poll + cron overlap).
+			$current_tick = (int) floor( time() );
+			$last_tick    = (int) get_post_meta( $auction_id, '_oba_last_autobid_tick', true );
+			if ( $last_tick >= $current_tick ) {
+				OBA_Audit_Log::log(
+					'autobid_skip_tick_guard',
+					array(
+						'auction_id' => $auction_id,
+						'last_tick'  => $last_tick,
+						'tick'       => $current_tick,
+					),
+					$auction_id
+				);
+				return;
+			}
+			update_post_meta( $auction_id, '_oba_last_autobid_tick', $current_tick );
+
 			global $wpdb;
 			$table = $wpdb->prefix . 'auction_autobid';
 			$rows  = $wpdb->get_results(
@@ -194,8 +215,9 @@ class OBA_Autobid_Service {
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 					continue;
 				}
-				$bids = $this->repo->get_user_bids( $auction_id, $user_id );
-				if ( $bids >= (int) $row['max_bids'] ) {
+				$limitless = (int) $row['max_bids'] === 0;
+				$bids      = $this->repo->get_user_bids( $auction_id, $user_id );
+				if ( ! $limitless && $bids >= (int) $row['max_bids'] ) {
 					// Auto-disable when quota is reached so user can reconfigure.
 					$wpdb->update(
 						$table,

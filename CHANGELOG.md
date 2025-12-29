@@ -1,8 +1,21 @@
 # Changelog
 
+## 2025-12-29
+### Changed
+- Autobid now uses an unlimited ON/OFF toggle: enabling still charges the configured points cost, stores `max_bids = 0` (limitless), and state responses expose `autobid_limitless`. Frontend no longer requires entering a max spend/bids and shows an “unlimited” label when active.
+- Auction editor keeps the per-auction “Enable autobid” checkbox but no longer forces the live timer up to 60s when checked; short live timers remain unchanged.
+
+## 2025-12-27
+### Changed
+- Autobid cron cadence increased to ~10s (self-heals legacy 60s schedule) and autobid-enabled timers now extend to a minimum of 15s instead of forcing 60s; short live timers no longer skip autobid runs.
+- `auction_get_state` now triggers autobids when enabled, so frontend polling can fire autobids even if cron is delayed.
+- Autobids are throttled to fire only when ≤4s remain on the timer and are guarded per-second to avoid multiple runs in the same second (poll + cron overlap).
+- Autobid fire window widened to 15s and time-window skip logging removed to reduce noise and prevent missed bids when timers are frequently extended.
+
 ## 2025-12-22
 ### Changed
 - Autobid cards (registration/live) simplified: compact inline spend input, single toggle switch, clean status text (no gradient/shadow), removed preset calc text, and enable now uses the user-entered EUR amount instead of defaulting to 1 bid.
+- Auction products now expose WooCommerce inventory + shipping tabs and allow virtual/downloadable flags, using core stock/meta handling.
 
 ## 2025-12-09
 ### Added

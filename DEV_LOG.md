@@ -2,6 +2,43 @@
 
 # Developer Log
 
+## 2025-12-29 — Unlimited autobid toggle + no forced 60s timer
+- **Summary:** Autobid now uses a simple ON/OFF toggle with “unlimited” mode (no max bids entry). Enabling still charges the configured points cost; backend treats `max_bids = 0` as limitless and state exposes `autobid_limitless`. The product editor keeps the per-auction autobid checkbox but no longer forces live timers up to 60s when enabled.
+- **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `assets/js/auction.js`, `includes/class-product-type.php`.
+- **How to test:** Edit an auction, enable autobid, set a short live timer (<60s) and save—value stays unchanged. On frontend, toggle autobid ON (no amount required) and confirm points charge prompt appears; state/labels show “unlimited” and autobids fire normally; toggling OFF re-enables manual bidding.
+
+## 2025-12-29 — Autobid UI toggle-only (removed max input)
+- **Summary:** Streamlined autobid cards in registration and live steps to show only the Autobid title, toggle switch, and status text—removed the unused max spend input now that autobid is unlimited.
+- **Files/Classes:** `templates/oba-single-auction.php` (inline styles/layout).
+- **How to test:** Register and view the autobid card in registration/live phases: no input box is present; toggle still enables/disables autobid and status text updates.
+
+## 2025-12-29 — Settings cleanup (remove autobid master/window)
+- **Summary:** Removed the unused “Enable autobid” master switch and “Autobid window” fields from Settings → General; autobid is always on when allowed per-auction.
+- **Files/Classes:** `includes/class-admin.php`, `includes/class-settings.php`.
+- **How to test:** Open 1BA Auctions → Settings → General; the autobid master/window fields are gone; saving settings still works and autobid toggles remain per auction.
+
+## 2025-12-27 — Faster autobid cadence + shorter live extension
+- **Summary:** Autobid cron now scheduled every ~10 seconds (self-heals any old 60s schedule); autobid-enabled auctions no longer force a 60s live timer—minimum live extension is 15s per bid. Removed the “skip if timer < 60s” guard so short timers work with frequent polling/cron.
+- **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.
+- **How to test:** Ensure WP-Cron shows `oba_run_autobid_check` with “Every 10 seconds (OBA)”. Run a live auction with autobid enabled and a 10–20s live timer: verify bids still reset the timer to at least ~15s, autobids fire via cron/polling, and no “autobid_skipped_short_timer” logs appear.
+
+## 2025-12-29 — Autobid firing from polling
+- **Summary:** `auction_get_state` now invokes `maybe_run_autobids` when autobid is enabled, so active frontend polling triggers autobids even if cron is delayed.
+- **Files/Classes:** `includes/class-ajax-controller.php`.
+- **How to test:** Disable/slow cron, keep an auction page open with autobid enabled; during live phase the polling should place autobids (see `autobid_check_tick`/`bid_placed` logs) and progress the auction.
+
+## 2025-12-29 — Autobid throttling (time window + per-second guard)
+- **Summary:** Autobids now fire only when the live timer is within ~4 seconds of expiring, and a per-second tick guard prevents multiple autobid runs within the same second (covers poll + cron overlap). Reduces “machine-gun” bidding while still keeping autobids responsive near the end of the timer.
+- **Files/Classes:** `includes/class-autobid-service.php`.
+- **How to test:** Run live auction with autobid enabled and active polling; confirm autobids only appear when `live_seconds_left` ≤ 4, and audit logs show `autobid_skip_time_window`/`autobid_skip_tick_guard` when applicable.
+
+## 2025-12-29 — Autobid window widened to 15s, skip logs muted
+- **Summary:** Autobids now fire in the final 15s (was 4s) to avoid missing bids when timer is extended; skip logging for the time window was removed to reduce log noise.
+- **Files/Classes:** `includes/class-autobid-service.php`.
+- **How to test:** Run live auction with autobid enabled; with polls/cron, autobids should place when `live_seconds_left` ≤ 15. Skip logs for time-window should no longer flood audit.
+
+# Developer Log
+
 ## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish
 - **Summary:** Live timer now starts when entering live (no empty `_live_expires_at`); autobid cron will initialize a missing expiry once before finalizing. If a live auction hits expiry with zero bids, the live timer is restarted instead of ending without a winner. Autobid card UI simplified to a 3-column layout with a single toggle button (Enable/Disable) and a clear “Autobid set to” value display, aligned with other cards.
 - **Files/Classes:** `includes/class-auction-engine.php`, `includes/class-plugin.php`, `templates/oba-single-auction.php`, `assets/js/auction.js`.
@@ -334,6 +371,14 @@
 - **DB:** None.
 - **Constraints/Assumptions:** User enters spend (EUR) not bid count; toggle sends that amount; status shows clean text without pill styling.
 - **How to test:** Register, enter a spend in the inline field, toggle autobid ON → confirm state shows correct € value and server stores that amount; toggle OFF and ON again with a different amount to verify updates; check status text has no background/shadow.
+
+## 2025-12-22 — Auction product supports inventory/virtual/downloadable
+- **Summary:** Enabled WooCommerce inventory and shipping tabs for auction products and re-enabled virtual/downloadable flags (with core downloadable fields) by adding `show_if_auction` to relevant tabs/fields via filters + admin JS helper.
+- **Why:** Auctions need stock management and virtual/downloadable behaviors like simple products.
+- **Files/Classes:** `includes/class-product-type.php`.
+- **DB:** None.
+- **Constraints/Assumptions:** Woo core saves stock/virtual/downloadable meta; auction products inherit simple product stock semantics (typically stock=1, manage stock on).
+- **How to test:** Edit an auction product → Inventory tab visible; set “Manage stock” + qty, save; toggle Virtual/Downloadable, add a file, save; confirm values persist and shipping behaves accordingly on checkout/claim.
 
 ## 2025-11-21 — Custom login/account link
 - **Summary:** Added settings field for custom login/account URL used in logged-out registration prompts.

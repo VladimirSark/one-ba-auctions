@@ -887,23 +887,6 @@ class OBA_Admin {
 						<td><input type="number" name="poll_interval_ms" min="500" step="100" value="<?php echo esc_attr( $settings['poll_interval_ms'] ); ?>" /></td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Enable autobid', 'one-ba-auctions' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="autobid_enabled" value="1" <?php checked( ! empty( $settings['autobid_enabled'] ) ); ?> />
-								<?php esc_html_e( 'Allow users to use autobid', 'one-ba-auctions' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'Master switch for autobid feature.', 'one-ba-auctions' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Autobid window (seconds)', 'one-ba-auctions' ); ?></th>
-						<td>
-							<input type="number" name="autobid_window_seconds" min="30" step="10" value="<?php echo esc_attr( $settings['autobid_window_seconds'] ); ?>" />
-							<p class="description"><?php esc_html_e( 'How long autobid stays active after activation.', 'one-ba-auctions' ); ?></p>
-						</td>
-					</tr>
-					<tr>
 						<th scope="row"><?php esc_html_e( 'Autobid activation cost (points)', 'one-ba-auctions' ); ?></th>
 						<td>
 							<input type="number" name="autobid_activation_cost_points" min="0" step="1" value="<?php echo esc_attr( $settings['autobid_activation_cost_points'] ); ?>" />
@@ -1119,8 +1102,6 @@ class OBA_Admin {
 				'membership_links'        => isset( $_POST['membership_links'] ) ? (array) wp_unslash( $_POST['membership_links'] ) : array(),
 				'membership_labels'       => isset( $_POST['membership_labels'] ) ? (array) wp_unslash( $_POST['membership_labels'] ) : array(),
 				'points_value'            => isset( $_POST['points_value'] ) ? wp_unslash( $_POST['points_value'] ) : null,
-				'autobid_enabled'         => isset( $_POST['autobid_enabled'] ),
-				'autobid_window_seconds'  => isset( $_POST['autobid_window_seconds'] ) ? wp_unslash( $_POST['autobid_window_seconds'] ) : null,
 				'autobid_activation_cost_points' => isset( $_POST['autobid_activation_cost_points'] ) ? wp_unslash( $_POST['autobid_activation_cost_points'] ) : null,
 				'autobid_reminder_minutes'=> isset( $_POST['autobid_reminder_minutes'] ) ? wp_unslash( $_POST['autobid_reminder_minutes'] ) : null,
 			)
