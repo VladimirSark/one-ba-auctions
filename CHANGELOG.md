@@ -3,6 +3,7 @@
 ## 2025-12-27
 ### Changed
 - Autobid cron cadence increased to ~10s (self-heals legacy 60s schedule) and autobid-enabled timers now extend to a minimum of 15s instead of forcing 60s; short live timers no longer skip autobid runs.
+- `auction_get_state` now triggers autobids when enabled, so frontend polling can fire autobids even if cron is delayed.
 
 ## 2025-12-22
 ### Changed

@@ -7,6 +7,11 @@
 - **Files/Classes:** `includes/class-plugin.php`, `includes/class-auction-engine.php`, `includes/class-autobid-service.php`.
 - **How to test:** Ensure WP-Cron shows `oba_run_autobid_check` with “Every 10 seconds (OBA)”. Run a live auction with autobid enabled and a 10–20s live timer: verify bids still reset the timer to at least ~15s, autobids fire via cron/polling, and no “autobid_skipped_short_timer” logs appear.
 
+## 2025-12-29 — Autobid firing from polling
+- **Summary:** `auction_get_state` now invokes `maybe_run_autobids` when autobid is enabled, so active frontend polling triggers autobids even if cron is delayed.
+- **Files/Classes:** `includes/class-ajax-controller.php`.
+- **How to test:** Disable/slow cron, keep an auction page open with autobid enabled; during live phase the polling should place autobids (see `autobid_check_tick`/`bid_placed` logs) and progress the auction.
+
 # Developer Log
 
 ## 2025-12-22 — Live timer guards, no-bid restart, autobid UI polish

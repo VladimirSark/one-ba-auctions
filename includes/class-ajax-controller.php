@@ -47,6 +47,11 @@ class OBA_Ajax_Controller {
 
 		$this->engine->maybe_move_to_live( $auction_id );
 		$this->engine->end_auction_if_expired( $auction_id, 'ajax_get_state' );
+		// Ensure autobids can fire from active polling even if cron is delayed.
+		$autobid_service = new OBA_Autobid_Service();
+		if ( $autobid_service->is_globally_enabled() && $autobid_service->is_enabled_for_auction( $auction_id ) ) {
+			$autobid_service->maybe_run_autobids( $auction_id );
+		}
 
 		wp_send_json_success( $this->serialize_state( $auction_id ) );
 	}
