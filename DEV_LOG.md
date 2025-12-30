@@ -7,6 +7,14 @@
 - **Files/Classes:** `includes/class-autobid-service.php`, `includes/class-ajax-controller.php`, `assets/js/auction.js`, `includes/class-product-type.php`.
 - **How to test:** Edit an auction, enable autobid, set a short live timer (<60s) and save—value stays unchanged. On frontend, toggle autobid ON (no amount required) and confirm points charge prompt appears; state/labels show “unlimited” and autobids fire normally; toggling OFF re-enables manual bidding.
 
+## 2025-12-29 — Autobid settings cleanup + CLI loop
+- **Summary:** Removed unused global autobid master/window settings (autobid is always available; per-auction enable remains) and added `wp oba run-autobid-loop --interval=5` to continuously run autobid + expiry ticks from CLI.
+- **Why:** Simplify the admin UI and offer a reliable background driver when WP-Cron can’t run sub-minute.
+- **Files/Classes:** `includes/class-admin.php`, `DEV_LOG.md`.
+- **DB:** None.
+- **Constraints/Assumptions:** Loop runs until Ctrl+C; interval ≥ 1s; per-auction “Enable autobid” meta still controls availability.
+- **How to test:** Run `wp oba run-autobid-loop --interval=5` in CLI during a live auction and confirm autobids/expiry proceed without open tabs. Settings page should no longer show global autobid toggle/window fields.
+
 ## 2025-12-29 — Autobid UI toggle-only (removed max input)
 - **Summary:** Streamlined autobid cards in registration and live steps to show only the Autobid title, toggle switch, and status text—removed the unused max spend input now that autobid is unlimited.
 - **Files/Classes:** `templates/oba-single-auction.php` (inline styles/layout).
