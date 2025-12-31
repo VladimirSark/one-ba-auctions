@@ -155,7 +155,9 @@ class OBA_Activator {
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$autobid_table = $wpdb->prefix . 'auction_autobid';
-		$sql_autobid   = "CREATE TABLE {$autobid_table} (
+		$table_exists  = (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $autobid_table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( ! $table_exists ) {
+			$sql_autobid = "CREATE TABLE {$autobid_table} (
 		  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		  auction_id BIGINT UNSIGNED NOT NULL,
 		  user_id BIGINT UNSIGNED NOT NULL,
@@ -171,7 +173,8 @@ class OBA_Activator {
 		  UNIQUE KEY auction_user (auction_id, user_id),
 		  KEY enabled_idx (auction_id, enabled)
 		) {$charset_collate};";
-		dbDelta( $sql_autobid );
+			dbDelta( $sql_autobid );
+		}
 
 		$bids_table = $wpdb->prefix . 'auction_bids';
 		$col        = $wpdb->get_results( "SHOW COLUMNS FROM {$bids_table} LIKE 'is_autobid'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
