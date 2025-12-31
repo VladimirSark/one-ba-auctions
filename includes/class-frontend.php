@@ -7,6 +7,7 @@ class OBA_Frontend {
 
 	public function hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -14,6 +15,32 @@ class OBA_Frontend {
 		add_shortcode( 'oba_upcoming_auctions', array( $this, 'shortcode_upcoming_auctions' ) );
 		add_shortcode( 'oba_live_auctions', array( $this, 'shortcode_live_auctions' ) );
 		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
+	}
+
+	public function enqueue_heartbeat() {
+		if ( is_admin() ) {
+			return;
+		}
+
+		wp_register_script(
+			'oba-heartbeat',
+			OBA_PLUGIN_URL . 'assets/js/heartbeat.js',
+			array(),
+			OBA_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'oba-heartbeat',
+			'obaHeartbeat',
+			array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'oba_heartbeat' ),
+				'interval' => 15000, // ms
+			)
+		);
+
+		wp_enqueue_script( 'oba-heartbeat' );
 	}
 
 	public function enqueue_assets() {

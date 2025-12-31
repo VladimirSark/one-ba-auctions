@@ -24,6 +24,8 @@ class OBA_Ajax_Controller {
 		add_action( 'wp_ajax_auction_place_bid', array( $this, 'auction_place_bid' ) );
 		add_action( 'wp_ajax_auction_claim_prize', array( $this, 'auction_claim_prize' ) );
 		add_action( 'wp_ajax_auction_toggle_autobid', array( $this, 'auction_toggle_autobid' ) );
+		add_action( 'wp_ajax_oba_tick_heartbeat', array( $this, 'heartbeat_tick' ) );
+		add_action( 'wp_ajax_nopriv_oba_tick_heartbeat', array( $this, 'heartbeat_tick' ) );
 	}
 
 	private function validate_nonce() {
@@ -39,6 +41,31 @@ class OBA_Ajax_Controller {
 
 	private function get_request_auction_id() {
 		return isset( $_REQUEST['auction_id'] ) ? absint( $_REQUEST['auction_id'] ) : 0;
+	}
+
+	private function validate_heartbeat_nonce() {
+		if ( empty( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'oba_heartbeat' ) ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'invalid_nonce',
+					'message' => __( 'Invalid request.', 'one-ba-auctions' ),
+				)
+			);
+		}
+	}
+
+	public function heartbeat_tick() {
+		$this->validate_heartbeat_nonce();
+		// Lightweight background driver from any page view.
+		do_action( 'oba_run_autobid_check' );
+		do_action( 'oba_run_expiry_check' );
+
+		wp_send_json_success(
+			array(
+				'ok'        => true,
+				'timestamp' => time(),
+			)
+		);
 	}
 
 	public function auction_get_state() {
