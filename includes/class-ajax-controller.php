@@ -56,6 +56,16 @@ class OBA_Ajax_Controller {
 
 	public function heartbeat_tick() {
 		$this->validate_heartbeat_nonce();
+
+		// Mark driver as alive for watchdog/daemon detection.
+		update_option(
+			'oba_last_driver',
+			array(
+				'ts'     => time(),
+				'source' => 'heartbeat',
+			),
+			false
+		);
 		// Lightweight background driver from any page view.
 		do_action( 'oba_run_autobid_check' );
 		do_action( 'oba_run_expiry_check' );

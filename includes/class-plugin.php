@@ -87,6 +87,9 @@ class OBA_Plugin {
 	}
 
 	public function check_expired_auctions() {
+		$this->touch_driver( 'expiry_check' );
+		$this->maybe_log_watchdog( 'expiry_check' );
+
 		$engine = new OBA_Auction_Engine();
 		$repo   = new OBA_Auction_Repository();
 
@@ -152,6 +155,9 @@ class OBA_Plugin {
 	}
 
 	public function run_autobid_check() {
+		$this->touch_driver( 'autobid_check' );
+		$this->maybe_log_watchdog( 'autobid_check' );
+
 		$service = new OBA_Autobid_Service();
 		if ( ! $service->is_globally_enabled() ) {
 			return;
@@ -254,6 +260,49 @@ class OBA_Plugin {
 	}
 
 	public function run_autobid_guard() { return; }
+
+	private function touch_driver( $source ) {
+		update_option(
+			'oba_last_driver',
+			array(
+				'ts'     => time(),
+				'source' => $source,
+			),
+			false
+		);
+	}
+
+	private function maybe_log_watchdog( $context ) {
+		$now        = time();
+		$last_seen  = get_option( 'oba_last_driver', array() );
+		$last_ts    = isset( $last_seen['ts'] ) ? absint( $last_seen['ts'] ) : 0;
+		$last_src   = isset( $last_seen['source'] ) ? $last_seen['source'] : null;
+		$delta      = $last_ts ? ( $now - $last_ts ) : null;
+		$last_alert = (int) get_option( 'oba_watchdog_last_alert', 0 );
+
+		if ( $last_ts && $delta <= 120 ) {
+			return;
+		}
+		if ( $last_alert && ( $now - $last_alert ) < 120 ) {
+			return;
+		}
+		if ( class_exists( 'OBA_Audit_Log' ) ) {
+			OBA_Audit_Log::log(
+				'watchdog_no_driver',
+				array(
+					'context'        => $context,
+					'last_seen_ts'   => $last_ts ?: null,
+					'last_seen_utc'  => $last_ts ? gmdate( 'c', $last_ts ) : null,
+					'last_source'    => $last_src,
+					'now_ts'         => $now,
+					'now_utc'        => gmdate( 'c', $now ),
+					'delta'          => $delta,
+				),
+				0
+			);
+			update_option( 'oba_watchdog_last_alert', $now, false );
+		}
+	}
 
 	public function maybe_schedule_cron() {
 		if ( ! wp_next_scheduled( 'oba_run_expiry_check' ) ) {
