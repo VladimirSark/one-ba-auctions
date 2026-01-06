@@ -49,6 +49,12 @@
 		});
 	}
 
+	function openLogin() {
+		if (obaAuction.login_url) {
+			window.open(obaAuction.login_url, '_blank', 'noopener');
+		}
+	}
+
 	function clearAlert() {
 		$('.oba-alert-error').hide().text('');
 	}
@@ -119,6 +125,15 @@
 		const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
 		const isLiveStage = status === 'live';
 		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
+		const isGuest = !state.data.is_logged_in;
+
+		if (isGuest) {
+			$('.oba-guest-banner').show();
+			$('.oba-layout').addClass('oba-guest-blur');
+		} else {
+			$('.oba-guest-banner').hide();
+			$('.oba-layout').removeClass('oba-guest-blur');
+		}
 		if (showLiveJoinCta) {
 			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
 			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
@@ -433,6 +448,10 @@
 	}
 
 	function register() {
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
+			return;
+		}
 		const termsBlocks = $('.oba-terms, .oba-live-terms');
 		const termsChecked = $('.oba-terms-checkbox').is(':checked');
 		if (obaAuction.terms_text && !termsChecked) {
@@ -489,6 +508,10 @@
 	}
 
 	function bid() {
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
+			return;
+		}
 		const btn = $('.oba-bid');
 		if (btn.prop('disabled')) return;
 
@@ -518,6 +541,10 @@
 	}
 
 	function claim() {
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
+			return;
+		}
 		if (!state.data || state.data.status !== 'ended' || !state.data.current_user_is_winner) {
 			return;
 		}
@@ -579,6 +606,15 @@
 	$(document).on('click', '.oba-register', (e) => {
 		e.preventDefault();
 		register();
+	});
+
+	$(document).on('click', '.oba-bid, .oba-register, .oba-claim, .oba-autobid-toggle, .oba-autobid-toggle-btn, .oba-autobid-enable, .oba-autobid-disable', (e) => {
+		if (state.data && !state.data.is_logged_in) {
+			e.preventDefault();
+			openLogin();
+			return false;
+		}
+		return true;
 	});
 
 	$(document).on('click', '.oba-bid', (e) => {

@@ -499,6 +499,7 @@ class OBA_Ajax_Controller {
 				'saved_amount_fmt'=> $saved_amount ? wc_price( $saved_amount ) : '',
 				'ended_at'       => $ended_at,
 			),
+			'is_logged_in'               => (bool) $user_id,
 		);
 	}
 

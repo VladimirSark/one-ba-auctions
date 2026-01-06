@@ -35,6 +35,26 @@ $stage_tips = array(
 
 <div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>">
 	<style>
+	.oba-guest-banner {
+		display: none;
+		background: #0f172a;
+		color: #fff;
+		padding: 14px 16px;
+		border-radius: 12px;
+		margin-bottom: 12px;
+		box-shadow: 0 10px 30px rgba(15,23,42,0.2);
+		align-items: center;
+		gap: 12px;
+		justify-content: space-between;
+	}
+	.oba-guest-banner h4 { margin: 0; font-size: 16px; }
+	.oba-guest-banner p { margin: 0; opacity: 0.9; }
+	.oba-guest-banner a.button {
+		background: #22c55e;
+		border-color: #16a34a;
+		color: #0f172a;
+	}
+	.oba-guest-blur { filter: blur(2px); opacity: 0.9; }
 	.oba-autobid-card {
 		display: flex;
 		flex-direction: row;
@@ -112,6 +132,15 @@ $stage_tips = array(
 		</div>
 	</div>
 	<div class="oba-layout">
+		<div class="oba-guest-banner">
+			<div>
+				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
+				<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
+			</div>
+			<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
+				<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
+			</a>
+		</div>
 		<div class="oba-col-right">
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
