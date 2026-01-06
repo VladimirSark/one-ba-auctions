@@ -266,6 +266,12 @@ $stage_tips = array(
 					<div class="oba-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
 						<button class="button button-primary oba-bid"><?php esc_html_e( 'Place bid', 'one-ba-auctions' ); ?></button>
 					</div>
+					<div class="oba-live-terms" style="display:none;margin-top:8px;">
+						<label style="display:flex;gap:8px;align-items:center;">
+							<input type="checkbox" class="oba-terms-checkbox" />
+							<span><a href="#" class="oba-terms-link"><?php esc_html_e( 'T&C must be accepted before participating', 'one-ba-auctions' ); ?></a></span>
+						</label>
+					</div>
 					<div class="oba-history-head">
 						<span><?php esc_html_e( 'Last bidder', 'one-ba-auctions' ); ?></span>
 						<span class="oba-history-time-head"><?php esc_html_e( 'Time', 'one-ba-auctions' ); ?></span>
