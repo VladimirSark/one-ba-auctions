@@ -124,6 +124,9 @@
 			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
 			regBtn.text(label);
 			regBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+			$('.oba-terms').show();
+			$('.oba-registered-note').hide();
+			$('.oba-not-registered').show();
 			if (!canJoinLive) {
 				const msg = !hasEnoughLive
 					? (obaAuction.i18n?.points_low_title || 'Not enough points to continue.')
@@ -430,6 +433,7 @@
 	function register() {
 		if (obaAuction.terms_text && !$('.oba-terms-checkbox').is(':checked')) {
 			$('.oba-terms').addClass('oba-terms-error');
+			showToast(obaAuction.i18n?.accept_terms || 'Please accept the terms to continue.', true);
 			return;
 		}
 		$('.oba-terms').removeClass('oba-terms-error');
@@ -575,7 +579,12 @@
 
 	$(document).on('click', '.oba-bid', (e) => {
 		e.preventDefault();
-		if (state.data && state.data.can_join_live && !state.data.user_registered) {
+		const canLiveJoinNow = state.data
+			&& state.data.status === 'live'
+			&& state.data.allow_live_join
+			&& !state.data.user_registered
+			&& state.data.can_join_live;
+		if (canLiveJoinNow) {
 			register();
 			return;
 		}
