@@ -46,6 +46,8 @@ $stage_tips = array(
 		align-items: center;
 		gap: 12px;
 		justify-content: space-between;
+		position: relative;
+		z-index: 9500;
 	}
 	.oba-guest-banner h4 { margin: 0; font-size: 16px; }
 	.oba-guest-banner p { margin: 0; opacity: 0.9; }

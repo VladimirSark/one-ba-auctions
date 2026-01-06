@@ -130,6 +130,7 @@
 		if (isGuest) {
 			$('.oba-guest-banner').show();
 			$('.oba-layout').addClass('oba-guest-blur');
+			$('.oba-membership-overlay, .oba-points-overlay').hide();
 		} else {
 			$('.oba-guest-banner').hide();
 			$('.oba-layout').removeClass('oba-guest-blur');
