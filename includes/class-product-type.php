@@ -177,6 +177,26 @@ class OBA_Product_Type {
 				'desc_tip'    => true,
 			)
 		);
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => '_allow_live_join',
+				'label'       => __( 'Allow live joining', 'one-ba-auctions' ),
+				'description' => __( 'Let users join during live stage for extra points.', 'one-ba-auctions' ),
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'          => '_live_join_points',
+				'label'       => __( 'Live join points required', 'one-ba-auctions' ),
+				'type'        => 'number',
+				'custom_attributes' => array(
+					'step' => '1',
+					'min'  => '0',
+				),
+				'description' => __( 'Points charged when a user joins during live stage.', 'one-ba-auctions' ),
+				'desc_tip'    => true,
+			)
+		);
 		?>
 		<p>
 			<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
@@ -227,6 +247,8 @@ class OBA_Product_Type {
 			'_bid_product_id',
 			'_registration_points',
 			'_product_cost',
+			'_allow_live_join',
+			'_live_join_points',
 		);
 
 		foreach ( $fields as $field ) {
