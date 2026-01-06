@@ -37,12 +37,13 @@ $stage_tips = array(
 	<style>
 	.oba-guest-banner {
 		display: none;
-		background: transparent;
+		background: #fff;
 		color: #0f172a;
-		padding: 0 0 12px;
-		border-radius: 0;
-		margin-bottom: 0;
-		box-shadow: none;
+		padding: 14px 16px;
+		border-radius: 12px;
+		margin-bottom: 12px;
+		box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+		border: 1px solid #e5e7eb;
 		align-items: center;
 		gap: 12px;
 		justify-content: space-between;
