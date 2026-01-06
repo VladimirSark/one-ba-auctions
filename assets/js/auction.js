@@ -163,7 +163,12 @@
 		}
 
 		const bidBtn = $('.oba-bid');
-		if (state.data.autobid_enabled) {
+		if (showLiveJoinCta) {
+			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+			bidBtn.text(label);
+			bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+		} else if (state.data.autobid_enabled) {
 			const autoText = obaAuction.i18n?.autobid_on_button || 'Autobid ON';
 			bidBtn.prop('disabled', true).text(autoText);
 		} else if (state.data.can_bid) {
@@ -570,6 +575,10 @@
 
 	$(document).on('click', '.oba-bid', (e) => {
 		e.preventDefault();
+		if (state.data && state.data.can_join_live && !state.data.user_registered) {
+			register();
+			return;
+		}
 		bid();
 	});
 
