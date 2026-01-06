@@ -129,11 +129,13 @@
 
 		if (isGuest) {
 			$('.oba-guest-banner').show();
-			$('.oba-layout').addClass('oba-guest-blur');
+			$('.oba-col-right').addClass('oba-guest-blur');
+			$('.oba-explainer').addClass('oba-guest-blur');
 			$('.oba-membership-overlay, .oba-points-overlay').hide();
 		} else {
 			$('.oba-guest-banner').hide();
-			$('.oba-layout').removeClass('oba-guest-blur');
+			$('.oba-col-right').removeClass('oba-guest-blur');
+			$('.oba-explainer').removeClass('oba-guest-blur');
 		}
 		if (showLiveJoinCta) {
 			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
