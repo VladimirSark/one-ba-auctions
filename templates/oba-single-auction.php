@@ -37,24 +37,24 @@ $stage_tips = array(
 	<style>
 	.oba-guest-banner {
 		display: none;
-		background: #0f172a;
-		color: #fff;
-		padding: 14px 16px;
-		border-radius: 12px;
-		margin-bottom: 12px;
-		box-shadow: 0 10px 30px rgba(15,23,42,0.2);
+		background: transparent;
+		color: #0f172a;
+		padding: 0 0 12px;
+		border-radius: 0;
+		margin-bottom: 0;
+		box-shadow: none;
 		align-items: center;
 		gap: 12px;
 		justify-content: space-between;
 		position: relative;
 		z-index: 9500;
 	}
-	.oba-guest-banner h4 { margin: 0; font-size: 16px; }
-	.oba-guest-banner p { margin: 0; opacity: 0.9; }
+	.oba-guest-banner h4 { margin: 0; font-size: 16px; color: #0f172a; }
+	.oba-guest-banner p { margin: 0; opacity: 0.85; color: #334155; }
 	.oba-guest-banner a.button {
-		background: #22c55e;
-		border-color: #16a34a;
-		color: #0f172a;
+		background: #0f172a;
+		border-color: #0f172a;
+		color: #fff;
 	}
 	.oba-guest-blur { filter: blur(2px); opacity: 0.9; }
 	.oba-autobid-card {
