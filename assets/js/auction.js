@@ -93,7 +93,7 @@
 		}
 
 		updateStepBar(status);
-		updatePhaseCards(status);
+		updatePhaseCards(status, showLiveJoinCta);
 		applyMembershipLocks(status);
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
@@ -302,7 +302,7 @@
 	});
 }
 
-	function updatePhaseCards(status) {
+	function updatePhaseCards(status, liveJoinMode = false) {
 		const order = ['registration', 'pre_live', 'live', 'ended'];
 		$('.oba-phase-card').each((_, el) => {
 			const step = $(el).data('step');
@@ -313,6 +313,21 @@
 			$(el).removeClass('is-active is-complete is-collapsed');
 			iconWrap.removeClass('icon-check icon-lock icon-up icon-down');
 			let iconState = 'lock';
+			if (liveJoinMode && step === 'registration') {
+				$(el).addClass('is-active');
+				iconState = 'up';
+				iconWrap.addClass(`icon-${iconState}`);
+				if (labelEl.length) {
+					const map = {
+						registration: obaAuction.i18n?.step1_label || 'Registration',
+						pre_live: obaAuction.i18n?.step2_label || 'Countdown to Live',
+						live: obaAuction.i18n?.step3_label || 'Live Bidding',
+						ended: obaAuction.i18n?.step4_label || 'Auction Ended',
+					};
+					labelEl.text(map[step] || labelEl.text());
+				}
+				return;
+			}
 			if (idx < cur || (step === 'registration' && state.data.user_registered && status !== 'registration')) {
 				$(el).addClass('is-complete');
 				iconState = 'check';
