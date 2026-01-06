@@ -433,12 +433,14 @@
 	}
 
 	function register() {
-		if (obaAuction.terms_text && !$('.oba-terms-checkbox').is(':checked')) {
-			$('.oba-terms').addClass('oba-terms-error');
+		const termsBlocks = $('.oba-terms, .oba-live-terms');
+		const termsChecked = $('.oba-terms-checkbox').is(':checked');
+		if (obaAuction.terms_text && !termsChecked) {
+			termsBlocks.addClass('oba-terms-error');
 			showToast(obaAuction.i18n?.accept_terms || 'Please accept the terms to continue.', true);
 			return;
 		}
-		$('.oba-terms').removeClass('oba-terms-error');
+		termsBlocks.removeClass('oba-terms-error');
 
 		$.post(
 			obaAuction.ajax_url,
@@ -638,7 +640,7 @@ $(document).on('click', '.oba-autobid-disable', function (e) {
 
 	$(document).on('change', '.oba-terms-checkbox', () => {
 		if ($('.oba-terms-checkbox').is(':checked')) {
-			$('.oba-terms').removeClass('oba-terms-error');
+			$('.oba-terms, .oba-live-terms').removeClass('oba-terms-error');
 		}
 	});
 
