@@ -56,6 +56,7 @@ $stage_tips = array(
 		background: #0f172a;
 		border-color: #0f172a;
 		color: #fff;
+		margin-top: 15px;
 	}
 	.oba-guest-blur { filter: blur(2px); opacity: 0.9; }
 	.oba-autobid-card {
