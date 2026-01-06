@@ -119,6 +119,7 @@ class OBA_Frontend {
 			'registration_closed'=> __( 'Registration closed', 'one-ba-auctions' ),
 			'points_label'      => $points_label,
 			'points_suffix'     => $points_suffix,
+			'live_join_cta'     => ! empty( $t['live_join_cta'] ) ? $t['live_join_cta'] : __( 'Participate in auction', 'one-ba-auctions' ),
 			'membership_required' => ! empty( $t['membership_required'] ) ? $t['membership_required'] : __( 'A membership plan is required to register.', 'one-ba-auctions' ),
 			'membership_cta'      => ! empty( $t['membership_cta'] ) ? $t['membership_cta'] : __( 'Get membership', 'one-ba-auctions' ),
 			'lobby_progress'    => ! empty( $t['lobby_progress'] ) ? $t['lobby_progress'] : __( 'Lobby progress', 'one-ba-auctions' ),

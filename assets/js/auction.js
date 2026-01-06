@@ -113,8 +113,26 @@
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
 		const suffix = obaAuction.i18n?.points_suffix || 'pts';
 		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
-		regBtn.text(`${regText}${fee ? ` (${fee} ${suffix})` : ''}`);
-		if (status !== 'registration' && !state.data.user_registered) {
+		const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
+		const allowLiveJoin = !!state.data.allow_live_join;
+		const canJoinLive = !!state.data.can_join_live;
+		const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
+		const isLiveStage = status === 'live';
+		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
+		if (showLiveJoinCta) {
+			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+			regBtn.text(label);
+			regBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+			if (!canJoinLive) {
+				const msg = !hasEnoughLive
+					? (obaAuction.i18n?.points_low_title || 'Not enough points to continue.')
+					: (obaAuction.i18n?.membership_required || 'Membership required to register.');
+				showAlert(msg);
+			} else {
+				clearAlert();
+			}
+		} else if (status !== 'registration' && !state.data.user_registered) {
 			regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
 			$('.oba-not-registered').hide();
 			$('.oba-registered').hide();
