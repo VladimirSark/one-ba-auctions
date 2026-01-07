@@ -57,6 +57,7 @@ class OBA_Plugin {
 
 		add_action( 'oba_run_expiry_check', array( $this, 'check_expired_auctions' ) );
 		add_action( 'oba_run_autobid_check', array( $this, 'run_autobid_check' ) );
+		add_action( 'oba_driver_tick', array( $this, 'run_driver_tick' ) );
 		add_filter(
 			'cron_schedules',
 			function ( $schedules ) {
@@ -261,6 +262,22 @@ class OBA_Plugin {
 
 	public function run_autobid_guard() { return; }
 
+	/**
+	 * Unified driver tick to run autobid + expiry from WP-Cron/CLI.
+	 */
+	public function run_driver_tick() {
+		$lock_key = 'oba:driver_tick';
+		if ( ! OBA_Lock::acquire( $lock_key, 10 ) ) {
+			return;
+		}
+		try {
+			do_action( 'oba_run_autobid_check' );
+			do_action( 'oba_run_expiry_check' );
+		} finally {
+			OBA_Lock::release( $lock_key );
+		}
+	}
+
 	private function touch_driver( $source ) {
 		update_option(
 			'oba_last_driver',
@@ -319,6 +336,9 @@ class OBA_Plugin {
 		}
 		if ( ! $autobid_ts ) {
 			wp_schedule_event( time() + 10, 'oba_every_ten_seconds', 'oba_run_autobid_check' );
+		}
+		if ( ! wp_next_scheduled( 'oba_driver_tick' ) ) {
+			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'oba_every_minute', 'oba_driver_tick' );
 		}
 	}
 
