@@ -58,6 +58,8 @@ $stage_tips = array(
 		color: #fff;
 		margin-top: 15px;
 	}
+	.oba-guest-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 220px; }
+	.oba-guest-social { width: 100%; }
 	.oba-guest-blur { filter: blur(2px); opacity: 0.9; }
 	.oba-autobid-card {
 		display: flex;
@@ -141,9 +143,16 @@ $stage_tips = array(
 				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
 				<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
 			</div>
-			<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
-				<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
-			</a>
+			<div class="oba-guest-actions">
+				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
+				</a>
+				<?php if ( function_exists( 'shortcode_exists' ) && shortcode_exists( 'nextend_social_login_register_flow' ) && function_exists( 'do_shortcode' ) ) : ?>
+					<div class="oba-guest-social">
+						<?php echo do_shortcode( '[nextend_social_login_register_flow]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+			</div>
 		</div>
 		<div class="oba-col-right">
 			<div class="oba-card oba-phase-card" data-step="registration">
