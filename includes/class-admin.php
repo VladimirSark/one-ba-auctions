@@ -2466,5 +2466,34 @@ class OBA_Admin {
 				WP_CLI::success( 'Tick processed for all live auctions.' );
 			}
 		);
+
+		// Long-running loop to drive autobids/expiry from CLI (for real 5s+ cadence).
+		WP_CLI::add_command(
+			'oba run-autobid-loop',
+			function ( $args, $assoc_args ) {
+				$interval = isset( $assoc_args['interval'] ) ? (int) $assoc_args['interval'] : 5;
+				if ( $interval < 1 ) {
+					WP_CLI::error( 'Interval must be at least 1 second.' );
+				}
+
+				WP_CLI::log( "Starting autobid loop every {$interval}s. Press Ctrl+C to stop." );
+				$loop = 0;
+				while ( true ) {
+					$start = microtime( true );
+
+					do_action( 'oba_run_autobid_check' );
+					do_action( 'oba_run_expiry_check' );
+
+					$elapsed = microtime( true ) - $start;
+					$loop++;
+					WP_CLI::log( sprintf( '[%s] tick #%d finished in %.2fs', gmdate( 'H:i:s' ), $loop, $elapsed ) );
+
+					$sleep = max( 0, $interval - $elapsed );
+					if ( $sleep > 0 ) {
+						usleep( (int) ( $sleep * 1_000_000 ) );
+					}
+				}
+			}
+		);
 	}
 }

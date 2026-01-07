@@ -15,6 +15,8 @@ class OBA_Auction_Repository {
 			'claim_price_credits'      => 0.0,
 			'bid_product_id'           => (int) get_post_meta( $auction_id, '_bid_product_id', true ),
 			'registration_points'      => (float) get_post_meta( $auction_id, '_registration_points', true ),
+			'allow_live_join'          => get_post_meta( $auction_id, '_allow_live_join', true ) === 'yes',
+			'live_join_points'         => (float) get_post_meta( $auction_id, '_live_join_points', true ),
 			'auction_status'           => get_post_meta( $auction_id, '_auction_status', true ) ?: 'registration',
 			'pre_live_start'           => get_post_meta( $auction_id, '_pre_live_start', true ),
 			'live_expires_at'          => get_post_meta( $auction_id, '_live_expires_at', true ),

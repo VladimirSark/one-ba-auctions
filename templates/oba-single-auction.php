@@ -35,6 +35,32 @@ $stage_tips = array(
 
 <div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>">
 	<style>
+	.oba-guest-banner {
+		display: none;
+		background: #fff;
+		color: #0f172a;
+		padding: 14px 16px;
+		border-radius: 12px;
+		margin-bottom: 12px;
+		box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+		border: 1px solid #e5e7eb;
+		align-items: center;
+		gap: 12px;
+		justify-content: space-between;
+		position: relative;
+		z-index: 9500;
+	}
+	.oba-guest-banner h4 { margin: 0; font-size: 16px; color: #0f172a; }
+	.oba-guest-banner p { margin: 0; opacity: 0.85; color: #334155; }
+	.oba-guest-banner a.button {
+		background: #0f172a;
+		border-color: #0f172a;
+		color: #fff;
+		margin-top: 15px;
+	}
+	.oba-guest-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; min-width: 220px; }
+	.oba-guest-social { width: 100%; }
+	.oba-guest-blur { filter: blur(2px); opacity: 0.9; }
 	.oba-autobid-card {
 		display: flex;
 		flex-direction: row;
@@ -112,6 +138,22 @@ $stage_tips = array(
 		</div>
 	</div>
 	<div class="oba-layout">
+		<div class="oba-guest-banner">
+			<div>
+				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
+				<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
+			</div>
+			<div class="oba-guest-actions">
+				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
+				</a>
+				<?php if ( function_exists( 'shortcode_exists' ) && shortcode_exists( 'nextend_social_login_register_flow' ) && function_exists( 'do_shortcode' ) ) : ?>
+					<div class="oba-guest-social">
+						<?php echo do_shortcode( '[nextend_social_login_register_flow]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
 		<div class="oba-col-right">
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
@@ -265,6 +307,12 @@ $stage_tips = array(
 					</div>
 					<div class="oba-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
 						<button class="button button-primary oba-bid"><?php esc_html_e( 'Place bid', 'one-ba-auctions' ); ?></button>
+					</div>
+					<div class="oba-live-terms" style="display:none;margin-top:8px;">
+						<label style="display:flex;gap:8px;align-items:center;">
+							<input type="checkbox" class="oba-terms-checkbox" />
+							<span><a href="#" class="oba-terms-link"><?php esc_html_e( 'T&C must be accepted before participating', 'one-ba-auctions' ); ?></a></span>
+						</label>
 					</div>
 					<div class="oba-history-head">
 						<span><?php esc_html_e( 'Last bidder', 'one-ba-auctions' ); ?></span>

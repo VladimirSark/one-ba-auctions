@@ -61,6 +61,48 @@ class OBA_Auction_Engine {
 		return true;
 	}
 
+	public function process_live_join( $auction_id, $user_id ) {
+		if ( ! is_user_logged_in() ) {
+			return new WP_Error( 'not_logged_in', __( 'You must be logged in to join.', 'one-ba-auctions' ) );
+		}
+
+		$meta = $this->repo->get_auction_meta( $auction_id );
+
+		if ( $meta['auction_status'] !== 'live' ) {
+			return new WP_Error( 'invalid_state', __( 'Live joining is only available during the live stage.', 'one-ba-auctions' ) );
+		}
+
+		if ( empty( $meta['allow_live_join'] ) ) {
+			return new WP_Error( 'live_join_disabled', __( 'Live joining is disabled for this auction.', 'one-ba-auctions' ) );
+		}
+
+		if ( $this->repo->is_user_registered( $auction_id, $user_id ) ) {
+			return true;
+		}
+
+		if ( ! $this->user_has_membership( $user_id ) ) {
+			return new WP_Error( 'membership_required', __( 'Membership required to join this auction.', 'one-ba-auctions' ) );
+		}
+
+		$live_points = isset( $meta['live_join_points'] ) ? (float) $meta['live_join_points'] : 0;
+		$reg_points  = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+
+		if ( $live_points <= 0 ) {
+			return new WP_Error( 'live_join_points_not_set', __( 'Live join points are not configured.', 'one-ba-auctions' ) );
+		}
+
+		if ( $live_points <= $reg_points ) {
+			return new WP_Error( 'live_join_points_too_low', __( 'Live join points must be greater than registration points.', 'one-ba-auctions' ) );
+		}
+
+		$deduct = $this->points->deduct_points( $user_id, $live_points );
+		if ( is_wp_error( $deduct ) ) {
+			return $deduct;
+		}
+
+		return true;
+	}
+
 	public function maybe_start_pre_live( $auction_id ) {
 		$meta = $this->repo->get_auction_meta( $auction_id );
 

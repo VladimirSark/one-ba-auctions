@@ -24,6 +24,8 @@ class OBA_Ajax_Controller {
 		add_action( 'wp_ajax_auction_place_bid', array( $this, 'auction_place_bid' ) );
 		add_action( 'wp_ajax_auction_claim_prize', array( $this, 'auction_claim_prize' ) );
 		add_action( 'wp_ajax_auction_toggle_autobid', array( $this, 'auction_toggle_autobid' ) );
+		add_action( 'wp_ajax_oba_tick_heartbeat', array( $this, 'heartbeat_tick' ) );
+		add_action( 'wp_ajax_nopriv_oba_tick_heartbeat', array( $this, 'heartbeat_tick' ) );
 	}
 
 	private function validate_nonce() {
@@ -39,6 +41,41 @@ class OBA_Ajax_Controller {
 
 	private function get_request_auction_id() {
 		return isset( $_REQUEST['auction_id'] ) ? absint( $_REQUEST['auction_id'] ) : 0;
+	}
+
+	private function validate_heartbeat_nonce() {
+		if ( empty( $_REQUEST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ), 'oba_heartbeat' ) ) {
+			wp_send_json_error(
+				array(
+					'code'    => 'invalid_nonce',
+					'message' => __( 'Invalid request.', 'one-ba-auctions' ),
+				)
+			);
+		}
+	}
+
+	public function heartbeat_tick() {
+		$this->validate_heartbeat_nonce();
+
+		// Mark driver as alive for watchdog/daemon detection.
+		update_option(
+			'oba_last_driver',
+			array(
+				'ts'     => time(),
+				'source' => 'heartbeat',
+			),
+			false
+		);
+		// Lightweight background driver from any page view.
+		do_action( 'oba_run_autobid_check' );
+		do_action( 'oba_run_expiry_check' );
+
+		wp_send_json_success(
+			array(
+				'ok'        => true,
+				'timestamp' => time(),
+			)
+		);
 	}
 
 	public function auction_get_state() {
@@ -61,6 +98,8 @@ class OBA_Ajax_Controller {
 		$auction_id = $this->get_request_auction_id();
 		$user_id    = get_current_user_id();
 		$accepted   = isset( $_POST['accepted_terms'] ) ? (int) $_POST['accepted_terms'] : 0;
+		$meta       = $this->repo->get_auction_meta( $auction_id );
+		$status     = isset( $meta['auction_status'] ) ? $meta['auction_status'] : 'registration';
 
 		if ( ! empty( $this->settings['terms_text'] ) && ! $accepted ) {
 			wp_send_json(
@@ -72,7 +111,23 @@ class OBA_Ajax_Controller {
 			);
 		}
 
-		$result = $this->engine->process_registration( $auction_id, $user_id );
+		if ( 'registration' === $status ) {
+			$result = $this->engine->process_registration( $auction_id, $user_id );
+			$join_fee = isset( $meta['registration_points'] ) ? (float) $meta['registration_points'] : 0;
+			$success_message = __( 'Registered for auction.', 'one-ba-auctions' );
+		} elseif ( 'live' === $status && ! empty( $meta['allow_live_join'] ) ) {
+			$result = $this->engine->process_live_join( $auction_id, $user_id );
+			$join_fee = isset( $meta['live_join_points'] ) ? (float) $meta['live_join_points'] : 0;
+			$success_message = __( 'Joined live auction.', 'one-ba-auctions' );
+		} else {
+			wp_send_json(
+				array(
+					'success' => false,
+					'code'    => 'invalid_state',
+					'message' => __( 'Registration is closed.', 'one-ba-auctions' ),
+				)
+			);
+		}
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json(
@@ -84,11 +139,9 @@ class OBA_Ajax_Controller {
 			);
 		}
 
-		$meta    = $this->repo->get_auction_meta( $auction_id );
-
-		$this->engine->enroll_participant( $auction_id, $user_id, 0 );
+		$this->engine->enroll_participant( $auction_id, $user_id, isset( $join_fee ) ? (float) $join_fee : 0 );
 		$state                    = $this->serialize_state( $auction_id );
-		$state['success_message'] = __( 'Registered for auction.', 'one-ba-auctions' );
+		$state['success_message'] = isset( $success_message ) ? $success_message : __( 'Registered for auction.', 'one-ba-auctions' );
 		wp_send_json_success( $state );
 	}
 
@@ -318,6 +371,8 @@ class OBA_Ajax_Controller {
 		$meta['product_cost'] = (float) get_post_meta( $auction_id, '_product_cost', true );
 		$user_id            = get_current_user_id();
 		$is_registered      = $user_id ? $this->repo->is_user_registered( $auction_id, $user_id ) : false;
+		$allow_live_join    = ! empty( $meta['allow_live_join'] );
+		$live_join_points   = isset( $meta['live_join_points'] ) ? (float) $meta['live_join_points'] : 0;
 		$registration_pending = false;
 		$claim_pending      = false;
 		$participant_count  = $this->repo->get_participant_count( $auction_id );
@@ -333,6 +388,14 @@ class OBA_Ajax_Controller {
 		$bid_fee_amount     = $this->get_bid_fee_amount( $meta );
 		$user_bid_total     = $user_bids * $bid_fee_amount;
 		$registration_pending = $user_id ? $this->has_pending_registration_order( $auction_id, $user_id ) : false;
+		$points_service     = new OBA_Points_Service();
+		$user_points_balance = $user_id ? $points_service->get_balance( $user_id ) : 0;
+		$can_join_live      = 'live' === $meta['auction_status']
+			&& $allow_live_join
+			&& ! $is_registered
+			&& $user_id
+			&& $this->engine->user_has_membership( $user_id );
+		$has_enough_points_live = $can_join_live ? ( $user_points_balance >= $live_join_points ) : false;
 
 		$autobid_service = class_exists( 'OBA_Autobid_Service' ) ? new OBA_Autobid_Service() : null;
 		$autobid_allowed = $autobid_service ? ( $autobid_service->is_globally_enabled() && $autobid_service->is_enabled_for_auction( $auction_id ) ) : false;
@@ -371,6 +434,11 @@ class OBA_Ajax_Controller {
 			'registration_fee'          => $meta['registration_points'],
 			'registration_fee_formatted'=> $meta['registration_points'],
 			'registration_fee_plain'    => $meta['registration_points'],
+			'allow_live_join'           => $allow_live_join,
+			'live_join_points'          => $live_join_points,
+			'live_join_points_plain'    => $live_join_points,
+			'can_join_live'             => $can_join_live,
+			'has_enough_points_for_live_join' => $has_enough_points_live,
 			'bid_cost'                  => $this->get_bid_fee_amount( $meta ),
 			'bid_cost_formatted'        => $this->get_bid_fee_formatted( $meta ),
 			'bid_cost_plain'            => $this->get_bid_fee_plain( $meta ),
@@ -404,7 +472,7 @@ class OBA_Ajax_Controller {
 			'wc_order_id'               => $winner_row ? (int) $winner_row['wc_order_id'] : null,
 			'is_admin'                  => current_user_can( 'manage_woocommerce' ),
 			'error_message'             => '',
-			'user_points_balance'       => $user_id ? ( new OBA_Points_Service() )->get_balance( $user_id ) : 0,
+			'user_points_balance'       => $user_points_balance,
 			'membership_active'         => $user_id ? $this->engine->user_has_membership( $user_id ) : false,
 			'registration_unlocked'     => $is_registered || ( $user_id ? $this->engine->user_has_membership( $user_id ) : false ),
 			'live_expires_at'           => $meta['live_expires_at'],
@@ -431,6 +499,7 @@ class OBA_Ajax_Controller {
 				'saved_amount_fmt'=> $saved_amount ? wc_price( $saved_amount ) : '',
 				'ended_at'       => $ended_at,
 			),
+			'is_logged_in'               => (bool) $user_id,
 		);
 	}
 

@@ -163,10 +163,12 @@ class OBA_Autobid_Service {
 			return;
 		}
 
-		// Only fire near the end of the timer to avoid machine-gun bidding from polling.
-		$seconds_left     = $expires_ts ? max( 0, $expires_ts - time() ) : 0;
-		$fire_threshold   = 15; // seconds; allow bids in the final 15s window.
-		if ( $seconds_left > $fire_threshold ) {
+		// Fire shortly after a timer reset (about 10s after the timer restarts) so bids land earlier.
+		$seconds_left   = $expires_ts ? max( 0, $expires_ts - time() ) : 0;
+		$live_duration  = isset( $meta['live_timer_seconds'] ) ? (int) $meta['live_timer_seconds'] : 0;
+		$elapsed        = $live_duration ? max( 0, $live_duration - $seconds_left ) : 0;
+		$fire_after_sec = 10; // start autobids once 10s have elapsed after a reset.
+		if ( $elapsed < $fire_after_sec ) {
 			return;
 		}
 

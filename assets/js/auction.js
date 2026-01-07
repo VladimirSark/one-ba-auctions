@@ -49,6 +49,12 @@
 		});
 	}
 
+	function openLogin() {
+		if (obaAuction.login_url) {
+			window.open(obaAuction.login_url, '_blank', 'noopener');
+		}
+	}
+
 	function clearAlert() {
 		$('.oba-alert-error').hide().text('');
 	}
@@ -113,8 +119,42 @@
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
 		const suffix = obaAuction.i18n?.points_suffix || 'pts';
 		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
-		regBtn.text(`${regText}${fee ? ` (${fee} ${suffix})` : ''}`);
-		if (status !== 'registration' && !state.data.user_registered) {
+		const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
+		const allowLiveJoin = !!state.data.allow_live_join;
+		const canJoinLive = !!state.data.can_join_live;
+		const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
+		const isLiveStage = status === 'live';
+		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
+		const isGuest = !state.data.is_logged_in;
+
+		if (isGuest) {
+			$('.oba-guest-banner').show();
+			$('.oba-col-right').addClass('oba-guest-blur');
+			$('.oba-explainer').addClass('oba-guest-blur');
+			$('.oba-membership-overlay, .oba-points-overlay').hide();
+		} else {
+			$('.oba-guest-banner').hide();
+			$('.oba-col-right').removeClass('oba-guest-blur');
+			$('.oba-explainer').removeClass('oba-guest-blur');
+		}
+		if (showLiveJoinCta) {
+			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+			regBtn.text(label);
+			regBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+			$('.oba-terms').show();
+			$('.oba-live-terms').show();
+			$('.oba-registered-note').hide();
+			$('.oba-not-registered').show();
+			if (!canJoinLive) {
+				const msg = !hasEnoughLive
+					? (obaAuction.i18n?.points_low_title || 'Not enough points to continue.')
+					: (obaAuction.i18n?.membership_required || 'Membership required to register.');
+				showAlert(msg);
+			} else {
+				clearAlert();
+			}
+		} else if (status !== 'registration' && !state.data.user_registered) {
 			regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
 			$('.oba-not-registered').hide();
 			$('.oba-registered').hide();
@@ -136,6 +176,7 @@
 		} else {
 			regBtn.removeClass('oba-registered').prop('disabled', false);
 			$('.oba-terms').show();
+			$('.oba-live-terms').hide();
 			$('.oba-registered-note').hide();
 			$('.oba-not-registered').show();
 			$('.oba-registered').hide();
@@ -145,7 +186,12 @@
 		}
 
 		const bidBtn = $('.oba-bid');
-		if (state.data.autobid_enabled) {
+		if (showLiveJoinCta) {
+			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+			bidBtn.text(label);
+			bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+		} else if (state.data.autobid_enabled) {
 			const autoText = obaAuction.i18n?.autobid_on_button || 'Autobid ON';
 			bidBtn.prop('disabled', true).text(autoText);
 		} else if (state.data.can_bid) {
@@ -405,11 +451,18 @@
 	}
 
 	function register() {
-		if (obaAuction.terms_text && !$('.oba-terms-checkbox').is(':checked')) {
-			$('.oba-terms').addClass('oba-terms-error');
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
 			return;
 		}
-		$('.oba-terms').removeClass('oba-terms-error');
+		const termsBlocks = $('.oba-terms, .oba-live-terms');
+		const termsChecked = $('.oba-terms-checkbox').is(':checked');
+		if (obaAuction.terms_text && !termsChecked) {
+			termsBlocks.addClass('oba-terms-error');
+			showToast(obaAuction.i18n?.accept_terms || 'Please accept the terms to continue.', true);
+			return;
+		}
+		termsBlocks.removeClass('oba-terms-error');
 
 		$.post(
 			obaAuction.ajax_url,
@@ -458,6 +511,10 @@
 	}
 
 	function bid() {
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
+			return;
+		}
 		const btn = $('.oba-bid');
 		if (btn.prop('disabled')) return;
 
@@ -487,6 +544,10 @@
 	}
 
 	function claim() {
+		if (state.data && !state.data.is_logged_in) {
+			openLogin();
+			return;
+		}
 		if (!state.data || state.data.status !== 'ended' || !state.data.current_user_is_winner) {
 			return;
 		}
@@ -550,8 +611,26 @@
 		register();
 	});
 
+	$(document).on('click', '.oba-bid, .oba-register, .oba-claim, .oba-autobid-toggle, .oba-autobid-toggle-btn, .oba-autobid-enable, .oba-autobid-disable', (e) => {
+		if (state.data && !state.data.is_logged_in) {
+			e.preventDefault();
+			openLogin();
+			return false;
+		}
+		return true;
+	});
+
 	$(document).on('click', '.oba-bid', (e) => {
 		e.preventDefault();
+		const canLiveJoinNow = state.data
+			&& state.data.status === 'live'
+			&& state.data.allow_live_join
+			&& !state.data.user_registered
+			&& state.data.can_join_live;
+		if (canLiveJoinNow) {
+			register();
+			return;
+		}
 		bid();
 	});
 
@@ -600,7 +679,7 @@ $(document).on('click', '.oba-autobid-disable', function (e) {
 
 	$(document).on('change', '.oba-terms-checkbox', () => {
 		if ($('.oba-terms-checkbox').is(':checked')) {
-			$('.oba-terms').removeClass('oba-terms-error');
+			$('.oba-terms, .oba-live-terms').removeClass('oba-terms-error');
 		}
 	});
 
