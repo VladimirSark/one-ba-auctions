@@ -70,13 +70,21 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT enabled, max_bids, enabled_at FROM {$table} WHERE auction_id = %d AND user_id = %d",
+				"SELECT enabled, max_bids, enabled_at, window_started_at, window_ends_at FROM {$table} WHERE auction_id = %d AND user_id = %d",
 				$auction_id,
 				$user_id
 			),
 			ARRAY_A
 		);
 		$bid_cost = $this->get_bid_cost( $auction_id );
+		$window_ends_at = isset( $row['window_ends_at'] ) ? $row['window_ends_at'] : null;
+		$window_left = 0;
+		if ( $window_ends_at && class_exists( 'OBA_Time' ) ) {
+			$ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $window_ends_at );
+			if ( $ts ) {
+				$window_left = max( 0, $ts - time() );
+			}
+		}
 		if ( ! $row ) {
 			return array(
 				'enabled'    => 0,
@@ -84,6 +92,8 @@ class OBA_Autobid_Service {
 				'enabled_at' => null,
 				'max_spend'  => 0,
 				'limitless'  => false,
+				'window_ends_at' => null,
+				'window_seconds_left' => 0,
 			);
 		}
 		$is_limitless = (int) $row['max_bids'] === 0;
@@ -93,15 +103,24 @@ class OBA_Autobid_Service {
 			'enabled_at' => $row['enabled_at'],
 			'max_spend'  => ( ! $is_limitless && $bid_cost ) ? (float) $row['max_bids'] * (float) $bid_cost : 0,
 			'limitless'  => $is_limitless,
+			'window_ends_at' => $window_ends_at,
+			'window_seconds_left' => $window_left,
 		);
 	}
 
-	public function set_user_settings( $auction_id, $user_id, $enabled, $max_bids ) {
+	public function set_user_settings( $auction_id, $user_id, $enabled, $max_bids, $window_minutes = 0 ) {
 		global $wpdb;
 		$table   = $wpdb->prefix . 'auction_autobid';
 		$enabled = $enabled ? 1 : 0;
 		$is_limitless = (int) $max_bids === 0;
 		$max_bids = $is_limitless ? 0 : max( 1, (int) $max_bids );
+		$window_minutes = max( 0, (int) $window_minutes );
+		$window_ends_at = null;
+		$window_started_at = null;
+		if ( $enabled && $window_minutes > 0 ) {
+			$window_started_at = current_time( 'mysql', 1 );
+			$window_ends_at    = gmdate( 'Y-m-d H:i:s', time() + ( $window_minutes * MINUTE_IN_SECONDS ) );
+		}
 
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
@@ -115,8 +134,10 @@ class OBA_Autobid_Service {
 			'enabled'    => $enabled,
 			'max_bids'   => $max_bids,
 			'enabled_at' => $enabled ? current_time( 'mysql' ) : null,
+			'window_started_at' => $enabled ? $window_started_at : null,
+			'window_ends_at'    => $enabled ? $window_ends_at : null,
 		);
-		$formats = array( '%d', '%d', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%s' );
 
 		if ( $exists ) {
 			$wpdb->update(
@@ -200,7 +221,7 @@ class OBA_Autobid_Service {
 			$table = $wpdb->prefix . 'auction_autobid';
 			$rows  = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT user_id, enabled, max_bids FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY enabled_at ASC, user_id ASC",
+					"SELECT user_id, enabled, max_bids, window_ends_at FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY enabled_at ASC, user_id ASC",
 					$auction_id
 				),
 				ARRAY_A
@@ -216,6 +237,31 @@ class OBA_Autobid_Service {
 				$user_id = (int) $row['user_id'];
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 					continue;
+				}
+				if ( ! empty( $row['window_ends_at'] ) ) {
+					$ends_ts = class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $row['window_ends_at'] ) : 0;
+					if ( $ends_ts && $ends_ts <= time() ) {
+						$wpdb->update(
+							$table,
+							array( 'enabled' => 0 ),
+							array(
+								'auction_id' => $auction_id,
+								'user_id'    => $user_id,
+							),
+							array( '%d' ),
+							array( '%d', '%d' )
+						);
+						OBA_Audit_Log::log(
+							'autobid_window_expired',
+							array(
+								'auction_id'     => $auction_id,
+								'user_id'        => $user_id,
+								'window_ends_at' => $row['window_ends_at'],
+							),
+							$auction_id
+						);
+						continue;
+					}
 				}
 				$limitless = (int) $row['max_bids'] === 0;
 				$bids      = $this->repo->get_user_bids( $auction_id, $user_id );

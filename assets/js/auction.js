@@ -833,6 +833,36 @@ function renderInlineAutobidTotal($block) {
 	totalEl.text(`${formatMoney(amount)} = ${count} bids`);
 }
 
+	function getSelectedAutobidWindow() {
+		const btn = $('.oba-autobid-window-btn.is-active').first();
+		return btn.length ? parseInt(btn.data('minutes'), 10) || 0 : 0;
+	}
+
+	function setSelectedAutobidWindow(minutes) {
+		$('.oba-autobid-window-btn').removeClass('is-active');
+		$('.oba-autobid-window-btn').each(function () {
+			if (parseInt($(this).data('minutes'), 10) === minutes) {
+				$(this).addClass('is-active');
+			}
+		});
+	}
+
+	function updateAutobidWindowUI(enabled) {
+		const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
+		$('.oba-autobid-window').each(function () {
+			const block = $(this);
+			const buttons = block.find('.oba-autobid-window-btn');
+			const remaining = block.find('.oba-autobid-window-remaining');
+			if (enabled && windowLeft > 0) {
+				buttons.hide();
+				remaining.text(`${formatDurationShort(windowLeft)} left`).show();
+			} else {
+				buttons.show();
+				remaining.hide().text('');
+			}
+		});
+	}
+
 	function toggleAutobid(enable) {
 		if (enable) {
 			const cost = obaAuction.autobid_cost_points || 0;
@@ -846,6 +876,7 @@ function renderInlineAutobidTotal($block) {
 		const maxBids = 0;
 		const spend = 0;
 		const limitless = true;
+		const windowMinutes = getSelectedAutobidWindow();
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -856,14 +887,15 @@ function renderInlineAutobidTotal($block) {
 				max_bids: maxBids,
 				max_spend: spend,
 				limitless: limitless ? 1 : 0,
+				window_minutes: windowMinutes,
 			},
 			(response) => {
 				if (response && response.success) {
 					state.data = state.data || {};
 					state.data.autobid_enabled = response.data.autobid_enabled;
 					state.data.autobid_remaining_bids = response.data.autobid_remaining_bids;
-					state.data.autobid_window_seconds = response.data.autobid_window_seconds;
-					state.data.autobid_remaining_seconds = response.data.autobid_remaining_seconds;
+					state.data.autobid_window_seconds_left = response.data.autobid_window_seconds_left;
+					state.data.autobid_window_ends_at = response.data.autobid_window_ends_at;
 					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
 					state.data.autobid_limitless = response.data.autobid_limitless;
@@ -983,6 +1015,12 @@ $(document).on('input change', '#oba-autobid-max-amount', function () {
 
 	buildPackLinks();
 	closeCreditModal();
+
+$(document).on('click', '.oba-autobid-window-btn', function (e) {
+	e.preventDefault();
+	const minutes = parseInt($(this).data('minutes'), 10) || 0;
+	setSelectedAutobidWindow(minutes);
+});
 
 	function updateLastRefreshed() {
 		// Intentionally left blank; system time hidden to avoid user confusion.

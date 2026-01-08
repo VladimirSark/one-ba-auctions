@@ -232,6 +232,11 @@ class OBA_Ajax_Controller {
 		$max_bids  = isset( $_POST['max_bids'] ) ? (int) $_POST['max_bids'] : 0;
 		$max_spend = isset( $_POST['max_spend'] ) ? (float) $_POST['max_spend'] : 0;
 		$limitless = ! empty( $_POST['limitless'] );
+		$window_minutes = isset( $_POST['window_minutes'] ) ? (int) $_POST['window_minutes'] : 0;
+		$allowed_windows = array( 0, 10, 30, 60 );
+		if ( ! in_array( $window_minutes, $allowed_windows, true ) ) {
+			$window_minutes = 0;
+		}
 		$current   = $service->get_user_settings( $auction_id, $user_id );
 
 		// Convert spend -> bids if provided.
@@ -263,7 +268,7 @@ class OBA_Ajax_Controller {
 			$max_spend = 0;
 		}
 
-		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids );
+		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids, $window_minutes );
 		OBA_Audit_Log::log(
 			'autobid_toggle',
 			array(
@@ -272,6 +277,7 @@ class OBA_Ajax_Controller {
 				'enabled'    => (bool) $settings['enabled'],
 				'max_bids'   => (int) $settings['max_bids'],
 				'limitless'  => ! empty( $settings['limitless'] ),
+				'window_minutes' => $window_minutes,
 			),
 			$auction_id
 		);
@@ -282,6 +288,8 @@ class OBA_Ajax_Controller {
 				'autobid_max_bids'=> (int) $settings['max_bids'],
 				'autobid_max_spend'=> isset( $settings['max_spend'] ) ? (float) $settings['max_spend'] : ( (int) $settings['max_bids'] * $this->get_bid_fee_amount( $meta ) ),
 				'autobid_limitless'=> ! empty( $settings['limitless'] ),
+				'autobid_window_seconds_left' => isset( $settings['window_seconds_left'] ) ? (int) $settings['window_seconds_left'] : 0,
+				'autobid_window_ends_at' => isset( $settings['window_ends_at'] ) ? $settings['window_ends_at'] : null,
 				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
 			)
 		);
@@ -488,6 +496,8 @@ class OBA_Ajax_Controller {
 			'autobid_max_bids'            => $autobid_allowed ? (int) $autobid_user['max_bids'] : 0,
 			'autobid_max_spend'           => $autobid_allowed ? ( (int) $autobid_user['max_bids'] * $bid_fee_amount ) : 0,
 			'autobid_limitless'           => $autobid_allowed ? ! empty( $autobid_user['limitless'] ) : false,
+			'autobid_window_seconds_left' => $autobid_allowed ? ( isset( $autobid_user['window_seconds_left'] ) ? (int) $autobid_user['window_seconds_left'] : 0 ) : 0,
+			'autobid_window_ends_at'      => $autobid_allowed ? ( isset( $autobid_user['window_ends_at'] ) ? $autobid_user['window_ends_at'] : null ) : null,
 			'winner'                     => array(
 				'anonymous_name' => $winner_anonymous,
 				'claimed'        => $winner_claimed,
