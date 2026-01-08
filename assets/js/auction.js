@@ -19,6 +19,16 @@
 		return `${secs}s`;
 	}
 
+	function formatDurationShort(seconds) {
+		const total = Math.max(0, parseInt(seconds || 0, 10));
+		const mins = Math.floor(total / 60);
+		const secs = total % 60;
+		if (mins > 0) {
+			return `${mins}m ${secs}s`;
+		}
+		return `${secs}s`;
+	}
+
 	function formatTimeStamp(ts) {
 		const d = new Date(ts);
 		if (Number.isNaN(d.getTime())) return ts;
