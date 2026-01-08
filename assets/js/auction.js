@@ -853,11 +853,11 @@ function renderInlineAutobidTotal($block) {
 			const remaining = block.find('.oba-autobid-window-remaining');
 			if (enabled && windowLeft > 0) {
 				buttons.hide();
-				remaining.text(`${formatDurationShort(windowLeft)} left`).show();
+				remaining.text(`${formatDurationShort(windowLeft)} left`).css('display', 'inline-block');
 			} else {
 				buttons.show().removeClass('oba-terms-error');
 				const label = windowMinutes ? `${windowMinutes}m (ready)` : (obaAuction.i18n?.autobid_not_active || 'Not active');
-				remaining.text(label).show();
+				remaining.text(label).css('display', 'inline-block');
 			}
 		});
 	}
