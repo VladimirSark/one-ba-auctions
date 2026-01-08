@@ -290,6 +290,7 @@ class OBA_Ajax_Controller {
 				'autobid_limitless'=> ! empty( $settings['limitless'] ),
 				'autobid_window_seconds_left' => isset( $settings['window_seconds_left'] ) ? (int) $settings['window_seconds_left'] : 0,
 				'autobid_window_ends_at' => isset( $settings['window_ends_at'] ) ? $settings['window_ends_at'] : null,
+				'autobid_window_minutes' => isset( $settings['window_minutes'] ) ? (int) $settings['window_minutes'] : 0,
 				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
 			)
 		);
@@ -498,6 +499,7 @@ class OBA_Ajax_Controller {
 			'autobid_limitless'           => $autobid_allowed ? ! empty( $autobid_user['limitless'] ) : false,
 			'autobid_window_seconds_left' => $autobid_allowed ? ( isset( $autobid_user['window_seconds_left'] ) ? (int) $autobid_user['window_seconds_left'] : 0 ) : 0,
 			'autobid_window_ends_at'      => $autobid_allowed ? ( isset( $autobid_user['window_ends_at'] ) ? $autobid_user['window_ends_at'] : null ) : null,
+			'autobid_window_minutes'      => $autobid_allowed ? ( isset( $autobid_user['window_minutes'] ) ? (int) $autobid_user['window_minutes'] : 0 ) : 0,
 			'winner'                     => array(
 				'anonymous_name' => $winner_anonymous,
 				'claimed'        => $winner_claimed,

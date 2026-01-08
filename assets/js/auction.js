@@ -837,6 +837,8 @@ function renderInlineAutobidTotal($block) {
 				$(this).addClass('is-active');
 			}
 		});
+		state.data = state.data || {};
+		state.data.autobid_window_selected = minutes;
 	}
 
 	function updateAutobidWindowUI(enabled) {
@@ -909,6 +911,7 @@ function toggleAutobid(enable) {
 					state.data.autobid_remaining_bids = response.data.autobid_remaining_bids;
 					state.data.autobid_window_seconds_left = response.data.autobid_window_seconds_left;
 					state.data.autobid_window_ends_at = response.data.autobid_window_ends_at;
+					state.data.autobid_window_minutes = response.data.autobid_window_minutes;
 					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
 					state.data.autobid_limitless = response.data.autobid_limitless;
