@@ -248,15 +248,15 @@ $stage_tips = array(
 							<div class="oba-autobid-left">
 								<h4><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
 							</div>
+							<div class="oba-autobid-window">
+								<span class="oba-autobid-window-remaining"></span>
+							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
 									<span class="oba-toggle-slider"></span>
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-							</div>
-							<div class="oba-autobid-window">
-								<span class="oba-autobid-window-remaining"></span>
 							</div>
 						</div>
 					</div>
