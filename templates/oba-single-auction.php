@@ -256,9 +256,6 @@ $stage_tips = array(
 								</label>
 							</div>
 							<div class="oba-autobid-window">
-								<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
-								<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
-								<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
 								<span class="oba-autobid-window-remaining"></span>
 							</div>
 						</div>
@@ -329,9 +326,6 @@ $stage_tips = array(
 								</label>
 							</div>
 							<div class="oba-autobid-window">
-								<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
-								<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
-								<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
 								<span class="oba-autobid-window-remaining"></span>
 							</div>
 						</div>
