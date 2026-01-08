@@ -126,7 +126,6 @@
 		const isLiveStage = status === 'live';
 		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
 		const isGuest = !state.data.is_logged_in;
-		const autobidWindowLeft = Number(state.data.autobid_window_seconds_left || 0);
 
 		if (isGuest) {
 			$('.oba-guest-banner').show();
@@ -301,30 +300,26 @@
 		updateCreditPill(pointsBalance, state.data.membership_active);
 
 		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
-		$('.oba-autobid-setup').each(function () {
-			const setup = $(this);
-			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
-			if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
-				setup.show();
-				const enabled = !!state.data.autobid_enabled;
-				const limitless = !!state.data.autobid_limitless || (enabled && Number(state.data.autobid_max_bids) === 0);
-				const labelVal = limitless
-					? (obaAuction.i18n?.autobid_limitless_label || 'Unlimited autobid')
-					: (state.data.autobid_max_spend
-						? formatMoney(state.data.autobid_max_spend)
-						: `${state.data.autobid_max_bids || ''} bids`);
-				setup.find('.oba-autobid-state').text(enabled ? `ON (${labelVal})` : 'OFF');
-				setup.find('.oba-autobid-enable').prop('disabled', enabled);
-				setup.find('.oba-autobid-disable').prop('disabled', !enabled);
-				renderInlineAutobidTotal(setup);
-				updateAutobidWindowUI(enabled);
-				if (enabled && autobidWindowLeft > 0) {
-					setSelectedAutobidWindow(0);
-				}
-			} else {
-				setup.hide();
-			}
-		});
+	$('.oba-autobid-setup').each(function () {
+		const setup = $(this);
+		const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
+		if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
+			setup.show();
+			const enabled = !!state.data.autobid_enabled;
+			const limitless = !!state.data.autobid_limitless || (enabled && Number(state.data.autobid_max_bids) === 0);
+			const labelVal = limitless
+				? (obaAuction.i18n?.autobid_limitless_label || 'Unlimited autobid')
+				: (state.data.autobid_max_spend
+					? formatMoney(state.data.autobid_max_spend)
+					: `${state.data.autobid_max_bids || ''} bids`);
+			setup.find('.oba-autobid-state').text(enabled ? `ON (${labelVal})` : 'OFF');
+			setup.find('.oba-autobid-enable').prop('disabled', enabled);
+			setup.find('.oba-autobid-disable').prop('disabled', !enabled);
+			renderInlineAutobidTotal(setup);
+		} else {
+			setup.hide();
+		}
+	});
 }
 
 	function updatePhaseCards(status) {
@@ -809,8 +804,6 @@ function updateAutobidUI() {
 			stateLabel.text(obaAuction.i18n?.off || 'OFF');
 		}
 	}
-
-	updateAutobidWindowUI(enabled);
 }
 
 function renderInlineAutobidTotal($block) {
@@ -854,21 +847,21 @@ function renderInlineAutobidTotal($block) {
 		});
 	}
 
-function updateAutobidWindowUI(enabled) {
-	const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
-	$('.oba-autobid-window').each(function () {
-		const block = $(this);
-		const buttons = block.find('.oba-autobid-window-btn');
-		const remaining = block.find('.oba-autobid-window-remaining');
-		if (enabled && windowLeft > 0) {
-			buttons.hide();
-			remaining.text(`${formatDurationShort(windowLeft)} left`).show();
-		} else {
-			buttons.show().removeClass('oba-terms-error');
-			remaining.hide().text('');
-		}
-	});
-}
+	function updateAutobidWindowUI(enabled) {
+		const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
+		$('.oba-autobid-window').each(function () {
+			const block = $(this);
+			const buttons = block.find('.oba-autobid-window-btn');
+			const remaining = block.find('.oba-autobid-window-remaining');
+			if (enabled && windowLeft > 0) {
+				buttons.hide();
+				remaining.text(`${formatDurationShort(windowLeft)} left`).show();
+			} else {
+				buttons.show().removeClass('oba-terms-error');
+				remaining.hide().text('');
+			}
+		});
+	}
 
 	function toggleAutobid(enable) {
 		const windowMinutes = getSelectedAutobidWindow();
