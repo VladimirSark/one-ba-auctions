@@ -300,19 +300,19 @@
 		updateCreditPill(pointsBalance, state.data.membership_active);
 
 		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
-	$('.oba-autobid-setup').each(function () {
-		const setup = $(this);
-		const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
-		if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
-			setup.show();
-			const enabled = !!state.data.autobid_enabled;
-			renderInlineAutobidTotal(setup);
-			updateAutobidWindowUI(enabled);
-		} else {
-			setup.hide();
-		}
-	});
-}
+		$('.oba-autobid-setup').each(function () {
+			const setup = $(this);
+			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
+			if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
+				setup.show();
+				const enabled = !!state.data.autobid_enabled;
+				renderInlineAutobidTotal(setup);
+				updateAutobidWindowUI(enabled);
+			} else {
+				setup.hide();
+			}
+		});
+	}
 
 	function updatePhaseCards(status) {
 		const order = ['registration', 'pre_live', 'live', 'ended'];
@@ -841,16 +841,18 @@ function renderInlineAutobidTotal($block) {
 
 	function updateAutobidWindowUI(enabled) {
 		const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
-		const windowMinutes = Number(state.data?.autobid_window_minutes || state.data?.autobid_window_selected || 0);
 		$('.oba-autobid-window').each(function () {
 			const block = $(this);
 			if (block.closest('.oba-autobid-window-modal').length) {
 				return;
 			}
+			const buttons = block.find('.oba-autobid-window-btn');
 			const remaining = block.find('.oba-autobid-window-remaining');
 			if (enabled && windowLeft > 0) {
+				buttons.hide();
 				remaining.text(`${formatDurationShort(windowLeft)} left`).show();
 			} else {
+				buttons.show().removeClass('oba-terms-error');
 				remaining.text(obaAuction.i18n?.autobid_not_active || 'Not active').show();
 			}
 		});
