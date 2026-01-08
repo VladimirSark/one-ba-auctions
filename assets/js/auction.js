@@ -851,6 +851,9 @@ function renderInlineAutobidTotal($block) {
 		const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
 		$('.oba-autobid-window').each(function () {
 			const block = $(this);
+			if (block.closest('.oba-autobid-window-modal').length) {
+				return;
+			}
 			const buttons = block.find('.oba-autobid-window-btn');
 			const remaining = block.find('.oba-autobid-window-remaining');
 			if (enabled && windowLeft > 0) {
@@ -863,8 +866,17 @@ function renderInlineAutobidTotal($block) {
 		});
 	}
 
-	function toggleAutobid(enable) {
-		const windowMinutes = getSelectedAutobidWindow();
+	function openAutobidWindowModal() {
+		setSelectedAutobidWindow(10);
+		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').css('display', 'flex');
+	}
+
+	function closeAutobidWindowModal() {
+		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').hide();
+	}
+
+function toggleAutobid(enable) {
+	const windowMinutes = getSelectedAutobidWindow();
 		if (enable && (!windowMinutes || windowMinutes <= 0)) {
 			$('.oba-autobid-window-btn').addClass('oba-terms-error');
 			showToast(obaAuction.i18n?.autobid_select_window || 'Select a time window to enable autobid.', true);
@@ -953,12 +965,32 @@ $(document).on('click', '.oba-autobid-config', (e) => {
 $(document).on('click', '.oba-autobid-toggle-btn', function (e) {
 	e.preventDefault();
 	const enable = !state.data?.autobid_enabled;
-	toggleAutobid(enable);
+	if (enable) {
+		openAutobidWindowModal();
+	} else {
+		toggleAutobid(false);
+	}
 });
 
 	$(document).on('click', '.oba-autobid-overlay, .oba-autobid-close', (e) => {
 		e.preventDefault();
 		closeAutobidModal();
+	});
+
+	$(document).on('click', '.oba-autobid-window-cancel, .oba-autobid-window-overlay', (e) => {
+		e.preventDefault();
+		closeAutobidWindowModal();
+	});
+
+	$(document).on('click', '.oba-autobid-window-confirm', (e) => {
+		e.preventDefault();
+		const minutes = getSelectedAutobidWindow();
+		if (!minutes) {
+			$('.oba-autobid-window-btn').addClass('oba-terms-error');
+			return;
+		}
+		closeAutobidWindowModal();
+		toggleAutobid(true);
 	});
 
 	$(document).on('click', '.oba-autobid-toggle', function (e) {
@@ -980,7 +1012,13 @@ $(document).on('change', '.oba-autobid-switch', function () {
 			modalInput.val(inlineVal).data('dirty', true);
 		}
 	}
-	toggleAutobid(enable);
+	// Intercept enable to show window modal.
+	if (enable) {
+		$(this).prop('checked', false);
+		openAutobidWindowModal();
+	} else {
+		toggleAutobid(false);
+	}
 });
 
 $(document).on('input change', '.oba-autobid-max', function () {

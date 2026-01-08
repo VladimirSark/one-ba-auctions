@@ -136,6 +136,13 @@ $stage_tips = array(
 	}
 	.oba-autobid-window button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
 	.oba-autobid-window-remaining { font-size:13px; color:#475569; display:none; }
+	.oba-autobid-window-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.35); display:none; z-index:12000; }
+	.oba-autobid-window-modal { position:fixed; inset:0; display:none; z-index:12001; align-items:center; justify-content:center; }
+	.oba-autobid-window-modal__inner { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; width:320px; box-shadow:0 15px 40px rgba(15,23,42,0.18); }
+	.oba-autobid-window-modal h4 { margin:0 0 10px; }
+	.oba-autobid-window-modal p { margin:0 0 12px; color:#475569; }
+	.oba-autobid-window-modal .oba-autobid-window { margin-top:0; }
+	.oba-autobid-window-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -416,6 +423,24 @@ $stage_tips = array(
 		<button class="oba-credit-close" type="button" aria-label="<?php esc_attr_e( 'Close', 'one-ba-auctions' ); ?>">&times;</button>
 		<h4><?php echo esc_html( $get( 'buy_credits_title', __( 'Buy credits', 'one-ba-auctions' ) ) ); ?></h4>
 		<div class="oba-credit-options"></div>
+	</div>
+</div>
+
+<div class="oba-autobid-window-overlay" style="display:none;"></div>
+<div class="oba-autobid-window-modal" style="display:none;">
+	<div class="oba-autobid-window-modal__inner">
+		<h4><?php esc_html_e( 'Enable autobid', 'one-ba-auctions' ); ?></h4>
+		<p><?php esc_html_e( 'Select how long autobid should stay active. Enabling will charge activation points.', 'one-ba-auctions' ); ?></p>
+		<div class="oba-autobid-window">
+			<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
+			<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
+			<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
+			<span class="oba-autobid-window-remaining"></span>
+		</div>
+		<div class="oba-autobid-window-actions">
+			<button type="button" class="button oba-autobid-window-cancel"><?php esc_html_e( 'Cancel', 'one-ba-auctions' ); ?></button>
+			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
+		</div>
 	</div>
 </div>
 

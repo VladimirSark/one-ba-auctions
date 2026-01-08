@@ -70,7 +70,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT enabled, max_bids, enabled_at, window_started_at, window_ends_at FROM {$table} WHERE auction_id = %d AND user_id = %d",
+				"SELECT enabled, max_bids, enabled_at, window_started_at, window_ends_at, window_minutes FROM {$table} WHERE auction_id = %d AND user_id = %d",
 				$auction_id,
 				$user_id
 			),
@@ -79,11 +79,13 @@ class OBA_Autobid_Service {
 		$bid_cost = $this->get_bid_cost( $auction_id );
 		$window_ends_at = isset( $row['window_ends_at'] ) ? $row['window_ends_at'] : null;
 		$window_left = 0;
-		if ( $window_ends_at && class_exists( 'OBA_Time' ) ) {
+		if ( ! empty( $row['window_started_at'] ) && $window_ends_at && class_exists( 'OBA_Time' ) ) {
 			$ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $window_ends_at );
 			if ( $ts ) {
 				$window_left = max( 0, $ts - time() );
 			}
+		} elseif ( ! empty( $row['window_minutes'] ) ) {
+			$window_left = (int) $row['window_minutes'] * MINUTE_IN_SECONDS;
 		}
 		if ( ! $row ) {
 			return array(
@@ -94,6 +96,7 @@ class OBA_Autobid_Service {
 				'limitless'  => false,
 				'window_ends_at' => null,
 				'window_seconds_left' => 0,
+				'window_minutes' => 0,
 			);
 		}
 		$is_limitless = (int) $row['max_bids'] === 0;
@@ -105,6 +108,7 @@ class OBA_Autobid_Service {
 			'limitless'  => $is_limitless,
 			'window_ends_at' => $window_ends_at,
 			'window_seconds_left' => $window_left,
+			'window_minutes' => isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0,
 		);
 	}
 
@@ -118,8 +122,9 @@ class OBA_Autobid_Service {
 		$window_ends_at = null;
 		$window_started_at = null;
 		if ( $enabled && $window_minutes > 0 ) {
-			$window_started_at = current_time( 'mysql', 1 );
-			$window_ends_at    = gmdate( 'Y-m-d H:i:s', time() + ( $window_minutes * MINUTE_IN_SECONDS ) );
+			// Defer start until live stage; window starts when live autobid loop first runs.
+			$window_started_at = null;
+			$window_ends_at    = null;
 		}
 
 		$exists = $wpdb->get_var(
@@ -136,8 +141,9 @@ class OBA_Autobid_Service {
 			'enabled_at' => $enabled ? current_time( 'mysql' ) : null,
 			'window_started_at' => $enabled ? $window_started_at : null,
 			'window_ends_at'    => $enabled ? $window_ends_at : null,
+			'window_minutes'    => $enabled ? $window_minutes : 0,
 		);
-		$formats = array( '%d', '%d', '%s', '%s', '%s' );
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%d' );
 
 		if ( $exists ) {
 			$wpdb->update(
@@ -221,7 +227,7 @@ class OBA_Autobid_Service {
 			$table = $wpdb->prefix . 'auction_autobid';
 			$rows  = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT user_id, enabled, max_bids, window_ends_at FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY enabled_at ASC, user_id ASC",
+					"SELECT user_id, enabled, max_bids, window_ends_at, window_started_at, window_minutes FROM {$table} WHERE auction_id = %d AND enabled = 1 ORDER BY enabled_at ASC, user_id ASC",
 					$auction_id
 				),
 				ARRAY_A
@@ -237,6 +243,26 @@ class OBA_Autobid_Service {
 				$user_id = (int) $row['user_id'];
 				if ( ! $this->repo->is_user_registered( $auction_id, $user_id ) ) {
 					continue;
+				}
+				$window_minutes = isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0;
+				if ( $window_minutes > 0 && empty( $row['window_started_at'] ) ) {
+					$start = current_time( 'mysql', 1 );
+					$end   = gmdate( 'Y-m-d H:i:s', time() + ( $window_minutes * MINUTE_IN_SECONDS ) );
+					$wpdb->update(
+						$table,
+						array(
+							'window_started_at' => $start,
+							'window_ends_at'    => $end,
+						),
+						array(
+							'auction_id' => $auction_id,
+							'user_id'    => $user_id,
+						),
+						array( '%s', '%s' ),
+						array( '%d', '%d' )
+					);
+					$row['window_started_at'] = $start;
+					$row['window_ends_at']    = $end;
 				}
 				if ( ! empty( $row['window_ends_at'] ) ) {
 					$ends_ts = class_exists( 'OBA_Time' ) ? OBA_Time::parse_utc_mysql_datetime_to_timestamp( $row['window_ends_at'] ) : 0;
