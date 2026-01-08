@@ -239,8 +239,14 @@ $stage_tips = array(
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
-								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
+								<h4><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
 							</div>
+							<div class="oba-autobid-window">
+							<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
+							<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
+							<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
+							<span class="oba-autobid-window-remaining"></span>
+						</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
@@ -248,13 +254,6 @@ $stage_tips = array(
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
 							</div>
-						</div>
-						<div class="oba-autobid-window">
-							<span style="font-weight:600;"><?php esc_html_e( 'Stay active for:', 'one-ba-auctions' ); ?></span>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
-							<span class="oba-autobid-window-remaining"></span>
 						</div>
 					</div>
 				</div>
@@ -313,8 +312,14 @@ $stage_tips = array(
 					<div class="oba-autobid-setup" style="display:none;margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
-								<h4><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
+								<h4><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
 							</div>
+							<div class="oba-autobid-window">
+							<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
+							<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
+							<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
+							<span class="oba-autobid-window-remaining"></span>
+						</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
@@ -322,13 +327,6 @@ $stage_tips = array(
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
 							</div>
-						</div>
-						<div class="oba-autobid-window">
-							<span style="font-weight:600;"><?php esc_html_e( 'Stay active for:', 'one-ba-auctions' ); ?></span>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
-							<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
-							<span class="oba-autobid-window-remaining"></span>
 						</div>
 					</div>
 					<div class="oba-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
