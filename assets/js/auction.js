@@ -883,6 +883,7 @@ function renderInlineAutobidTotal($block) {
 		const maxBids = 0;
 		const spend = 0;
 		const limitless = false;
+		const maxBidsDefault = 1000000; // large cap to satisfy server requirement when using time windows.
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -890,7 +891,7 @@ function renderInlineAutobidTotal($block) {
 				auction_id: obaAuction.auction_id,
 				nonce: obaAuction.nonce,
 				enable: enable ? 1 : 0,
-				max_bids: maxBids,
+				max_bids: maxBidsDefault,
 				max_spend: spend,
 				limitless: limitless ? 1 : 0,
 				window_minutes: windowMinutes,
