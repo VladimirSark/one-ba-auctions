@@ -312,13 +312,17 @@
 		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
 		$('.oba-autobid-setup').each(function () {
 			const setup = $(this);
-		const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
-		if (auctionAutobidEnabled) {
-			setup.show();
-			const enabled = !!state.data.autobid_enabled;
-			renderInlineAutobidTotal(setup);
-			updateAutobidWindowUI(enabled);
-		} else {
+			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
+			if (auctionAutobidEnabled) {
+				setup.show();
+				const enabled = !!state.data.autobid_enabled;
+				renderInlineAutobidTotal(setup);
+				updateAutobidWindowUI(enabled);
+				const windowMinutes = Number(state.data.autobid_window_minutes || state.data.autobid_window_selected || 0);
+				if (!enabled && windowMinutes) {
+					setSelectedAutobidWindow(windowMinutes);
+				}
+			} else {
 				setup.hide();
 			}
 		});
