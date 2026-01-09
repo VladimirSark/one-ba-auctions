@@ -868,13 +868,13 @@ function renderInlineAutobidTotal($block) {
 			if (block.closest('.oba-autobid-window-modal').length) {
 				return;
 			}
-			const buttons = block.find('.oba-autobid-window-btn');
 			const remaining = block.find('.oba-autobid-window-remaining');
+			if (!remaining.length) {
+				return;
+			}
 			if (enabled && windowLeft > 0) {
-				buttons.hide();
 				remaining.text(`${formatDurationShort(windowLeft)} left`).css('display', 'inline-block');
 			} else {
-				buttons.show().removeClass('oba-terms-error');
 				const label = windowMinutes ? `${windowMinutes}m (ready)` : (obaAuction.i18n?.autobid_not_active || 'Not active');
 				remaining.text(label).css('display', 'inline-block');
 			}
