@@ -19,6 +19,16 @@
 		return `${secs}s`;
 	}
 
+	function formatDurationShort(seconds) {
+		const total = Math.max(0, parseInt(seconds || 0, 10));
+		const mins = Math.floor(total / 60);
+		const secs = total % 60;
+		if (mins > 0) {
+			return `${mins}m ${secs}s`;
+		}
+		return `${secs}s`;
+	}
+
 	function formatTimeStamp(ts) {
 		const d = new Date(ts);
 		if (Number.isNaN(d.getTime())) return ts;
@@ -117,15 +127,21 @@
 		$('.oba-user-cost').text(userCost);
 		const regBtn = $('.oba-register');
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
-		const suffix = obaAuction.i18n?.points_suffix || 'pts';
-		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
-		const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
-		const allowLiveJoin = !!state.data.allow_live_join;
-		const canJoinLive = !!state.data.can_join_live;
-		const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
-		const isLiveStage = status === 'live';
-		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
-		const isGuest = !state.data.is_logged_in;
+	const suffix = obaAuction.i18n?.points_suffix || 'pts';
+	const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
+	const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
+	const allowLiveJoin = !!state.data.allow_live_join;
+	const canJoinLive = !!state.data.can_join_live;
+	const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
+	const isLiveStage = status === 'live';
+	const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
+	const isGuest = !state.data.is_logged_in;
+	const autobidWindowLeft = Number(state.data.autobid_window_seconds_left || 0);
+	const autobidWindowMinutes = Number(state.data.autobid_window_minutes || state.data.autobid_window_selected || 0);
+	const autobidOnLabel = obaAuction.i18n?.autobid_on_button || 'Aut. statymas įjungtas';
+	const autobidBtnLabel = autobidWindowLeft > 0
+		? `${autobidOnLabel} (${formatDurationShort(autobidWindowLeft)})`
+		: autobidOnLabel;
 
 		if (isGuest) {
 			$('.oba-guest-banner').show();
@@ -155,11 +171,11 @@
 				clearAlert();
 			}
 		} else if (status !== 'registration' && !state.data.user_registered) {
-			regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
-			$('.oba-not-registered').hide();
-			$('.oba-registered').hide();
-			showAlert(obaAuction.i18n?.registration_closed || 'Registration closed');
-			$('.oba-autobid').hide();
+		regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
+		$('.oba-not-registered').hide();
+		$('.oba-registered').hide();
+		showAlert(obaAuction.i18n?.registration_closed || 'Registration closed');
+		$('.oba-autobid').hide();
 		} else if (!unlocked) {
 			regBtn.prop('disabled', true);
 			showAlert(obaAuction.i18n?.membership_required || 'Membership required to register.');
@@ -186,20 +202,19 @@
 		}
 
 		const bidBtn = $('.oba-bid');
-		if (showLiveJoinCta) {
-			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
-			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
-			bidBtn.text(label);
-			bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
-		} else if (state.data.autobid_enabled) {
-			const autoText = obaAuction.i18n?.autobid_on_button || 'Autobid ON';
-			bidBtn.prop('disabled', true).text(autoText);
-		} else if (state.data.can_bid) {
-			bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
-		} else {
-			const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading_custom || obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
-			bidBtn.prop('disabled', true).text(btnText);
-		}
+	if (showLiveJoinCta) {
+		const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+		const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+		bidBtn.text(label);
+		bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+	} else if (state.data.autobid_enabled) {
+		bidBtn.prop('disabled', true).text(autobidBtnLabel);
+	} else if (state.data.can_bid) {
+		bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
+	} else {
+		const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading_custom || obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
+		bidBtn.prop('disabled', true).text(btnText);
+	}
 
 		const historyList = $('.oba-history');
 		historyList.empty();
@@ -300,27 +315,37 @@
 		updateCreditPill(pointsBalance, state.data.membership_active);
 
 		// Autobid UI (V2 minimal) - only show if registered and server says autobid feature is enabled for auction.
-	$('.oba-autobid-setup').each(function () {
-		const setup = $(this);
-		const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
-		if (state.data.user_registered && auctionAutobidEnabled && status !== 'ended') {
-			setup.show();
-			const enabled = !!state.data.autobid_enabled;
-			const limitless = !!state.data.autobid_limitless || (enabled && Number(state.data.autobid_max_bids) === 0);
-			const labelVal = limitless
-				? (obaAuction.i18n?.autobid_limitless_label || 'Unlimited autobid')
-				: (state.data.autobid_max_spend
-					? formatMoney(state.data.autobid_max_spend)
-					: `${state.data.autobid_max_bids || ''} bids`);
-			setup.find('.oba-autobid-state').text(enabled ? `ON (${labelVal})` : 'OFF');
-			setup.find('.oba-autobid-enable').prop('disabled', enabled);
-			setup.find('.oba-autobid-disable').prop('disabled', !enabled);
-			renderInlineAutobidTotal(setup);
-		} else {
-			setup.hide();
-		}
-	});
-}
+		$('.oba-autobid-setup').each(function () {
+			const setup = $(this);
+			const auctionAutobidEnabled = !!state.data.autobid_allowed_for_auction;
+			if (auctionAutobidEnabled) {
+				setup.show();
+				const enabled = !!state.data.autobid_enabled;
+				renderInlineAutobidTotal(setup);
+				updateAutobidWindowUI(enabled);
+				const windowMinutes = Number(state.data.autobid_window_minutes || state.data.autobid_window_selected || 0);
+				const windowSeconds = Number(state.data.autobid_window_seconds_left || 0);
+				if (!enabled && windowMinutes) {
+					setSelectedAutobidWindow(windowMinutes);
+				}
+				if (setup.attr('data-phase') === 'registration') {
+					const title = setup.find('.oba-autobid-left h4');
+					if (title.length) {
+						if (enabled) {
+							const base = obaAuction.i18n?.autobid_set_for || 'Autobid is set for:';
+							const windowForLabel = windowMinutes || (windowSeconds ? Math.ceil(windowSeconds / 60) : 0);
+							const label = windowForLabel ? `${base} ${windowForLabel}m` : (obaAuction.i18n?.autobid_set || 'Autobid is set');
+							title.text(label);
+						} else {
+							title.text(obaAuction.i18n?.autobid_title || 'Autobid');
+						}
+					}
+				}
+			} else {
+				setup.hide();
+			}
+		});
+	}
 
 	function updatePhaseCards(status) {
 		const order = ['registration', 'pre_live', 'live', 'ended'];
@@ -783,7 +808,7 @@ $(document).on('click', '.oba-autobid-disable', function (e) {
 
 function updateAutobidUI() {
 	const enabled = !!state.data?.autobid_enabled;
-	const limitless = !!state.data?.autobid_limitless || (!!enabled && Number(state.data?.autobid_max_bids) === 0);
+	const limitless = false;
 	$('.oba-autobid-switch').prop('checked', enabled);
 	const toggleText = $('.oba-toggle-text');
 	if (toggleText.length) {
@@ -833,7 +858,43 @@ function renderInlineAutobidTotal($block) {
 	totalEl.text(`${formatMoney(amount)} = ${count} bids`);
 }
 
-	function toggleAutobid(enable) {
+	function getSelectedAutobidWindow() {
+		const btn = $('.oba-autobid-window-btn.is-active').first();
+		return btn.length ? parseInt(btn.data('minutes'), 10) || 0 : 0;
+	}
+
+	function setSelectedAutobidWindow(minutes) {
+		$('.oba-autobid-window-btn').removeClass('is-active');
+		$('.oba-autobid-window-btn').each(function () {
+			if (parseInt($(this).data('minutes'), 10) === minutes) {
+				$(this).addClass('is-active');
+			}
+		});
+		state.data = state.data || {};
+		state.data.autobid_window_selected = minutes;
+	}
+
+	function updateAutobidWindowUI(enabled) {
+		$('.oba-autobid-window-remaining').text('');
+	}
+
+	function openAutobidWindowModal() {
+		setSelectedAutobidWindow(10);
+		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').css('display', 'flex');
+	}
+
+	function closeAutobidWindowModal() {
+		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').hide();
+	}
+
+function toggleAutobid(enable) {
+	const windowMinutes = getSelectedAutobidWindow();
+		if (enable && (!windowMinutes || windowMinutes <= 0)) {
+			$('.oba-autobid-window-btn').addClass('oba-terms-error');
+			showToast(obaAuction.i18n?.autobid_select_window || 'Select a time window to enable autobid.', true);
+			return;
+		}
+		$('.oba-autobid-window-btn').removeClass('oba-terms-error');
 		if (enable) {
 			const cost = obaAuction.autobid_cost_points || 0;
 			const message = obaAuction.i18n?.autobid_confirm
@@ -845,7 +906,8 @@ function renderInlineAutobidTotal($block) {
 	}
 		const maxBids = 0;
 		const spend = 0;
-		const limitless = true;
+		const limitless = false;
+		const maxBidsDefault = 1000000; // large cap to satisfy server requirement when using time windows.
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -853,17 +915,19 @@ function renderInlineAutobidTotal($block) {
 				auction_id: obaAuction.auction_id,
 				nonce: obaAuction.nonce,
 				enable: enable ? 1 : 0,
-				max_bids: maxBids,
+				max_bids: maxBidsDefault,
 				max_spend: spend,
 				limitless: limitless ? 1 : 0,
+				window_minutes: windowMinutes,
 			},
 			(response) => {
 				if (response && response.success) {
 					state.data = state.data || {};
 					state.data.autobid_enabled = response.data.autobid_enabled;
 					state.data.autobid_remaining_bids = response.data.autobid_remaining_bids;
-					state.data.autobid_window_seconds = response.data.autobid_window_seconds;
-					state.data.autobid_remaining_seconds = response.data.autobid_remaining_seconds;
+					state.data.autobid_window_seconds_left = response.data.autobid_window_seconds_left;
+					state.data.autobid_window_ends_at = response.data.autobid_window_ends_at;
+					state.data.autobid_window_minutes = response.data.autobid_window_minutes;
 					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
 					state.data.autobid_limitless = response.data.autobid_limitless;
@@ -914,12 +978,32 @@ $(document).on('click', '.oba-autobid-config', (e) => {
 $(document).on('click', '.oba-autobid-toggle-btn', function (e) {
 	e.preventDefault();
 	const enable = !state.data?.autobid_enabled;
-	toggleAutobid(enable);
+	if (enable) {
+		openAutobidWindowModal();
+	} else {
+		toggleAutobid(false);
+	}
 });
 
 	$(document).on('click', '.oba-autobid-overlay, .oba-autobid-close', (e) => {
 		e.preventDefault();
 		closeAutobidModal();
+	});
+
+	$(document).on('click', '.oba-autobid-window-cancel, .oba-autobid-window-overlay', (e) => {
+		e.preventDefault();
+		closeAutobidWindowModal();
+	});
+
+	$(document).on('click', '.oba-autobid-window-confirm', (e) => {
+		e.preventDefault();
+		const minutes = getSelectedAutobidWindow();
+		if (!minutes) {
+			$('.oba-autobid-window-btn').addClass('oba-terms-error');
+			return;
+		}
+		closeAutobidWindowModal();
+		toggleAutobid(true);
 	});
 
 	$(document).on('click', '.oba-autobid-toggle', function (e) {
@@ -941,7 +1025,13 @@ $(document).on('change', '.oba-autobid-switch', function () {
 			modalInput.val(inlineVal).data('dirty', true);
 		}
 	}
-	toggleAutobid(enable);
+	// Intercept enable to show window modal.
+	if (enable) {
+		$(this).prop('checked', false);
+		openAutobidWindowModal();
+	} else {
+		toggleAutobid(false);
+	}
 });
 
 $(document).on('input change', '.oba-autobid-max', function () {
@@ -983,6 +1073,12 @@ $(document).on('input change', '#oba-autobid-max-amount', function () {
 
 	buildPackLinks();
 	closeCreditModal();
+
+$(document).on('click', '.oba-autobid-window-btn', function (e) {
+	e.preventDefault();
+	const minutes = parseInt($(this).data('minutes'), 10) || 0;
+	setSelectedAutobidWindow(minutes);
+});
 
 	function updateLastRefreshed() {
 		// Intentionally left blank; system time hidden to avoid user confusion.

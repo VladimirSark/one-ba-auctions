@@ -198,5 +198,9 @@ class OBA_Activator {
 		if ( empty( $max_spend ) ) {
 			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN max_spend DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER reminder_sent" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
+		$window_minutes = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'window_minutes'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $window_minutes ) ) {
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN window_minutes INT UNSIGNED NOT NULL DEFAULT 0 AFTER window_ends_at" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 	}
 }
