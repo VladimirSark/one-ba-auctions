@@ -1,6 +1,14 @@
 # Developer Log
 
-# Developer Log
+## 2026-01-08 — Time-boxed autobid windows + live join UX
+- **Summary:** Autobid now requires choosing a time window (10/30/60 minutes) via a confirmation modal; enabling charges the configured points, stores the choice in DB, and starts the window when live begins. Autobid auto-disables when the window expires; responses expose `autobid_window_minutes`/`autobid_window_seconds_left`, and the bid button shows the remaining time when active. Registration autobid card updates its title to “Autobid is set for: Xm” once armed. Autobid table gains a `window_minutes` column (migration on activation).
+- **Files/Classes:** `includes/class-activator.php`, `includes/class-auction-repository.php`, `includes/class-ajax-controller.php`, `includes/class-autobid-service.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
+- **How to test:** Register for an auction with autobid enabled; toggle autobid ON, select 10/30/60m in the modal, accept charge. Before live, card title shows selected minutes; when live starts, the bid button shows “Aut. statymas įjungtas (Xm Ys)” and disables manual bids. Let the window elapse—autobid turns off, manual bidding re-enables. Reactivate with a new window to confirm re-charge works and DB column exists.
+
+## 2026-01-07 — Live join points + guest/login prompt
+- **Summary:** Added optional “join during live” flow: auctions can allow late joiners for a higher points fee than registration. During live, unregistered users see a “Participate in auction (X pts)” CTA (with T&C checkbox) instead of the bid button; click deducts live-join points and registers the user. Guests now see a blurred auction UI with a login/signup prompt banner, and all action buttons open the configured login link in a new tab.
+- **Files/Classes:** `includes/class-auction-engine.php`, `includes/class-auction-repository.php`, `includes/class-product-type.php`, `includes/class-ajax-controller.php`, `includes/class-frontend.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
+- **How to test:** Enable “Allow live join” and set live join points > registration points on an auction. Start live with an unregistered user: observe CTA text with points, T&C required, and successful join deducts points then enables bidding. As a guest, page shows blurred content with login banner; clicking any primary action opens login URL.
 
 ## 2025-12-29 — Unlimited autobid toggle + no forced 60s timer
 - **Summary:** Autobid now uses a simple ON/OFF toggle with “unlimited” mode (no max bids entry). Enabling still charges the configured points cost; backend treats `max_bids = 0` as limitless and state exposes `autobid_limitless`. The product editor keeps the per-auction autobid checkbox but no longer forces live timers up to 60s when enabled.

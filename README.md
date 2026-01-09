@@ -6,10 +6,12 @@ WooCommerce auction product type with an AJAX 4-step frontend. Registration now 
 - **Auction product meta:** registration points, bid product, required participants, pre-live timer, live timer, status, timestamps.
 - **Lifecycle:** registration → pre-live (auto when lobby fills) → live (timer resets on each bid) → ended (last bid wins; leading bidder cannot rebid).
 - **Membership & points:** membership is required to view/participate. Membership products grant points on order completion (stored in `wp_auction_user_points`). Registration deducts points instantly—no checkout for registration.
+- **Live join (optional):** auctions can allow late joiners during live for a higher points fee than registration; live CTA shows “Participate in auction (X pts)” with T&C gating and deducts points on join before bidding is enabled.
 - **Bidding:** bid fee = bid product price; bids logged; live timer resets per bid.
+- **Autobid (per auction):** users must select a window (10/30/60 minutes) when enabling autobid; points are charged on enable, the window starts at live, and autobid turns off when the window expires. Manual bids are blocked while autobid is on; the bid button shows remaining autobid time.
 - **Claim:** winner claim adds total bid fees to checkout; claim order tagged with `_oba_claim_auction_id`; claimed status shows with order link when completed.
 - **Data tables:** participants, bids, winners, audit log, user points (+ ledger).
-- **Frontend:** single template with 4 step cards, lobby %, timers, history, winner/loser blocks, T&C modal, membership lock overlay, and “Your points” display.
+- **Frontend:** single template with 4 step cards, lobby %, timers, history, winner/loser blocks, T&C modal, membership lock overlay, and “Your points” display. Guests see a blurred view with a stacked login/signup prompt; primary actions open the configured login URL in a new tab.
 - **Admin (1BA menu):** All Auctions list with status filter and “registered/required” counts; auction detail shows status, winner, claim/order, end time, totals (registration points/value and bids/savings), participant log with inline removal; Audit Log; Settings (General/Emails/Translations); Memberships screen to toggle membership and edit points.
 - **Settings:** default timers, poll interval, T&C text, login link, status-info HTML, email sender, translations overrides, email templates, point value (for money equivalent).
 - **Ops/reliability:** cron expiry check, manual status actions, CLI tools for expiry/end/list; admin “End now”.
