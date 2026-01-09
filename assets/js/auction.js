@@ -127,15 +127,21 @@
 		$('.oba-user-cost').text(userCost);
 		const regBtn = $('.oba-register');
 		const regText = obaAuction.i18n?.register_cta || obaAuction.i18n?.register || 'Register & Reserve Spot';
-		const suffix = obaAuction.i18n?.points_suffix || 'pts';
-		const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
-		const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
-		const allowLiveJoin = !!state.data.allow_live_join;
-		const canJoinLive = !!state.data.can_join_live;
-		const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
-		const isLiveStage = status === 'live';
-		const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
-		const isGuest = !state.data.is_logged_in;
+	const suffix = obaAuction.i18n?.points_suffix || 'pts';
+	const fee = (state.data.registration_fee_plain ?? state.data.registration_fee_formatted ?? state.data.registration_fee ?? '').toString().trim();
+	const liveFee = (state.data.live_join_points_plain ?? state.data.live_join_points ?? '').toString().trim();
+	const allowLiveJoin = !!state.data.allow_live_join;
+	const canJoinLive = !!state.data.can_join_live;
+	const hasEnoughLive = !!state.data.has_enough_points_for_live_join;
+	const isLiveStage = status === 'live';
+	const showLiveJoinCta = isLiveStage && allowLiveJoin && !state.data.user_registered;
+	const isGuest = !state.data.is_logged_in;
+	const autobidWindowLeft = Number(state.data.autobid_window_seconds_left || 0);
+	const autobidWindowMinutes = Number(state.data.autobid_window_minutes || state.data.autobid_window_selected || 0);
+	const autobidOnLabel = obaAuction.i18n?.autobid_on_button || 'Aut. statymas įjungtas';
+	const autobidBtnLabel = autobidWindowLeft > 0
+		? `${autobidOnLabel} (${formatDurationShort(autobidWindowLeft)})`
+		: autobidOnLabel;
 
 		if (isGuest) {
 			$('.oba-guest-banner').show();
@@ -165,11 +171,11 @@
 				clearAlert();
 			}
 		} else if (status !== 'registration' && !state.data.user_registered) {
-			regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
-			$('.oba-not-registered').hide();
-			$('.oba-registered').hide();
-			showAlert(obaAuction.i18n?.registration_closed || 'Registration closed');
-			$('.oba-autobid').hide();
+		regBtn.prop('disabled', true).text(obaAuction.i18n?.registration_closed || 'Registration closed');
+		$('.oba-not-registered').hide();
+		$('.oba-registered').hide();
+		showAlert(obaAuction.i18n?.registration_closed || 'Registration closed');
+		$('.oba-autobid').hide();
 		} else if (!unlocked) {
 			regBtn.prop('disabled', true);
 			showAlert(obaAuction.i18n?.membership_required || 'Membership required to register.');
@@ -196,20 +202,19 @@
 		}
 
 		const bidBtn = $('.oba-bid');
-		if (showLiveJoinCta) {
-			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
-			const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
-			bidBtn.text(label);
-			bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
-		} else if (state.data.autobid_enabled) {
-			const autoText = obaAuction.i18n?.autobid_on_button || 'Autobid ON';
-			bidBtn.prop('disabled', true).text(autoText);
-		} else if (state.data.can_bid) {
-			bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
-		} else {
-			const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading_custom || obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
-			bidBtn.prop('disabled', true).text(btnText);
-		}
+	if (showLiveJoinCta) {
+		const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
+		const label = liveFee ? `${cta} (${liveFee} ${suffix})` : cta;
+		bidBtn.text(label);
+		bidBtn.prop('disabled', !canJoinLive || !hasEnoughLive);
+	} else if (state.data.autobid_enabled) {
+		bidBtn.prop('disabled', true).text(autobidBtnLabel);
+	} else if (state.data.can_bid) {
+		bidBtn.prop('disabled', false).text(obaAuction.i18n?.bid_button || 'Place bid');
+	} else {
+		const btnText = state.data.user_is_winning ? (obaAuction.i18n?.you_leading_custom || obaAuction.i18n?.you_leading || 'You are leading') : (obaAuction.i18n?.cannot_bid || 'Cannot bid');
+		bidBtn.prop('disabled', true).text(btnText);
+	}
 
 		const historyList = $('.oba-history');
 		historyList.empty();
