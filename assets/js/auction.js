@@ -861,24 +861,7 @@ function renderInlineAutobidTotal($block) {
 	}
 
 	function updateAutobidWindowUI(enabled) {
-		const windowLeft = Number(state.data?.autobid_window_seconds_left || 0);
-		const windowMinutes = Number(state.data?.autobid_window_minutes || state.data?.autobid_window_selected || 0);
-		$('.oba-autobid-window').each(function () {
-			const block = $(this);
-			if (block.closest('.oba-autobid-window-modal').length) {
-				return;
-			}
-			const remaining = block.find('.oba-autobid-window-remaining');
-			if (!remaining.length) {
-				return;
-			}
-			if (enabled && windowLeft > 0) {
-				remaining.text(`${formatDurationShort(windowLeft)} left`).css('display', 'inline-block');
-			} else {
-				const label = windowMinutes ? `${windowMinutes}m (ready)` : (obaAuction.i18n?.autobid_not_active || 'Not active');
-				remaining.text(label).css('display', 'inline-block');
-			}
-		});
+		$('.oba-autobid-window-remaining').text('');
 	}
 
 	function openAutobidWindowModal() {
