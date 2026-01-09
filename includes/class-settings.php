@@ -138,8 +138,18 @@ class OBA_Settings {
 			'autobid_on_badge' => '',
 			'autobid_off_badge' => '',
 			'outbid_label' => '',
-			'autobid_limitless_label' => '',
-		);
+				'autobid_limitless_label' => '',
+				'autobid_window_title' => __( 'Enable autobid for:', 'one-ba-auctions' ),
+				'autobid_window_10' => __( '10m', 'one-ba-auctions' ),
+				'autobid_window_30' => __( '30m', 'one-ba-auctions' ),
+				'autobid_window_60' => __( '60m', 'one-ba-auctions' ),
+				'autobid_window_select' => __( 'Select a time window to enable autobid.', 'one-ba-auctions' ),
+				'live_join_cta' => __( 'Participate in auction', 'one-ba-auctions' ),
+				'participate_cta' => __( 'Participate in auction', 'one-ba-auctions' ),
+				'live_terms_label' => __( 'T&C must be accepted before participating', 'one-ba-auctions' ),
+				'guest_banner_title' => __( 'Please log in or create an account to register.', 'one-ba-auctions' ),
+				'guest_banner_button' => __( 'Log in / Create account', 'one-ba-auctions' ),
+			);
 
 		$translations = array();
 		foreach ( $defaults as $key => $default ) {

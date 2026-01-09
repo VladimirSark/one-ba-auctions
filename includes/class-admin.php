@@ -1189,10 +1189,34 @@ class OBA_Admin {
 			'autobid_off_badge'        => __( 'Autobid OFF badge', 'one-ba-auctions' ),
 			'outbid_label'             => __( 'Outbid label', 'one-ba-auctions' ),
 			'autobid_limitless_label'  => __( 'Autobid limitless label', 'one-ba-auctions' ),
+			'autobid_window_title'     => __( 'Autobid window title', 'one-ba-auctions' ),
+			'autobid_window_10'        => __( 'Autobid window 10m', 'one-ba-auctions' ),
+			'autobid_window_30'        => __( 'Autobid window 30m', 'one-ba-auctions' ),
+			'autobid_window_60'        => __( 'Autobid window 60m', 'one-ba-auctions' ),
+			'autobid_window_select'    => __( 'Autobid window select prompt', 'one-ba-auctions' ),
+			'live_join_cta'            => __( 'Live join CTA', 'one-ba-auctions' ),
+			'participate_cta'          => __( 'Participate CTA', 'one-ba-auctions' ),
+			'live_terms_label'         => __( 'Live T&C label', 'one-ba-auctions' ),
+			'guest_banner_title'       => __( 'Guest banner title', 'one-ba-auctions' ),
+			'guest_banner_button'      => __( 'Guest banner button', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></h1>
+			<?php
+			$default_texts = array(
+				'autobid_window_title'  => __( 'Enable autobid for:', 'one-ba-auctions' ),
+				'autobid_window_10'     => __( '10m', 'one-ba-auctions' ),
+				'autobid_window_30'     => __( '30m', 'one-ba-auctions' ),
+				'autobid_window_60'     => __( '60m', 'one-ba-auctions' ),
+				'autobid_window_select' => __( 'Select a time window to enable autobid.', 'one-ba-auctions' ),
+				'live_join_cta'         => __( 'Participate in auction', 'one-ba-auctions' ),
+				'participate_cta'       => __( 'Participate in auction', 'one-ba-auctions' ),
+				'live_terms_label'      => __( 'T&C must be accepted before participating', 'one-ba-auctions' ),
+				'guest_banner_title'    => __( 'Please log in or create an account to register.', 'one-ba-auctions' ),
+				'guest_banner_button'   => __( 'Log in / Create account', 'one-ba-auctions' ),
+			);
+			?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_translations' ); ?>
 				<input type="hidden" name="action" value="oba_save_translations" />
@@ -1201,7 +1225,12 @@ class OBA_Admin {
 						<tr>
 							<th scope="row"><?php echo esc_html( $label ); ?></th>
 							<td>
-								<input type="text" name="<?php echo esc_attr( $key ); ?>" value="<?php echo isset( $translations[ $key ] ) ? esc_attr( $translations[ $key ] ) : ''; ?>" style="width:100%;max-width:420px;" />
+								<?php
+								$val       = isset( $translations[ $key ] ) ? $translations[ $key ] : '';
+								$fallback  = isset( $default_texts[ $key ] ) ? $default_texts[ $key ] : '';
+								$input_val = ( '' !== $val ) ? $val : $fallback;
+								?>
+								<input type="text" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $input_val ); ?>" placeholder="<?php echo esc_attr( $fallback ); ?>" style="width:100%;max-width:420px;" />
 							</td>
 						</tr>
 					<?php endforeach; ?>
