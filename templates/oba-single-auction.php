@@ -246,10 +246,8 @@ $stage_tips = array(
 					<div class="oba-autobid-setup" style="margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
-								<h4><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
-							</div>
-							<div class="oba-autobid-window">
-								<span class="oba-autobid-window-remaining"></span>
+								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
+								<span class="oba-autobid-window-remaining" style="font-size:13px;font-weight:600;color:#475569;"></span>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -316,7 +314,8 @@ $stage_tips = array(
 					<div class="oba-autobid-setup" style="margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
-								<h4><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
+								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
+								<span class="oba-autobid-window-remaining" style="font-size:13px;font-weight:600;color:#475569;"></span>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -324,9 +323,6 @@ $stage_tips = array(
 									<span class="oba-toggle-slider"></span>
 									<span class="oba-toggle-text"><?php esc_html_e( 'Off', 'one-ba-auctions' ); ?></span>
 								</label>
-							</div>
-							<div class="oba-autobid-window">
-								<span class="oba-autobid-window-remaining"></span>
 							</div>
 						</div>
 					</div>
