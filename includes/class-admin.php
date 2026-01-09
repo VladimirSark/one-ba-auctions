@@ -1326,6 +1326,56 @@ class OBA_Admin {
 			'autobid_on_reminder'   => __( 'Autobid reminder', 'one-ba-auctions' ),
 			'autobid_off'           => __( 'Autobid disabled', 'one-ba-auctions' ),
 		);
+		$defaults = array(
+			'pre_live' => array(
+				'subject' => __( '[Auction] Countdown to live: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" will go live soon.<br />Countdown: <strong>{seconds}s</strong>.<br />Get ready to bid as soon as it goes live.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'live' => array(
+				'subject' => __( '[Auction] Live now: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" is now <strong>LIVE</strong>.<br />Bid cost: {bid_cost} credits. Claim price: {claim_price} credits.<br />Live timer: {live_timer}s (resets on each bid).<br /><a href="{auction_link}">Bid now</a>', 'one-ba-auctions' ),
+			),
+			'winner' => array(
+				'subject' => __( '[Auction] You won: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Congrats {user_name}!<br />You won "<strong>{auction_title}</strong>".<br />Claim price: <strong>{claim_price} credits</strong>.<br />Click below to claim your prize.', 'one-ba-auctions' ),
+			),
+			'loser' => array(
+				'subject' => __( '[Auction] Ended: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" has ended.<br />Your reserved credits have been refunded.<br />Thanks for participating!', 'one-ba-auctions' ),
+			),
+			'claim' => array(
+				'subject' => __( '[Auction] Claim confirmation', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your claim for "<strong>{auction_title}</strong>" has started.<br />Order/claim price: {claim_price} credits.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'registration_pending' => array(
+				'subject' => __( '[Auction] Registration pending', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is pending approval/payment.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'registration_approved' => array(
+				'subject' => __( '[Auction] Registration approved', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is now active.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'participant' => array(
+				'subject' => __( '[Auction] Participation updated', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
+			),
+			'credits' => array(
+				'subject' => __( '[Auction] Your credits were updated', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
+			),
+			'autobid_on' => array(
+				'subject' => __( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'autobid_on_reminder' => array(
+				'subject' => __( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'autobid_off' => array(
+				'subject' => __( '[Auction] Autobid disabled: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is now OFF for "<strong>{auction_title}</strong>".<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></h1>
@@ -1338,8 +1388,14 @@ class OBA_Admin {
 						<tr>
 							<th scope="row"><?php echo esc_html( $label ); ?></th>
 							<td>
-								<input type="text" name="email_templates[<?php echo esc_attr( $key ); ?>][subject]" value="<?php echo isset( $tpl[ $key ]['subject'] ) ? esc_attr( $tpl[ $key ]['subject'] ) : ''; ?>" placeholder="<?php esc_attr_e( 'Subject', 'one-ba-auctions' ); ?>" style="width:100%;max-width:520px;margin-bottom:6px;" />
-								<textarea name="email_templates[<?php echo esc_attr( $key ); ?>][body]" rows="4" style="width:100%;max-width:520px;" placeholder="<?php esc_attr_e( 'Body (HTML allowed)', 'one-ba-auctions' ); ?>"><?php echo isset( $tpl[ $key ]['body'] ) ? esc_textarea( $tpl[ $key ]['body'] ) : ''; ?></textarea>
+								<?php
+								$default_subject = isset( $defaults[ $key ]['subject'] ) ? $defaults[ $key ]['subject'] : '';
+								$default_body    = isset( $defaults[ $key ]['body'] ) ? $defaults[ $key ]['body'] : '';
+								$subject_value   = isset( $tpl[ $key ]['subject'] ) && '' !== $tpl[ $key ]['subject'] ? $tpl[ $key ]['subject'] : $default_subject;
+								$body_value      = isset( $tpl[ $key ]['body'] ) && '' !== $tpl[ $key ]['body'] ? $tpl[ $key ]['body'] : $default_body;
+								?>
+								<input type="text" name="email_templates[<?php echo esc_attr( $key ); ?>][subject]" value="<?php echo esc_attr( $subject_value ); ?>" placeholder="<?php echo esc_attr( $default_subject ? $default_subject : __( 'Subject', 'one-ba-auctions' ) ); ?>" style="width:100%;max-width:520px;margin-bottom:6px;" />
+								<textarea name="email_templates[<?php echo esc_attr( $key ); ?>][body]" rows="4" style="width:100%;max-width:520px;" placeholder="<?php echo esc_attr( $default_body ? $default_body : __( 'Body (HTML allowed)', 'one-ba-auctions' ) ); ?>"><?php echo esc_textarea( $body_value ); ?></textarea>
 							</td>
 						</tr>
 					<?php endforeach; ?>
