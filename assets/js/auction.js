@@ -324,15 +324,17 @@
 				renderInlineAutobidTotal(setup);
 				updateAutobidWindowUI(enabled);
 				const windowMinutes = Number(state.data.autobid_window_minutes || state.data.autobid_window_selected || 0);
+				const windowSeconds = Number(state.data.autobid_window_seconds_left || 0);
 				if (!enabled && windowMinutes) {
 					setSelectedAutobidWindow(windowMinutes);
 				}
-				if (setup.data('phase') === 'registration') {
+				if (setup.attr('data-phase') === 'registration') {
 					const title = setup.find('.oba-autobid-left h4');
 					if (title.length) {
 						if (enabled) {
 							const base = obaAuction.i18n?.autobid_set_for || 'Autobid is set for:';
-							const label = windowMinutes ? `${base} ${windowMinutes}m` : (obaAuction.i18n?.autobid_set || 'Autobid is set');
+							const windowForLabel = windowMinutes || (windowSeconds ? Math.ceil(windowSeconds / 60) : 0);
+							const label = windowForLabel ? `${base} ${windowForLabel}m` : (obaAuction.i18n?.autobid_set || 'Autobid is set');
 							title.text(label);
 						} else {
 							title.text(obaAuction.i18n?.autobid_title || 'Autobid');
