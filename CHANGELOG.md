@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-01-08
+### Added
+- Optional live join stage: auctions can allow unregistered users to join during live for a higher points fee than registration; live CTA shows “Participate in auction (X pts)” with T&C gating, deducts points on join, and replaces the bid button until registered.
+- Guest UX: auction UI stays visible but blurred with a login/signup prompt; primary actions open the configured login URL in a new tab.
+- Autobid windows: users must choose a window (10/30/60 minutes) when enabling autobid via modal; `wp_auction_autobid` gains `window_minutes` (migration on activation); state responses include `autobid_window_minutes`, `autobid_window_seconds_left`, `autobid_window_ends_at`.
+
+### Changed
+- Autobid window starts when live begins and auto-disables when the window expires; manual bids remain disabled while autobid is on. Registration autobid card title now shows “Autobid is set for: Xm” once armed, and the bid button shows remaining time when active; card stays visible whenever autobid is allowed for the auction.
+
 ## 2025-12-29
 ### Changed
 - Autobid now uses an unlimited ON/OFF toggle: enabling still charges the configured points cost, stores `max_bids = 0` (limitless), and state responses expose `autobid_limitless`. Frontend no longer requires entering a max spend/bids and shows an “unlimited” label when active.
