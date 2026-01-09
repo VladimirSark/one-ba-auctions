@@ -383,7 +383,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT user_id, max_bids FROM {$table} WHERE auction_id = %d AND enabled = 1",
+				"SELECT user_id, max_bids, window_minutes FROM {$table} WHERE auction_id = %d AND enabled = 1",
 				$auction_id
 			),
 			ARRAY_A
@@ -411,6 +411,7 @@ class OBA_Autobid_Service {
 				array(
 					'autobid_max_bids'  => (int) $row['max_bids'],
 					'autobid_bids_used' => (int) $used,
+					'autobid_window_minutes' => isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0,
 				)
 			);
 			update_user_meta( $user_id, $key, time() );

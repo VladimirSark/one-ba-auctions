@@ -1365,11 +1365,11 @@ class OBA_Admin {
 			),
 			'autobid_on' => array(
 				'subject' => __( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
-				'body'    => __( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 			),
 			'autobid_on_reminder' => array(
 				'subject' => __( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
-				'body'    => __( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 			),
 			'autobid_off' => array(
 				'subject' => __( '[Auction] Autobid disabled: {auction_title}', 'one-ba-auctions' ),
@@ -1379,7 +1379,7 @@ class OBA_Admin {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></h1>
-			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {live_timer}, {seconds}, {order_id}, {delta}, {balance}, {status}, {autobid_max_bids}, {autobid_bids_used}.', 'one-ba-auctions' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {live_timer}, {seconds}, {order_id}, {delta}, {balance}, {status}, {autobid_max_bids}, {autobid_bids_used}, {autobid_window_minutes}.', 'one-ba-auctions' ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_emails' ); ?>
 				<input type="hidden" name="action" value="oba_save_emails" />
