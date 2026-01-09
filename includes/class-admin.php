@@ -910,8 +910,19 @@ class OBA_Admin {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Terms & Conditions text', 'one-ba-auctions' ); ?></th>
 						<td>
-							<textarea name="terms_text" rows="4" cols="50"><?php echo esc_textarea( $settings['terms_text'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Shown in registration step and required to register when not empty.', 'one-ba-auctions' ); ?></p>
+							<?php
+							wp_editor(
+								$settings['terms_text'],
+								'terms_text',
+								array(
+									'textarea_name' => 'terms_text',
+									'media_buttons' => false,
+									'textarea_rows' => 6,
+									'teeny'         => true,
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Shown in registration step and required to register when not empty. You can add links and basic formatting.', 'one-ba-auctions' ); ?></p>
 						</td>
 					</tr>
 					<tr>
