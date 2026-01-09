@@ -135,7 +135,7 @@ $stage_tips = array(
 		color:#0f172a;
 	}
 	.oba-autobid-window button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
-	.oba-autobid-window-remaining { font-size:13px; color:#475569; display:none; }
+	.oba-autobid-window-remaining { font-size:13px; color:#475569; display:inline-block; }
 	.oba-autobid-window-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.35); display:none; z-index:12000; }
 	.oba-autobid-window-modal { position:fixed; inset:0; display:none; z-index:12001; align-items:center; justify-content:center; }
 	.oba-autobid-window-modal__inner { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; width:320px; box-shadow:0 15px 40px rgba(15,23,42,0.18); }
