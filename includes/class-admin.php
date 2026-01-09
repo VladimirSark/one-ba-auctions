@@ -1313,20 +1313,23 @@ class OBA_Admin {
 		$settings = $this->settings;
 		$tpl      = isset( $settings['email_templates'] ) ? $settings['email_templates'] : array();
 		$fields   = array(
-			'pre_live'    => __( 'Pre-live (to registered participants)', 'one-ba-auctions' ),
-			'live'        => __( 'Live started (to registered participants)', 'one-ba-auctions' ),
-			'winner'      => __( 'Auction winner', 'one-ba-auctions' ),
-			'loser'       => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
-			'claim'       => __( 'Claim confirmation', 'one-ba-auctions' ),
-			'participant' => __( 'Participant status change', 'one-ba-auctions' ),
-			'autobid_on'  => __( 'Autobid enabled', 'one-ba-auctions' ),
-			'autobid_off' => __( 'Autobid disabled', 'one-ba-auctions' ),
-			'autobid_limitless_reminder' => __( 'Autobid limitless reminder', 'one-ba-auctions' ),
+			'pre_live'              => __( 'Pre-live (to registered participants)', 'one-ba-auctions' ),
+			'live'                  => __( 'Live started (to registered participants)', 'one-ba-auctions' ),
+			'winner'                => __( 'Auction winner', 'one-ba-auctions' ),
+			'loser'                 => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
+			'claim'                 => __( 'Claim confirmation', 'one-ba-auctions' ),
+			'registration_pending'  => __( 'Registration pending', 'one-ba-auctions' ),
+			'registration_approved' => __( 'Registration approved', 'one-ba-auctions' ),
+			'participant'           => __( 'Participant status change', 'one-ba-auctions' ),
+			'credits'               => __( 'Points balance edited', 'one-ba-auctions' ),
+			'autobid_on'            => __( 'Autobid enabled', 'one-ba-auctions' ),
+			'autobid_on_reminder'   => __( 'Autobid reminder', 'one-ba-auctions' ),
+			'autobid_off'           => __( 'Autobid disabled', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></h1>
-			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {balance}, {status}, {autobid_max_bids}.', 'one-ba-auctions' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {live_timer}, {seconds}, {order_id}, {delta}, {balance}, {status}, {autobid_max_bids}, {autobid_bids_used}.', 'one-ba-auctions' ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_emails' ); ?>
 				<input type="hidden" name="action" value="oba_save_emails" />
@@ -1358,10 +1361,13 @@ class OBA_Admin {
 					<label><input type="checkbox" name="templates[]" value="winner" checked /> <?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="loser" checked /> <?php esc_html_e( 'Loser', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="claim" checked /> <?php esc_html_e( 'Claim confirmation', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="registration_pending" checked /> <?php esc_html_e( 'Registration pending', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="registration_approved" checked /> <?php esc_html_e( 'Registration approved', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="credits" checked /> <?php esc_html_e( 'Points balance edited', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="autobid_on" checked /> <?php esc_html_e( 'Autobid enabled', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="autobid_on_reminder" checked /> <?php esc_html_e( 'Autobid reminder', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="autobid_off" checked /> <?php esc_html_e( 'Autobid disabled', 'one-ba-auctions' ); ?></label><br />
-					<label><input type="checkbox" name="templates[]" value="autobid_limitless_reminder" checked /> <?php esc_html_e( 'Autobid limitless reminder', 'one-ba-auctions' ); ?></label>
 				</div>
 				<?php submit_button( __( 'Send Selected Tests', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
 			</form>
