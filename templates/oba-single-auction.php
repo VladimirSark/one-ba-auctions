@@ -243,10 +243,10 @@ $stage_tips = array(
 							<a class="oba-share-btn oba-share-copy" href="#" data-network="copy"><?php esc_html_e( 'Copy link', 'one-ba-auctions' ); ?></a>
 						</div>
 					</div>
-					<div class="oba-autobid-setup" style="margin-top:12px;">
+					<div class="oba-autobid-setup" data-phase="registration" style="margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
-								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid active for:', 'one-ba-auctions' ); ?></h4>
+								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
 							</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
@@ -310,7 +310,7 @@ $stage_tips = array(
 							<div class="oba-legend-value oba-bidder-status-pill" style="font-size:16px;padding:6px 10px;border-radius:10px;"><?php esc_html_e( 'Outbid', 'one-ba-auctions' ); ?></div>
 						</div>
 					</div>
-					<div class="oba-autobid-setup" style="margin-top:12px;">
+					<div class="oba-autobid-setup" data-phase="live" style="margin-top:12px;">
 						<div class="oba-autobid-card">
 							<div class="oba-autobid-left">
 								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>

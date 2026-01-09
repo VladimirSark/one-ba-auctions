@@ -327,6 +327,18 @@
 				if (!enabled && windowMinutes) {
 					setSelectedAutobidWindow(windowMinutes);
 				}
+				if (setup.data('phase') === 'registration') {
+					const title = setup.find('.oba-autobid-left h4');
+					if (title.length) {
+						if (enabled) {
+							const base = obaAuction.i18n?.autobid_set_for || 'Autobid is set for:';
+							const label = windowMinutes ? `${base} ${windowMinutes}m` : (obaAuction.i18n?.autobid_set || 'Autobid is set');
+							title.text(label);
+						} else {
+							title.text(obaAuction.i18n?.autobid_title || 'Autobid');
+						}
+					}
+				}
 			} else {
 				setup.hide();
 			}
