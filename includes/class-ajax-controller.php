@@ -702,7 +702,7 @@ class OBA_Ajax_Controller {
 
 		WC()->cart->empty_cart();
 
-		$allow_ids = array_filter( array( (int) $bid_product_id ) );
+		$allow_ids = array_filter( array( (int) $bid_product_id, (int) $auction_id ) );
 		$allow = function( $purchasable, $product ) use ( $allow_ids ) {
 			if ( $product && in_array( (int) $product->get_id(), $allow_ids, true ) ) {
 				return true;
@@ -712,13 +712,6 @@ class OBA_Ajax_Controller {
 		add_filter( 'woocommerce_is_purchasable', $allow, 10, 2 );
 
 		$added = false;
-		$order_meta = array(
-			'oba_is_claim'          => true,
-			'oba_claim_price'       => $claim_price,
-			'oba_claim_auction_id'  => $auction_id,
-			'oba_winner_row_id'     => $winner_row_id,
-		);
-
 		if ( $bid_product_id && $bid_qty > 0 ) {
 			$added_key = WC()->cart->add_to_cart(
 				$bid_product_id,
@@ -739,6 +732,27 @@ class OBA_Ajax_Controller {
 				WC()->cart->cart_contents[ $added_key ]['data']->set_price( $bid_price );
 			}
 			$added = (bool) $added_key;
+		}
+
+		// Also add the auction product itself (prize) at zero price so the order shows the won item and delivers downloads if applicable.
+		if ( $auction_id ) {
+			$prize_key = WC()->cart->add_to_cart(
+				$auction_id,
+				1,
+				0,
+				array(),
+				array(
+					'oba_is_claim'          => true,
+					'oba_is_prize'          => true,
+					'oba_claim_price'       => $claim_price,
+					'oba_claim_auction_id'  => $auction_id,
+					'oba_winner_row_id'     => $winner_row_id,
+				)
+			);
+			if ( $prize_key && isset( WC()->cart->cart_contents[ $prize_key ]['data'] ) && WC()->cart->cart_contents[ $prize_key ]['data'] instanceof WC_Product ) {
+				WC()->cart->cart_contents[ $prize_key ]['data']->set_price( 0 );
+				$added = true;
+			}
 		}
 
 		remove_filter( 'woocommerce_is_purchasable', $allow, 10 );
