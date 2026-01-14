@@ -897,8 +897,11 @@ function toggleAutobid(enable) {
 		$('.oba-autobid-window-btn').removeClass('oba-terms-error');
 		if (enable) {
 			const cost = obaAuction.autobid_cost_points || 0;
-			const message = obaAuction.i18n?.autobid_confirm
-				|| `Autobid will charge ${cost} points. Proceed?`;
+			const tmpl = obaAuction.i18n?.autobid_confirm
+				|| 'Autobid will charge {cost} points and will be enabled for {minutes} minutes in live stage. Proceed?';
+			const message = tmpl
+				.replace('{cost}', cost)
+				.replace('{minutes}', windowMinutes || 0);
 		// eslint-disable-next-line no-alert
 		if (!window.confirm(message)) {
 			return;

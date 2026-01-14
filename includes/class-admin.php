@@ -1279,7 +1279,7 @@ class OBA_Admin {
 				'autobid_saved' => __( 'Autobid updated', 'one-ba-auctions' ),
 				'autobid_error' => __( 'Could not update autobid', 'one-ba-auctions' ),
 				'autobid_ended' => __( 'Autobid ended', 'one-ba-auctions' ),
-				'autobid_confirm' => __( 'Autobid will charge {cost} points. Proceed?', 'one-ba-auctions' ),
+				'autobid_confirm' => __( 'Autobid will charge {cost} points and will be enabled for {minutes} minutes in live stage. Proceed?', 'one-ba-auctions' ),
 				'remaining' => __( 'Remaining', 'one-ba-auctions' ),
 				'registration_closed' => __( 'Registration closed', 'one-ba-auctions' ),
 				'autobid_title' => __( 'Autobid', 'one-ba-auctions' ),
