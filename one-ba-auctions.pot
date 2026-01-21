@@ -68,6 +68,18 @@ msgstr ""
 msgid "Saved vs cost"
 msgstr ""
 
+#: assets/js/auction.js:323
+msgid "Autobid is set for:"
+msgstr ""
+
+#: templates/oba-single-auction.php:101
+msgid "On"
+msgstr ""
+
+#: templates/oba-single-auction.php:101
+msgid "Off"
+msgstr ""
+
 #: includes/class-admin.php:337
 msgid "Action"
 msgstr ""
