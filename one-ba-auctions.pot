@@ -16,6 +16,58 @@ msgstr ""
 "X-Loco-Version: 2.8.0; wp-6.8.3; php-8.2.27\n"
 "X-Domain: one-ba-auctions"
 
+#: templates/oba-single-auction.php:424
+msgid "Enable autobid"
+msgstr ""
+
+#: templates/oba-single-auction.php:425
+msgid "Select how long autobid should stay active. Enabling will charge activation points."
+msgstr ""
+
+#: templates/oba-single-auction.php:428
+msgid "10m"
+msgstr ""
+
+#: templates/oba-single-auction.php:429
+msgid "30m"
+msgstr ""
+
+#: templates/oba-single-auction.php:430
+msgid "60m"
+msgstr ""
+
+#: templates/oba-single-auction.php:434
+msgid "Cancel"
+msgstr ""
+
+#: templates/oba-single-auction.php:435
+msgid "Enable"
+msgstr ""
+
+#: assets/js/auction.js:902
+msgid "Autobid will charge {cost} points and will be enabled for {minutes} minutes in live stage. Proceed?"
+msgstr ""
+
+#: templates/oba-single-auction.php:361
+msgid "Prize claimed"
+msgstr ""
+
+#: templates/oba-single-auction.php:365
+msgid "Winner"
+msgstr ""
+
+#: templates/oba-single-auction.php:366
+msgid "Bids placed"
+msgstr ""
+
+#: templates/oba-single-auction.php:367
+msgid "Bids value"
+msgstr ""
+
+#: templates/oba-single-auction.php:368
+msgid "Saved vs cost"
+msgstr ""
+
 #: includes/class-admin.php:337
 msgid "Action"
 msgstr ""
