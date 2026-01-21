@@ -852,9 +852,8 @@ class OBA_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Auction Settings', 'one-ba-auctions' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab || 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'emails' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'emails' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></a>
-				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'translations' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></a>
 			</h2>
 		<?php
 		if ( 'emails' === $active_tab ) {
@@ -862,11 +861,7 @@ class OBA_Admin {
 			echo '</div>';
 			return;
 		}
-		if ( 'translations' === $active_tab ) {
-			$this->render_translations_page();
-			echo '</div>';
-			return;
-		}
+		// Translations tab removed; fall back to General.
 		?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_settings' ); ?>
@@ -980,15 +975,6 @@ class OBA_Admin {
 						<td>
 							<p class="description"><?php esc_html_e( 'Use the Emails page to edit subjects and bodies for pre-live, live, winner, loser, claim confirmation, credits edited, and participant status notifications.', 'one-ba-auctions' ); ?></p>
 							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-emails' ) ); ?>"><?php esc_html_e( 'Open Emails', 'one-ba-auctions' ); ?></a>
-						</td>
-					</tr>
-					<?php endif; ?>
-					<?php if ( 'translations' === $active_tab ) : ?>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></th>
-						<td>
-							<p class="description"><?php esc_html_e( 'Manage all frontend translations from the Translations page.', 'one-ba-auctions' ); ?></p>
-							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-1ba-settings&tab=translations' ) ); ?>"><?php esc_html_e( 'Open Translations', 'one-ba-auctions' ); ?></a>
 						</td>
 					</tr>
 					<?php endif; ?>
