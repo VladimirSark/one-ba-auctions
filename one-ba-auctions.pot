@@ -72,6 +72,10 @@ msgstr ""
 msgid "Autobid is set for:"
 msgstr ""
 
+#: templates/oba-single-auction.php:100
+msgid "Autobid"
+msgstr ""
+
 #: templates/oba-single-auction.php:101
 msgid "On"
 msgstr ""
