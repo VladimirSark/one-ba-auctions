@@ -736,6 +736,9 @@ class OBA_Ajax_Controller {
 
 		// Also add the auction product itself (prize) at zero price so the order shows the won item and delivers downloads if applicable.
 		if ( $auction_id ) {
+			$prize_product = wc_get_product( $auction_id );
+			$is_downloadable = $prize_product ? $prize_product->is_downloadable() : false;
+			$is_virtual      = $prize_product ? $prize_product->is_virtual() : false;
 			$prize_key = WC()->cart->add_to_cart(
 				$auction_id,
 				1,
@@ -750,7 +753,18 @@ class OBA_Ajax_Controller {
 				)
 			);
 			if ( $prize_key && isset( WC()->cart->cart_contents[ $prize_key ]['data'] ) && WC()->cart->cart_contents[ $prize_key ]['data'] instanceof WC_Product ) {
-				WC()->cart->cart_contents[ $prize_key ]['data']->set_price( 0 );
+				$line_product = WC()->cart->cart_contents[ $prize_key ]['data'];
+				$line_product->set_price( 0 );
+				// Ensure downloads/virtual flags propagate to the line item so digital goods are delivered.
+				if ( $is_downloadable ) {
+					$line_product->set_downloadable( true );
+					$line_product->set_downloads( $prize_product->get_downloads() );
+					$line_product->set_download_limit( $prize_product->get_download_limit() );
+					$line_product->set_download_expiry( $prize_product->get_download_expiry() );
+				}
+				if ( $is_virtual ) {
+					$line_product->set_virtual( true );
+				}
 				$added = true;
 			}
 		}
