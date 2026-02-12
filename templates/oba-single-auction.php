@@ -35,7 +35,7 @@ $stage_tips = array(
 );
 ?>
 
-<div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>">
+<div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>" data-buy-now-enabled="<?php echo $buy_now_enabled ? '1' : '0'; ?>">
 	<style>
 	.oba-guest-banner {
 		display: none;

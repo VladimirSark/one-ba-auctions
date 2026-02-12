@@ -453,12 +453,18 @@
 	}
 
 	function applyMembershipLocks(status) {
+		const buyNowEnabled = $('.oba-auction-wrap').data('buy-now-enabled') === 1 || $('.oba-auction-wrap').data('buy-now-enabled') === '1';
 		const hasMembership = !!state.data.membership_active;
 		const unlocked = !!state.data.registration_unlocked;
 		const isRegistered = !!state.data.user_registered;
 		const layoutOverlay = $('.oba-membership-overlay');
 		const pointsOverlay = $('.oba-points-overlay');
 		pointsOverlay.hide();
+		if (buyNowEnabled) {
+			layoutOverlay.hide();
+			pointsOverlay.hide();
+			return;
+		}
 		if (!unlocked) {
 			buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
 			layoutOverlay.css('display', 'flex');
