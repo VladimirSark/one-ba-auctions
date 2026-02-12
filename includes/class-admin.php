@@ -852,9 +852,8 @@ class OBA_Admin {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Auction Settings', 'one-ba-auctions' ); ?></h1>
 			<h2 class="nav-tab-wrapper">
-				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab || 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'emails' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'emails' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></a>
-				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'translations' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></a>
 			</h2>
 		<?php
 		if ( 'emails' === $active_tab ) {
@@ -862,11 +861,7 @@ class OBA_Admin {
 			echo '</div>';
 			return;
 		}
-		if ( 'translations' === $active_tab ) {
-			$this->render_translations_page();
-			echo '</div>';
-			return;
-		}
+		// Translations tab removed; fall back to General.
 		?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_settings' ); ?>
@@ -910,8 +905,19 @@ class OBA_Admin {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Terms & Conditions text', 'one-ba-auctions' ); ?></th>
 						<td>
-							<textarea name="terms_text" rows="4" cols="50"><?php echo esc_textarea( $settings['terms_text'] ); ?></textarea>
-							<p class="description"><?php esc_html_e( 'Shown in registration step and required to register when not empty.', 'one-ba-auctions' ); ?></p>
+							<?php
+							wp_editor(
+								$settings['terms_text'],
+								'terms_text',
+								array(
+									'textarea_name' => 'terms_text',
+									'media_buttons' => false,
+									'textarea_rows' => 6,
+									'teeny'         => true,
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Shown in registration step and required to register when not empty. You can add links and basic formatting.', 'one-ba-auctions' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -969,15 +975,6 @@ class OBA_Admin {
 						<td>
 							<p class="description"><?php esc_html_e( 'Use the Emails page to edit subjects and bodies for pre-live, live, winner, loser, claim confirmation, credits edited, and participant status notifications.', 'one-ba-auctions' ); ?></p>
 							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-emails' ) ); ?>"><?php esc_html_e( 'Open Emails', 'one-ba-auctions' ); ?></a>
-						</td>
-					</tr>
-					<?php endif; ?>
-					<?php if ( 'translations' === $active_tab ) : ?>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></th>
-						<td>
-							<p class="description"><?php esc_html_e( 'Manage all frontend translations from the Translations page.', 'one-ba-auctions' ); ?></p>
-							<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=oba-1ba-settings&tab=translations' ) ); ?>"><?php esc_html_e( 'Open Translations', 'one-ba-auctions' ); ?></a>
 						</td>
 					</tr>
 					<?php endif; ?>
@@ -1157,6 +1154,11 @@ class OBA_Admin {
 			'claim_continue' => __( 'Claim continue button', 'one-ba-auctions' ),
 			'claim_cancel' => __( 'Claim cancel button', 'one-ba-auctions' ),
 			'claim_error' => __( 'Claim error message label', 'one-ba-auctions' ),
+			'claimed_title' => __( 'Claimed summary: title', 'one-ba-auctions' ),
+			'claimed_winner' => __( 'Claimed summary: winner label', 'one-ba-auctions' ),
+			'claimed_bids' => __( 'Claimed summary: bids label', 'one-ba-auctions' ),
+			'claimed_value' => __( 'Claimed summary: value label', 'one-ba-auctions' ),
+			'claimed_saved' => __( 'Claimed summary: saved label', 'one-ba-auctions' ),
 			'stage2_tip'       => __( 'Tooltip: Countdown lock', 'one-ba-auctions' ),
 			'stage3_tip'       => __( 'Tooltip: Live lock', 'one-ba-auctions' ),
 			'stage4_tip'       => __( 'Tooltip: Ended lock', 'one-ba-auctions' ),
@@ -1189,10 +1191,123 @@ class OBA_Admin {
 			'autobid_off_badge'        => __( 'Autobid OFF badge', 'one-ba-auctions' ),
 			'outbid_label'             => __( 'Outbid label', 'one-ba-auctions' ),
 			'autobid_limitless_label'  => __( 'Autobid limitless label', 'one-ba-auctions' ),
+			'autobid_window_title'     => __( 'Autobid window title', 'one-ba-auctions' ),
+			'autobid_window_10'        => __( 'Autobid window 10m', 'one-ba-auctions' ),
+			'autobid_window_30'        => __( 'Autobid window 30m', 'one-ba-auctions' ),
+			'autobid_window_60'        => __( 'Autobid window 60m', 'one-ba-auctions' ),
+			'autobid_window_select'    => __( 'Autobid window select prompt', 'one-ba-auctions' ),
+			'autobid_modal_title'      => __( 'Autobid modal title', 'one-ba-auctions' ),
+			'autobid_modal_desc'       => __( 'Autobid modal description', 'one-ba-auctions' ),
+			'autobid_modal_enable'     => __( 'Autobid modal enable button', 'one-ba-auctions' ),
+			'autobid_modal_cancel'     => __( 'Autobid modal cancel button', 'one-ba-auctions' ),
+			'live_join_cta'            => __( 'Live join CTA', 'one-ba-auctions' ),
+			'participate_cta'          => __( 'Participate CTA', 'one-ba-auctions' ),
+			'live_terms_label'         => __( 'Live T&C label', 'one-ba-auctions' ),
+			'guest_banner_title'       => __( 'Guest banner title', 'one-ba-auctions' ),
+			'guest_banner_button'      => __( 'Guest banner button', 'one-ba-auctions' ),
 		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Translations', 'one-ba-auctions' ); ?></h1>
+			<?php
+			$default_texts = array(
+				'step1_label'    => __( 'Registration', 'one-ba-auctions' ),
+				'step2_label'    => __( 'Countdown to Live', 'one-ba-auctions' ),
+				'step3_label'    => __( 'Live Bidding', 'one-ba-auctions' ),
+				'step4_label'    => __( 'Auction Ended', 'one-ba-auctions' ),
+				'step1_desc'     => __( 'Join the lobby with points.', 'one-ba-auctions' ),
+				'step2_desc'     => __( 'Short countdown before live.', 'one-ba-auctions' ),
+				'step3_desc'     => __( 'Bid, reset timer, compete.', 'one-ba-auctions' ),
+				'step4_desc'     => __( 'Auction has ended.', 'one-ba-auctions' ),
+				'lobby_progress' => __( 'Lobby progress', 'one-ba-auctions' ),
+				'register_cta'   => __( 'Register & Reserve Spot', 'one-ba-auctions' ),
+				'bid_button'     => __( 'Place bid', 'one-ba-auctions' ),
+				'prelive_hint'   => __( 'Auction is about to go live', 'one-ba-auctions' ),
+				'winner_msg'     => __( 'You won!', 'one-ba-auctions' ),
+				'loser_msg'      => __( 'Auction ended.', 'one-ba-auctions' ),
+				'refund_msg'     => __( 'Your reserved points have been refunded.', 'one-ba-auctions' ),
+				'register_note'  => __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ),
+				'buy_credits_title' => __( 'Buy points', 'one-ba-auctions' ),
+				'registration_fee_label' => __( 'Registration points', 'one-ba-auctions' ),
+				'registered_badge' => __( 'Registered', 'one-ba-auctions' ),
+				'not_registered_badge' => __( 'Not registered', 'one-ba-auctions' ),
+				'credit_singular' => __( 'credit', 'one-ba-auctions' ),
+				'credit_plural'   => __( 'credits', 'one-ba-auctions' ),
+				'points_label'    => __( 'Points', 'one-ba-auctions' ),
+				'points_suffix'   => __( 'pts', 'one-ba-auctions' ),
+				'bid_cost_label'  => __( 'Bid cost', 'one-ba-auctions' ),
+				'your_bids_label' => __( 'Your bids', 'one-ba-auctions' ),
+				'your_cost_label' => __( 'Your cost', 'one-ba-auctions' ),
+				'you_leading'     => __( 'You are leading', 'one-ba-auctions' ),
+				'claim_button'    => __( 'Claim now', 'one-ba-auctions' ),
+				'notify_bid_placed' => __( 'Bid placed', 'one-ba-auctions' ),
+				'notify_bid_failed' => __( 'Bid failed', 'one-ba-auctions' ),
+				'notify_claim_started' => __( 'Claim started', 'one-ba-auctions' ),
+				'notify_claim_failed' => __( 'Claim failed', 'one-ba-auctions' ),
+				'notify_registration_success' => __( 'Registered', 'one-ba-auctions' ),
+				'notify_registration_fail' => __( 'Registration failed', 'one-ba-auctions' ),
+				'notify_cannot_bid' => __( 'Cannot bid', 'one-ba-auctions' ),
+				'notify_login_required' => __( 'Please log in to register.', 'one-ba-auctions' ),
+				'claim_modal_title' => __( 'Claim prize', 'one-ba-auctions' ),
+				'claim_option_gateway' => __( 'Checkout', 'one-ba-auctions' ),
+				'claim_continue' => __( 'Continue', 'one-ba-auctions' ),
+				'claim_cancel' => __( 'Cancel', 'one-ba-auctions' ),
+				'claim_error' => __( 'Claim failed. Please try again.', 'one-ba-auctions' ),
+				'stage2_tip'       => __( 'Lobby filled, short countdown', 'one-ba-auctions' ),
+				'stage3_tip'       => __( 'Bid to reset timer', 'one-ba-auctions' ),
+				'stage4_tip'       => __( 'See results and claim', 'one-ba-auctions' ),
+				'stage1_tip'       => __( 'Register to join', 'one-ba-auctions' ),
+				'login_prompt'     => __( 'Please log in or create an account to register.', 'one-ba-auctions' ),
+				'login_button'     => __( 'Log in / Create account', 'one-ba-auctions' ),
+				'membership_required_title' => __( 'Membership required to register.', 'one-ba-auctions' ),
+				'points_low_title' => __( 'Not enough points to continue.', 'one-ba-auctions' ),
+				'points_label'    => __( 'Points', 'one-ba-auctions' ),
+				'points_suffix'   => __( 'pts', 'one-ba-auctions' ),
+				'win_save_prefix' => __( 'You saved around', 'one-ba-auctions' ),
+				'win_save_suffix' => __( 'from regular price in other stores.', 'one-ba-auctions' ),
+				'lose_save_prefix' => __( 'If you win, you would save around', 'one-ba-auctions' ),
+				'lose_save_suffix' => __( 'from regular price in other stores.', 'one-ba-auctions' ),
+				'claimed_title' => __( 'Prize claimed', 'one-ba-auctions' ),
+				'claimed_winner' => __( 'Winner', 'one-ba-auctions' ),
+				'claimed_bids' => __( 'Bids placed', 'one-ba-auctions' ),
+				'claimed_value' => __( 'Bids value', 'one-ba-auctions' ),
+				'claimed_saved' => __( 'Saved vs cost', 'one-ba-auctions' ),
+				'autobid_on_button' => __( 'Aut. statymas įjungtas', 'one-ba-auctions' ),
+				'autobid_off_button' => __( 'Autobid off', 'one-ba-auctions' ),
+				'autobid_on' => __( 'On', 'one-ba-auctions' ),
+				'autobid_off' => __( 'Off', 'one-ba-auctions' ),
+				'autobid_saved' => __( 'Autobid updated', 'one-ba-auctions' ),
+				'autobid_error' => __( 'Could not update autobid', 'one-ba-auctions' ),
+				'autobid_ended' => __( 'Autobid ended', 'one-ba-auctions' ),
+				'autobid_confirm' => __( 'Autobid will charge {cost} points and will be enabled for {minutes} minutes in live stage. Proceed?', 'one-ba-auctions' ),
+				'remaining' => __( 'Remaining', 'one-ba-auctions' ),
+				'registration_closed' => __( 'Registration closed', 'one-ba-auctions' ),
+				'autobid_title' => __( 'Autobid', 'one-ba-auctions' ),
+				'autobid_cost_hint' => __( 'Autobid activation will deduct points.', 'one-ba-auctions' ),
+				'autobid_prompt_title' => __( 'Enable autobid for:', 'one-ba-auctions' ),
+				'autobid_set_title' => __( 'Autobid is set for:', 'one-ba-auctions' ),
+				'autobid_set' => __( 'Set autobid', 'one-ba-auctions' ),
+				'autobid_edit' => __( 'Edit autobid', 'one-ba-auctions' ),
+				'autobid_on_badge' => __( 'ON', 'one-ba-auctions' ),
+				'autobid_off_badge' => __( 'OFF', 'one-ba-auctions' ),
+				'outbid_label' => __( 'Outbid', 'one-ba-auctions' ),
+				'autobid_limitless_label' => __( 'Unlimited autobid', 'one-ba-auctions' ),
+				'autobid_window_title'  => __( 'Enable autobid for:', 'one-ba-auctions' ),
+				'autobid_window_10'     => __( '10m', 'one-ba-auctions' ),
+				'autobid_window_30'     => __( '30m', 'one-ba-auctions' ),
+				'autobid_window_60'     => __( '60m', 'one-ba-auctions' ),
+				'autobid_window_select' => __( 'Select a time window to enable autobid.', 'one-ba-auctions' ),
+				'autobid_modal_title'   => __( 'Enable autobid', 'one-ba-auctions' ),
+				'autobid_modal_desc'    => __( 'Select how long autobid should stay active. Enabling will charge activation points.', 'one-ba-auctions' ),
+				'autobid_modal_enable'  => __( 'Enable', 'one-ba-auctions' ),
+				'autobid_modal_cancel'  => __( 'Cancel', 'one-ba-auctions' ),
+				'live_join_cta'         => __( 'Participate in auction', 'one-ba-auctions' ),
+				'participate_cta'       => __( 'Participate in auction', 'one-ba-auctions' ),
+				'live_terms_label'      => __( 'T&C must be accepted before participating', 'one-ba-auctions' ),
+				'guest_banner_title'    => __( 'Please log in or create an account to register.', 'one-ba-auctions' ),
+				'guest_banner_button'   => __( 'Log in / Create account', 'one-ba-auctions' ),
+			);
+			?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_translations' ); ?>
 				<input type="hidden" name="action" value="oba_save_translations" />
@@ -1201,7 +1316,12 @@ class OBA_Admin {
 						<tr>
 							<th scope="row"><?php echo esc_html( $label ); ?></th>
 							<td>
-								<input type="text" name="<?php echo esc_attr( $key ); ?>" value="<?php echo isset( $translations[ $key ] ) ? esc_attr( $translations[ $key ] ) : ''; ?>" style="width:100%;max-width:420px;" />
+								<?php
+								$val       = isset( $translations[ $key ] ) ? $translations[ $key ] : '';
+								$fallback  = isset( $default_texts[ $key ] ) ? $default_texts[ $key ] : '';
+								$input_val = ( '' !== $val ) ? $val : $fallback;
+								?>
+								<input type="text" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $input_val ); ?>" placeholder="<?php echo esc_attr( $fallback ); ?>" style="width:100%;max-width:420px;" />
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -1313,20 +1433,73 @@ class OBA_Admin {
 		$settings = $this->settings;
 		$tpl      = isset( $settings['email_templates'] ) ? $settings['email_templates'] : array();
 		$fields   = array(
-			'pre_live'    => __( 'Pre-live (to registered participants)', 'one-ba-auctions' ),
-			'live'        => __( 'Live started (to registered participants)', 'one-ba-auctions' ),
-			'winner'      => __( 'Auction winner', 'one-ba-auctions' ),
-			'loser'       => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
-			'claim'       => __( 'Claim confirmation', 'one-ba-auctions' ),
-			'participant' => __( 'Participant status change', 'one-ba-auctions' ),
-			'autobid_on'  => __( 'Autobid enabled', 'one-ba-auctions' ),
-			'autobid_off' => __( 'Autobid disabled', 'one-ba-auctions' ),
-			'autobid_limitless_reminder' => __( 'Autobid limitless reminder', 'one-ba-auctions' ),
+			'pre_live'              => __( 'Pre-live (to registered participants)', 'one-ba-auctions' ),
+			'live'                  => __( 'Live started (to registered participants)', 'one-ba-auctions' ),
+			'winner'                => __( 'Auction winner', 'one-ba-auctions' ),
+			'loser'                 => __( 'Auction losers (refund notice)', 'one-ba-auctions' ),
+			'claim'                 => __( 'Claim confirmation', 'one-ba-auctions' ),
+			'registration_pending'  => __( 'Registration pending', 'one-ba-auctions' ),
+			'registration_approved' => __( 'Registration approved', 'one-ba-auctions' ),
+			'participant'           => __( 'Participant status change', 'one-ba-auctions' ),
+			'credits'               => __( 'Points balance edited', 'one-ba-auctions' ),
+			'autobid_on'            => __( 'Autobid enabled', 'one-ba-auctions' ),
+			'autobid_on_reminder'   => __( 'Autobid reminder', 'one-ba-auctions' ),
+			'autobid_off'           => __( 'Autobid disabled', 'one-ba-auctions' ),
+		);
+		$defaults = array(
+			'pre_live' => array(
+				'subject' => __( '[Auction] Countdown to live: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" will go live soon.<br />Countdown: <strong>{seconds}s</strong>.<br />Get ready to bid as soon as it goes live.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'live' => array(
+				'subject' => __( '[Auction] Live now: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" is now <strong>LIVE</strong>.<br />Bid cost: {bid_cost} credits. Claim price: {claim_price} credits.<br />Live timer: {live_timer}s (resets on each bid).<br /><a href="{auction_link}">Bid now</a>', 'one-ba-auctions' ),
+			),
+			'winner' => array(
+				'subject' => __( '[Auction] You won: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Congrats {user_name}!<br />You won "<strong>{auction_title}</strong>".<br />Claim price: <strong>{claim_price} credits</strong>.<br />Click below to claim your prize.', 'one-ba-auctions' ),
+			),
+			'loser' => array(
+				'subject' => __( '[Auction] Ended: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />The auction "<strong>{auction_title}</strong>" has ended.<br />Your reserved credits have been refunded.<br />Thanks for participating!', 'one-ba-auctions' ),
+			),
+			'claim' => array(
+				'subject' => __( '[Auction] Claim confirmation', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your claim for "<strong>{auction_title}</strong>" has started.<br />Order/claim price: {claim_price} credits.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'registration_pending' => array(
+				'subject' => __( '[Auction] Registration pending', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is pending approval/payment.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'registration_approved' => array(
+				'subject' => __( '[Auction] Registration approved', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your registration for "<strong>{auction_title}</strong>" is now active.<br />Order: #{order_id}.<br /><a href="{auction_link}">View auction</a>', 'one-ba-auctions' ),
+			),
+			'participant' => array(
+				'subject' => __( '[Auction] Participation updated', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your status for auction "<strong>{auction_title}</strong>" is now <strong>{status}</strong>.', 'one-ba-auctions' ),
+			),
+			'credits' => array(
+				'subject' => __( '[Auction] Your credits were updated', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your credits changed by <strong>{delta}</strong>.<br />New balance: <strong>{balance} credits</strong>.', 'one-ba-auctions' ),
+			),
+			'autobid_on' => array(
+				'subject' => __( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'autobid_on_reminder' => array(
+				'subject' => __( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
+			'autobid_off' => array(
+				'subject' => __( '[Auction] Autobid disabled: {auction_title}', 'one-ba-auctions' ),
+				'body'    => __( 'Hi {user_name},<br />Your autobid is now OFF for "<strong>{auction_title}</strong>".<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			),
 		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></h1>
-			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {balance}, {status}, {autobid_max_bids}.', 'one-ba-auctions' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Edit subjects and bodies for outgoing emails. Allowed tokens: {user_name}, {auction_title}, {auction_link}, {claim_price}, {bid_cost}, {live_timer}, {seconds}, {order_id}, {delta}, {balance}, {status}, {autobid_max_bids}, {autobid_bids_used}, {autobid_window_minutes}.', 'one-ba-auctions' ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'oba_save_emails' ); ?>
 				<input type="hidden" name="action" value="oba_save_emails" />
@@ -1335,8 +1508,14 @@ class OBA_Admin {
 						<tr>
 							<th scope="row"><?php echo esc_html( $label ); ?></th>
 							<td>
-								<input type="text" name="email_templates[<?php echo esc_attr( $key ); ?>][subject]" value="<?php echo isset( $tpl[ $key ]['subject'] ) ? esc_attr( $tpl[ $key ]['subject'] ) : ''; ?>" placeholder="<?php esc_attr_e( 'Subject', 'one-ba-auctions' ); ?>" style="width:100%;max-width:520px;margin-bottom:6px;" />
-								<textarea name="email_templates[<?php echo esc_attr( $key ); ?>][body]" rows="4" style="width:100%;max-width:520px;" placeholder="<?php esc_attr_e( 'Body (HTML allowed)', 'one-ba-auctions' ); ?>"><?php echo isset( $tpl[ $key ]['body'] ) ? esc_textarea( $tpl[ $key ]['body'] ) : ''; ?></textarea>
+								<?php
+								$default_subject = isset( $defaults[ $key ]['subject'] ) ? $defaults[ $key ]['subject'] : '';
+								$default_body    = isset( $defaults[ $key ]['body'] ) ? $defaults[ $key ]['body'] : '';
+								$subject_value   = isset( $tpl[ $key ]['subject'] ) && '' !== $tpl[ $key ]['subject'] ? $tpl[ $key ]['subject'] : $default_subject;
+								$body_value      = isset( $tpl[ $key ]['body'] ) && '' !== $tpl[ $key ]['body'] ? $tpl[ $key ]['body'] : $default_body;
+								?>
+								<input type="text" name="email_templates[<?php echo esc_attr( $key ); ?>][subject]" value="<?php echo esc_attr( $subject_value ); ?>" placeholder="<?php echo esc_attr( $default_subject ? $default_subject : __( 'Subject', 'one-ba-auctions' ) ); ?>" style="width:100%;max-width:520px;margin-bottom:6px;" />
+								<textarea name="email_templates[<?php echo esc_attr( $key ); ?>][body]" rows="4" style="width:100%;max-width:520px;" placeholder="<?php echo esc_attr( $default_body ? $default_body : __( 'Body (HTML allowed)', 'one-ba-auctions' ) ); ?>"><?php echo esc_textarea( $body_value ); ?></textarea>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -1358,10 +1537,13 @@ class OBA_Admin {
 					<label><input type="checkbox" name="templates[]" value="winner" checked /> <?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="loser" checked /> <?php esc_html_e( 'Loser', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="claim" checked /> <?php esc_html_e( 'Claim confirmation', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="registration_pending" checked /> <?php esc_html_e( 'Registration pending', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="registration_approved" checked /> <?php esc_html_e( 'Registration approved', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="participant" checked /> <?php esc_html_e( 'Participant status', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="credits" checked /> <?php esc_html_e( 'Points balance edited', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="autobid_on" checked /> <?php esc_html_e( 'Autobid enabled', 'one-ba-auctions' ); ?></label><br />
+					<label><input type="checkbox" name="templates[]" value="autobid_on_reminder" checked /> <?php esc_html_e( 'Autobid reminder', 'one-ba-auctions' ); ?></label><br />
 					<label><input type="checkbox" name="templates[]" value="autobid_off" checked /> <?php esc_html_e( 'Autobid disabled', 'one-ba-auctions' ); ?></label><br />
-					<label><input type="checkbox" name="templates[]" value="autobid_limitless_reminder" checked /> <?php esc_html_e( 'Autobid limitless reminder', 'one-ba-auctions' ); ?></label>
 				</div>
 				<?php submit_button( __( 'Send Selected Tests', 'one-ba-auctions' ), 'secondary', 'submit', false ); ?>
 			</form>

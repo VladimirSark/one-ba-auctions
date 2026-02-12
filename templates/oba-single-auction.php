@@ -420,17 +420,17 @@ $stage_tips = array(
 <div class="oba-autobid-window-overlay" style="display:none;"></div>
 <div class="oba-autobid-window-modal" style="display:none;">
 	<div class="oba-autobid-window-modal__inner">
-		<h4><?php esc_html_e( 'Enable autobid', 'one-ba-auctions' ); ?></h4>
-		<p><?php esc_html_e( 'Select how long autobid should stay active. Enabling will charge activation points.', 'one-ba-auctions' ); ?></p>
+		<h4><?php echo esc_html( $get( 'autobid_modal_title', __( 'Enable autobid', 'one-ba-auctions' ) ) ); ?></h4>
+		<p><?php echo esc_html( $get( 'autobid_modal_desc', __( 'Select how long autobid should stay active. Enabling will charge activation points.', 'one-ba-auctions' ) ) ); ?></p>
 		<div class="oba-autobid-window">
-			<button type="button" class="oba-autobid-window-btn" data-minutes="10">10m</button>
-			<button type="button" class="oba-autobid-window-btn" data-minutes="30">30m</button>
-			<button type="button" class="oba-autobid-window-btn" data-minutes="60">60m</button>
+			<button type="button" class="oba-autobid-window-btn" data-minutes="10"><?php echo esc_html( $get( 'autobid_window_10', __( '10m', 'one-ba-auctions' ) ) ); ?></button>
+			<button type="button" class="oba-autobid-window-btn" data-minutes="30"><?php echo esc_html( $get( 'autobid_window_30', __( '30m', 'one-ba-auctions' ) ) ); ?></button>
+			<button type="button" class="oba-autobid-window-btn" data-minutes="60"><?php echo esc_html( $get( 'autobid_window_60', __( '60m', 'one-ba-auctions' ) ) ); ?></button>
 			<span class="oba-autobid-window-remaining"></span>
 		</div>
 		<div class="oba-autobid-window-actions">
-			<button type="button" class="button oba-autobid-window-cancel"><?php esc_html_e( 'Cancel', 'one-ba-auctions' ); ?></button>
-			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php esc_html_e( 'Enable', 'one-ba-auctions' ); ?></button>
+			<button type="button" class="button oba-autobid-window-cancel"><?php echo esc_html( $get( 'autobid_modal_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
+			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php echo esc_html( $get( 'autobid_modal_enable', __( 'Enable', 'one-ba-auctions' ) ) ); ?></button>
 		</div>
 	</div>
 </div>

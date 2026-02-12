@@ -455,6 +455,7 @@
 	function applyMembershipLocks(status) {
 		const hasMembership = !!state.data.membership_active;
 		const unlocked = !!state.data.registration_unlocked;
+		const isRegistered = !!state.data.user_registered;
 		const layoutOverlay = $('.oba-membership-overlay');
 		const pointsOverlay = $('.oba-points-overlay');
 		pointsOverlay.hide();
@@ -467,9 +468,10 @@
 		}
 
 		// If user is unlocked/registered but points are too low to register (balance < fee), show prompt to top-up.
+		// Registered users keep access even if balance later drops below the registration fee.
 		const balance = Number(state.data.user_points_balance || 0);
 		const fee = Number(state.data.registration_fee_plain || state.data.registration_fee || 0);
-		if (unlocked && fee && balance < fee) {
+		if (!isRegistered && unlocked && fee && balance < fee) {
 			buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
 			pointsOverlay.css('display', 'flex');
 		}
@@ -897,8 +899,11 @@ function toggleAutobid(enable) {
 		$('.oba-autobid-window-btn').removeClass('oba-terms-error');
 		if (enable) {
 			const cost = obaAuction.autobid_cost_points || 0;
-			const message = obaAuction.i18n?.autobid_confirm
-				|| `Autobid will charge ${cost} points. Proceed?`;
+			const tmpl = obaAuction.i18n?.autobid_confirm
+				|| 'Autobid will charge {cost} points and will be enabled for {minutes} minutes in live stage. Proceed?';
+			const message = tmpl
+				.replace('{cost}', cost)
+				.replace('{minutes}', windowMinutes || 0);
 		// eslint-disable-next-line no-alert
 		if (!window.confirm(message)) {
 			return;
