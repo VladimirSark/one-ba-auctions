@@ -62,14 +62,17 @@ class OBA_Points_Order_Integration {
 				continue;
 			}
 			$is_membership = $product->get_meta( '_is_membership_plan_points' );
-			if ( 'yes' !== $is_membership ) {
-				continue;
+			$buy_now_points = (float) $product->get_meta( '_oba_buy_now_points' );
+			if ( 'yes' === $is_membership ) {
+				$points = (float) $product->get_meta( '_points_amount' );
+				if ( $points > 0 ) {
+					$this->points->add_points( $user_id, $points );
+				}
+				update_user_meta( $user_id, '_oba_has_membership', 1 );
 			}
-			$points = (float) $product->get_meta( '_points_amount' );
-			if ( $points > 0 ) {
-				$this->points->add_points( $user_id, $points );
+			if ( $buy_now_points > 0 ) {
+				$this->points->add_points( $user_id, $buy_now_points );
 			}
-			update_user_meta( $user_id, '_oba_has_membership', 1 );
 		}
 	}
 }

@@ -197,6 +197,26 @@ class OBA_Product_Type {
 				'desc_tip'    => true,
 			)
 		);
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => '_oba_buy_now_enabled',
+				'label'       => __( 'Enable Buy It Now', 'one-ba-auctions' ),
+				'description' => __( 'Show Buy It Now tab and allow direct purchase alongside auction.', 'one-ba-auctions' ),
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'          => '_oba_buy_now_points',
+				'label'       => __( 'Points granted on Buy It Now', 'one-ba-auctions' ),
+				'type'        => 'number',
+				'custom_attributes' => array(
+					'step' => '1',
+					'min'  => '0',
+				),
+				'description' => __( 'Points awarded to the buyer when purchasing via Buy It Now.', 'one-ba-auctions' ),
+				'desc_tip'    => true,
+			)
+		);
 		?>
 		<p>
 			<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
@@ -249,6 +269,8 @@ class OBA_Product_Type {
 			'_product_cost',
 			'_allow_live_join',
 			'_live_join_points',
+			'_oba_buy_now_enabled',
+			'_oba_buy_now_points',
 		);
 
 		foreach ( $fields as $field ) {

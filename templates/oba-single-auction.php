@@ -143,6 +143,14 @@ $stage_tips = array(
 	.oba-autobid-window-modal p { margin:0 0 12px; color:#475569; }
 	.oba-autobid-window-modal .oba-autobid-window { margin-top:0; }
 	.oba-autobid-window-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+	.oba-tab-nav { display:flex; gap:8px; margin-bottom:12px; }
+	.oba-tab-nav button { border:1px solid #e2e8f0; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+	.oba-tab-nav button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
+	.oba-tab-panel { display:none; }
+	.oba-tab-panel.is-active { display:block; }
+	.oba-buy-panel { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; margin-bottom:16px; }
+	.oba-buy-price { font-size:22px; font-weight:700; margin:8px 0; }
+	.oba-buy-points { color:#0f172a; font-weight:600; margin:6px 0; }
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -157,6 +165,40 @@ $stage_tips = array(
 		</div>
 	</div>
 	<div class="oba-layout">
+		<?php
+		$price_html    = $product->get_price_html();
+		$description   = apply_filters( 'the_content', $product->get_description() );
+		?>
+		<div class="oba-tab-nav">
+			<?php if ( $buy_now_enabled ) : ?>
+				<button type="button" class="oba-tab-btn" data-tab="buy-now"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
+				<button type="button" class="oba-tab-btn is-active" data-tab="auction"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></button>
+			<?php else : ?>
+				<button type="button" class="oba-tab-btn is-active" data-tab="auction"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></button>
+			<?php endif; ?>
+		</div>
+		<?php if ( $buy_now_enabled ) : ?>
+		<div class="oba-tab-panel oba-buy-panel" data-panel="buy-now">
+			<h3 style="margin:0;"><?php echo esc_html( get_the_title( $product->get_id() ) ); ?></h3>
+			<div class="oba-buy-price"><?php echo wp_kses_post( $price_html ); ?></div>
+			<?php if ( $buy_now_points > 0 ) : ?>
+				<div class="oba-buy-points">
+					<?php
+					printf(
+						esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ),
+						(int) $buy_now_points
+					);
+					?>
+				</div>
+			<?php endif; ?>
+			<div class="oba-buy-description"><?php echo wp_kses_post( $description ); ?></div>
+			<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin-top:12px;">
+				<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
+				<button type="submit" class="button button-primary"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
+			</form>
+		</div>
+		<?php endif; ?>
+		<div class="oba-tab-panel oba-auction-panel <?php echo $buy_now_enabled ? 'is-active' : 'is-active'; ?>" data-panel="auction">
 		<div class="oba-guest-banner">
 			<div>
 				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
@@ -403,6 +445,7 @@ $stage_tips = array(
 			<div class="oba-toast" role="alert"></div>
 			<div class="oba-last-refreshed" style="display:none;"></div>
 		</div>
+		</div><!-- /.oba-auction-panel -->
 	</div>
 </div>
 
@@ -445,3 +488,18 @@ $stage_tips = array(
 		</div>
 	</div>
 </div>
+<script>
+(function($){
+	function setTab(tab){
+		$('.oba-tab-btn').removeClass('is-active');
+		$('.oba-tab-panel').removeClass('is-active');
+		$('.oba-tab-btn[data-tab="'+tab+'"]').addClass('is-active');
+		$('.oba-tab-panel[data-panel="'+tab+'"]').addClass('is-active');
+	}
+	$(document).on('click', '.oba-tab-btn', function(e){
+		e.preventDefault();
+		const tab = $(this).data('tab');
+		setTab(tab);
+	});
+})(jQuery);
+</script>

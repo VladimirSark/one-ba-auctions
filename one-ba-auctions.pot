@@ -84,6 +84,18 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
+#: templates/oba-single-auction.php:77
+msgid "Buy it now"
+msgstr ""
+
+#: templates/oba-single-auction.php:78
+msgid "Auction"
+msgstr ""
+
+#: templates/oba-single-auction.php:93
+msgid "Earn %d points with this purchase."
+msgstr ""
+
 #: includes/class-admin.php:337
 msgid "Action"
 msgstr ""
