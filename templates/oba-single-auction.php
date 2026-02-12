@@ -171,6 +171,7 @@ $stage_tips = array(
 		$price_html    = $product->get_price_html();
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		?>
+		<div style="margin-bottom:6px;font-weight:700;font-size:15px;"><?php esc_html_e( 'Choose the way to get this product:', 'one-ba-auctions' ); ?></div>
 		<div class="oba-tab-nav">
 			<?php if ( $buy_now_enabled ) : ?>
 				<button type="button" class="oba-tab-btn" data-tab="buy-now"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
