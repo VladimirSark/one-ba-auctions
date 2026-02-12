@@ -20,6 +20,8 @@ $get      = function( $key, $default ) use ( $tr ) {
 };
 $points_suffix = $get( 'points_suffix', __( 'pts', 'one-ba-auctions' ) );
 $product_cost  = (float) get_post_meta( $product->get_id(), '_product_cost', true );
+$buy_now_enabled = get_post_meta( $product->get_id(), '_oba_buy_now_enabled', true ) === 'yes';
+$buy_now_points  = (int) get_post_meta( $product->get_id(), '_oba_buy_now_points', true );
 $meta     = array(
 	'registration_fee' => $reg_points ? $reg_points . ' ' . $points_suffix : '',
 	'bid_cost'         => $bid_price_text,
@@ -198,7 +200,7 @@ $stage_tips = array(
 			</form>
 		</div>
 		<?php endif; ?>
-		<div class="oba-tab-panel oba-auction-panel <?php echo $buy_now_enabled ? 'is-active' : 'is-active'; ?>" data-panel="auction">
+		<div class="oba-tab-panel oba-auction-panel is-active" data-panel="auction">
 		<div class="oba-guest-banner">
 			<div>
 				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
