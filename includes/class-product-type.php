@@ -334,39 +334,7 @@ class OBA_Product_Type {
 		);
 	}
 
-	public function render_explainer_bar() {
-		global $product;
-
-		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
-			return;
-		}
-		?>
-		<div class="oba-explainer-wrap">
-			<div class="oba-explainer">
-				<div class="oba-step-pill is-active" data-step="registration">
-					<span class="badge"><span class="badge-number">1</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
-					<span class="label"><?php esc_html_e( 'Registration', 'one-ba-auctions' ); ?></span>
-					<span class="desc"><?php esc_html_e( 'Join the lobby with credits.', 'one-ba-auctions' ); ?></span>
-				</div>
-				<div class="oba-step-pill" data-step="pre_live">
-					<span class="badge"><span class="badge-number">2</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
-					<span class="label"><?php esc_html_e( 'Countdown to Live', 'one-ba-auctions' ); ?></span>
-					<span class="desc"><?php esc_html_e( 'Short pre-live timer.', 'one-ba-auctions' ); ?></span>
-				</div>
-				<div class="oba-step-pill" data-step="live">
-					<span class="badge"><span class="badge-number">3</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
-					<span class="label"><?php esc_html_e( 'Live Bidding', 'one-ba-auctions' ); ?></span>
-					<span class="desc"><?php esc_html_e( 'Bid, reset timer, compete.', 'one-ba-auctions' ); ?></span>
-				</div>
-				<div class="oba-step-pill" data-step="ended">
-					<span class="badge"><span class="badge-number">4</span><span class="badge-check"><?php echo wp_kses_post( self::lucide_svg( 'check-circle' ) ); ?></span></span>
-					<span class="label"><?php esc_html_e( 'Auction Ended', 'one-ba-auctions' ); ?></span>
-					<span class="desc"><?php esc_html_e( 'Claim or view results.', 'one-ba-auctions' ); ?></span>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
+	public function render_explainer_bar() {}
 
 	/**
 	 * Admin inline script to show core simple-product fields for auctions.
