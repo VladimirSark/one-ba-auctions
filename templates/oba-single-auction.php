@@ -208,11 +208,11 @@ $stage_tips = array(
 		</div>
 		<?php endif; ?>
 		<div class="oba-tab-panel oba-auction-panel <?php echo $buy_now_enabled ? '' : 'is-active'; ?>" data-panel="auction">
-		<div class="oba-guest-banner">
-			<div>
-				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
-				<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
-			</div>
+			<div class="oba-guest-banner">
+				<div>
+					<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
+					<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
+				</div>
 			<div class="oba-guest-actions">
 				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
 					<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
@@ -504,6 +504,11 @@ $stage_tips = array(
 		$('.oba-tab-panel').removeClass('is-active');
 		$('.oba-tab-btn[data-tab="'+tab+'"]').addClass('is-active');
 		$('.oba-tab-panel[data-panel="'+tab+'"]').addClass('is-active');
+		if (tab === 'auction') {
+			$('.product_meta, .summary .price, .entry-summary .price').hide();
+		} else {
+			$('.product_meta, .summary .price, .entry-summary .price').show();
+		}
 	}
 	$(document).on('click', '.oba-tab-btn', function(e){
 		e.preventDefault();
