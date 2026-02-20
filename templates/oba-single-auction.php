@@ -146,6 +146,8 @@ $stage_tips = array(
 	.oba-autobid-window-modal .oba-autobid-window { margin-top:0; }
 	.oba-autobid-window-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
 	.oba-autobid-window-actions .button { width:100%; text-align:center; }
+	.oba-autobid-window-actions .oba-autobid-window-cancel { background:#ef4444; border-color:#ef4444; color:#fff; }
+	.oba-autobid-window-actions .oba-autobid-window-cancel:hover { background:#dc2626; border-color:#dc2626; color:#fff; }
 	.oba-tab-nav { display:flex; gap:8px; margin-bottom:12px; }
 	.oba-tab-nav button { border:1px solid #e2e8f0; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
 	.oba-tab-nav button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
@@ -479,8 +481,8 @@ $stage_tips = array(
 			<span class="oba-autobid-window-remaining"></span>
 		</div>
 		<div class="oba-autobid-window-actions">
-			<button type="button" class="button oba-autobid-window-cancel"><?php echo esc_html( $get( 'autobid_modal_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
 			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php echo esc_html( $get( 'autobid_modal_enable', __( 'Enable', 'one-ba-auctions' ) ) ); ?></button>
+			<button type="button" class="button oba-autobid-window-cancel"><?php echo esc_html( $get( 'autobid_modal_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
 		</div>
 	</div>
 </div>
