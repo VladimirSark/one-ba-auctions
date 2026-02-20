@@ -185,8 +185,6 @@ $stage_tips = array(
 		</div>
 		<?php if ( $buy_now_enabled ) : ?>
 		<div class="oba-tab-panel oba-buy-panel is-active" data-panel="buy-now">
-			<h3 style="margin:0;"><?php echo esc_html( get_the_title( $product->get_id() ) ); ?></h3>
-			<div class="oba-buy-price"><?php echo wp_kses_post( $price_html ); ?></div>
 			<?php if ( $buy_now_points > 0 ) : ?>
 				<div class="oba-buy-points">
 					<?php
@@ -197,7 +195,6 @@ $stage_tips = array(
 					?>
 				</div>
 			<?php endif; ?>
-			<div class="oba-buy-description"><?php echo wp_kses_post( $description ); ?></div>
 			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
 				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
