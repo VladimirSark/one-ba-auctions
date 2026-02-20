@@ -527,6 +527,12 @@
 					showToast(response.message, true);
 					if (response.code === 'not_logged_in') {
 						showLoginHint();
+					} else if (response.code === 'membership_required') {
+						const overlay = $('.oba-membership-overlay');
+						if (overlay.length) {
+							buildMembershipButtons(overlay.find('.oba-membership-links'));
+							overlay.css('display', 'flex');
+						}
 					}
 				} else {
 					const msg = obaAuction.i18n?.registration_fail_custom || obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';
