@@ -459,16 +459,19 @@
 		const isRegistered = !!state.data.user_registered;
 		const layoutOverlay = $('.oba-membership-overlay');
 		const pointsOverlay = $('.oba-points-overlay');
+		const inlineMembership = $('.oba-membership-inline');
 		pointsOverlay.hide();
-		if (buyNowEnabled) {
-			layoutOverlay.hide();
-			pointsOverlay.hide();
-			return;
-		}
+		inlineMembership.hide().empty();
 		if (!unlocked) {
-			buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
-			layoutOverlay.css('display', 'flex');
-			$('.oba-phase-card').addClass('is-collapsed');
+			if (buyNowEnabled && inlineMembership.length) {
+				buildMembershipButtons(inlineMembership);
+				inlineMembership.show();
+				layoutOverlay.hide();
+			} else {
+				buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
+				layoutOverlay.css('display', 'flex');
+				$('.oba-phase-card').addClass('is-collapsed');
+			}
 		} else {
 			layoutOverlay.hide();
 		}
@@ -478,8 +481,13 @@
 		const balance = Number(state.data.user_points_balance || 0);
 		const fee = Number(state.data.registration_fee_plain || state.data.registration_fee || 0);
 		if (!isRegistered && unlocked && fee && balance < fee) {
-			buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
-			pointsOverlay.css('display', 'flex');
+			if (buyNowEnabled && inlineMembership.length) {
+				buildMembershipButtons(inlineMembership);
+				inlineMembership.show();
+			} else {
+				buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
+				pointsOverlay.css('display', 'flex');
+			}
 		}
 	}
 

@@ -247,6 +247,7 @@ $stage_tips = array(
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
 					</div>
+					<div class="oba-membership-inline" style="display:none;margin-top:10px;"></div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
 							<?php
