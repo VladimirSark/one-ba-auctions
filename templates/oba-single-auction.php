@@ -144,7 +144,8 @@ $stage_tips = array(
 	.oba-autobid-window-modal h4 { margin:0 0 10px; }
 	.oba-autobid-window-modal p { margin:0 0 12px; color:#475569; }
 	.oba-autobid-window-modal .oba-autobid-window { margin-top:0; }
-	.oba-autobid-window-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+	.oba-autobid-window-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+	.oba-autobid-window-actions .button { width:100%; text-align:center; }
 	.oba-tab-nav { display:flex; gap:8px; margin-bottom:12px; }
 	.oba-tab-nav button { border:1px solid #e2e8f0; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
 	.oba-tab-nav button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
