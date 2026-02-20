@@ -504,11 +504,7 @@ $stage_tips = array(
 		$('.oba-tab-panel').removeClass('is-active');
 		$('.oba-tab-btn[data-tab="'+tab+'"]').addClass('is-active');
 		$('.oba-tab-panel[data-panel="'+tab+'"]').addClass('is-active');
-		if (tab === 'auction') {
-			$('.product_meta, .summary .price, .entry-summary .price').hide();
-		} else {
-			$('.product_meta, .summary .price, .entry-summary .price').show();
-		}
+		$('.oba-auction-wrap').attr('data-auction-tab', tab === 'auction' ? 'auction' : 'buy');
 	}
 	$(document).on('click', '.oba-tab-btn', function(e){
 		e.preventDefault();
@@ -521,5 +517,7 @@ $stage_tips = array(
 			}
 		}
 	});
+	// Initialize price visibility state on load.
+	setTab($('.oba-tab-btn.is-active').data('tab') || 'auction');
 })(jQuery);
 </script>

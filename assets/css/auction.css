@@ -844,3 +844,7 @@
 		font-size: 12px;
 	}
 }
+.oba-auction-wrap[data-auction-tab="auction"] .price,
+.oba-auction-wrap[data-auction-tab="auction"] p.price,
+.oba-auction-wrap[data-auction-tab="auction"] .woocommerce-Price-amount,
+.oba-auction-wrap[data-auction-tab="auction"] .woocommerce-price-suffix { display:none !important; }
