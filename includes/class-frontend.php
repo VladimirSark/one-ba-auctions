@@ -8,6 +8,8 @@ class OBA_Frontend {
 	public function hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
+		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
+		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -44,11 +46,14 @@ class OBA_Frontend {
 	}
 
 	public function enqueue_assets() {
-		if ( ! is_product() ) {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
 			return;
 		}
 
 		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		}
 
 		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
 			return;
@@ -91,6 +96,20 @@ class OBA_Frontend {
 			'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
 			)
 		);
+	}
+
+	public function ensure_assets_on_product() {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		}
+		if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
+			$this->enqueue_assets();
+			$this->enqueue_heartbeat();
+		}
 	}
 
 	private function build_i18n( $settings ) {
