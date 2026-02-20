@@ -173,6 +173,7 @@ $stage_tips = array(
 		<?php
 		$price_html    = $product->get_price_html();
 		$description   = apply_filters( 'the_content', $product->get_description() );
+		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
 		<div style="margin-bottom:6px;font-weight:700;font-size:15px;"><?php esc_html_e( 'Choose the way to get this product:', 'one-ba-auctions' ); ?></div>
 		<div class="oba-tab-nav">
@@ -211,7 +212,7 @@ $stage_tips = array(
 					<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
 				</div>
 			<div class="oba-guest-actions">
-				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
+				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $login_link ); ?>" target="_blank" rel="noopener">
 					<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
 				</a>
 				<?php if ( function_exists( 'shortcode_exists' ) && shortcode_exists( 'nextend_social_login_register_flow' ) && function_exists( 'do_shortcode' ) ) : ?>
@@ -255,9 +256,9 @@ $stage_tips = array(
 							);
 							?>
 						</p>
-						<div class="oba-login-cta" style="display:none;" data-login-url="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
+						<div class="oba-login-cta" style="display:none;" data-login-url="<?php echo esc_url( $login_link ); ?>">
 							<div class="oba-login-cta__text"><?php echo esc_html( $get( 'login_prompt', __( 'Please log in or create an account to register.', 'one-ba-auctions' ) ) ); ?></div>
-							<a class="button button-primary" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
+							<a class="button button-primary" href="<?php echo esc_url( $login_link ); ?>">
 								<?php echo esc_html( $get( 'login_button', __( 'Log in / Create account', 'one-ba-auctions' ) ) ); ?>
 							</a>
 						</div>
