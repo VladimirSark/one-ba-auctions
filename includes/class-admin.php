@@ -854,10 +854,16 @@ class OBA_Admin {
 			<h2 class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab || 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'emails' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'emails' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'shortcodes' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'shortcodes' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Shortcodes', 'one-ba-auctions' ); ?></a>
 			</h2>
 		<?php
 		if ( 'emails' === $active_tab ) {
 			$this->render_emails_page();
+			echo '</div>';
+			return;
+		}
+		if ( 'shortcodes' === $active_tab ) {
+			$this->render_shortcodes_page();
 			echo '</div>';
 			return;
 		}
@@ -981,6 +987,64 @@ class OBA_Admin {
 				</table>
 				<?php submit_button( __( 'Save Settings', 'one-ba-auctions' ) ); ?>
 			</form>
+		</div>
+		<?php
+	}
+
+	public function render_shortcodes_page() {
+		if ( ! $this->can_manage() ) {
+			return;
+		}
+
+		$shortcodes = array(
+			array(
+				'tag'         => '[oba_credits_balance]',
+				'description' => __( 'Shows the logged-in user points balance.', 'one-ba-auctions' ),
+				'attributes'  => __( 'None', 'one-ba-auctions' ),
+			),
+			array(
+				'tag'         => '[oba_live_auctions limit="6"]',
+				'description' => __( 'Card grid of live auctions with timer.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_upcoming_auctions limit="6"]',
+				'description' => __( 'Card grid of registration and pre-live auctions (lobby progress).', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_recent_ended_auctions limit="6"]',
+				'description' => __( 'Card grid of recently ended auctions with winner summary.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_ended_auctions limit="20"]',
+				'description' => __( 'Table of ended auctions with winners and totals.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '20' ),
+			),
+		);
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Shortcodes', 'one-ba-auctions' ); ?></h1>
+			<p class="description"><?php esc_html_e( 'Use these shortcodes to embed auctions and widgets.', 'one-ba-auctions' ); ?></p>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Shortcode', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Description', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Attributes', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $shortcodes as $row ) : ?>
+						<tr>
+							<td><code><?php echo esc_html( $row['tag'] ); ?></code></td>
+							<td><?php echo esc_html( $row['description'] ); ?></td>
+							<td><?php echo esc_html( $row['attributes'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
 		</div>
 		<?php
 	}

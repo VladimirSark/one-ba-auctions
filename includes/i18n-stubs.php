@@ -88,4 +88,16 @@ if ( false ) {
 	__( 'Saved vs cost', 'one-ba-auctions' );
 	__( 'Participate in auction', 'one-ba-auctions' );
 	__( 'T&C must be accepted before participating', 'one-ba-auctions' );
+	__( 'Shortcodes', 'one-ba-auctions' );
+	__( 'Use these shortcodes to embed auctions and widgets.', 'one-ba-auctions' );
+	__( 'Shortcode', 'one-ba-auctions' );
+	__( 'Description', 'one-ba-auctions' );
+	__( 'Attributes', 'one-ba-auctions' );
+	__( 'None', 'one-ba-auctions' );
+	__( 'Shows the logged-in user points balance.', 'one-ba-auctions' );
+	__( 'Card grid of live auctions with timer.', 'one-ba-auctions' );
+	__( 'Card grid of registration and pre-live auctions (lobby progress).', 'one-ba-auctions' );
+	__( 'Card grid of recently ended auctions with winner summary.', 'one-ba-auctions' );
+	__( 'Table of ended auctions with winners and totals.', 'one-ba-auctions' );
+	__( 'limit (default: %s)', 'one-ba-auctions' );
 }

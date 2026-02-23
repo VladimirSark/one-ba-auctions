@@ -773,3 +773,52 @@ msgstr ""
 #, php-format
 msgid "Your current balance: %s credits"
 msgstr ""
+
+#: includes/class-admin.php:1005
+msgid "Shortcodes"
+msgstr ""
+
+#: includes/class-admin.php:1006
+msgid "Use these shortcodes to embed auctions and widgets."
+msgstr ""
+
+#: includes/class-admin.php:1009
+msgid "Shortcode"
+msgstr ""
+
+#: includes/class-admin.php:1010
+msgid "Description"
+msgstr ""
+
+#: includes/class-admin.php:1011
+msgid "Attributes"
+msgstr ""
+
+#: includes/class-admin.php:1019
+msgid "Shows the logged-in user points balance."
+msgstr ""
+
+#: includes/class-admin.php:1023
+msgid "Card grid of live auctions with timer."
+msgstr ""
+
+#: includes/class-admin.php:1027
+msgid "Card grid of registration and pre-live auctions (lobby progress)."
+msgstr ""
+
+#: includes/class-admin.php:1031
+msgid "Card grid of recently ended auctions with winner summary."
+msgstr ""
+
+#: includes/class-admin.php:1035
+msgid "Table of ended auctions with winners and totals."
+msgstr ""
+
+#: includes/class-admin.php:1017
+msgid "None"
+msgstr ""
+
+#: includes/class-admin.php:1021 includes/class-admin.php:1025 includes/class-admin.php:1029 includes/class-admin.php:1033
+#, php-format
+msgid "limit (default: %s)"
+msgstr ""

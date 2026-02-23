@@ -281,7 +281,8 @@ class OBA_Plugin {
 			return;
 		}
 		$points = new OBA_Points_Service();
-		$points->add_points( $user_id, 10 );
+		$points->add_points( $user_id, 5 );
+		update_user_meta( $user_id, '_oba_has_membership', 1 );
 	}
 
 	public function run_autobid_guard() { return; }
