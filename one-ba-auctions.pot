@@ -774,6 +774,30 @@ msgstr ""
 msgid "Your current balance: %s credits"
 msgstr ""
 
+#: includes/class-product-type.php:120
+msgid "Pricing"
+msgstr ""
+
+#: includes/class-product-type.php:121
+msgid "Auction settings"
+msgstr ""
+
+#: includes/class-product-type.php:122
+msgid "Status"
+msgstr ""
+
+#: includes/class-product-type.php:123
+msgid "Other settings"
+msgstr ""
+
+#: includes/class-product-type.php:144
+msgid "Cost of goods"
+msgstr ""
+
+#: includes/class-product-type.php:239
+msgid "Points × participants × point value minus cost of goods."
+msgstr ""
+
 #: includes/class-admin.php:1005
 msgid "Shortcodes"
 msgstr ""

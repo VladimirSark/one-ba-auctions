@@ -100,4 +100,10 @@ if ( false ) {
 	__( 'Card grid of recently ended auctions with winner summary.', 'one-ba-auctions' );
 	__( 'Table of ended auctions with winners and totals.', 'one-ba-auctions' );
 	__( 'limit (default: %s)', 'one-ba-auctions' );
+	__( 'Pricing', 'one-ba-auctions' );
+	__( 'Auction settings', 'one-ba-auctions' );
+	__( 'Status', 'one-ba-auctions' );
+	__( 'Other settings', 'one-ba-auctions' );
+	__( 'Cost of goods', 'one-ba-auctions' );
+	__( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' );
 }

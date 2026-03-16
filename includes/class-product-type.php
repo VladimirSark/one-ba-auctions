@@ -104,214 +104,224 @@ class OBA_Product_Type {
 			? wc_get_product_tax_class_options()
 			: array( '' => __( 'Standard', 'woocommerce' ) );
 
-		// Core pricing & tax fields, moved from General tab for auction products.
-		echo '<div class="options_group oba-auction-pricing">';
-		woocommerce_wp_text_input(
-			array(
-				'id'            => '_regular_price',
-				'label'         => __( 'Regular price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
-				'data_type'     => 'price',
-				'wrapper_class' => 'show_if_auction',
-				'value'         => $product_obj ? $product_obj->get_regular_price( 'edit' ) : '',
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'            => '_sale_price',
-				'label'         => __( 'Sale price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
-				'data_type'     => 'price',
-				'wrapper_class' => 'show_if_auction',
-				'value'         => $product_obj ? $product_obj->get_sale_price( 'edit' ) : '',
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'                => '_wc_cog_cost',
-				'label'             => __( 'Cost of goods', 'one-ba-auctions' ) . ' (' . get_woocommerce_currency_symbol() . ')',
-				'type'              => 'number',
-				'custom_attributes' => array(
-					'step' => '0.01',
-					'min'  => '0',
-				),
-				'wrapper_class'     => 'show_if_auction',
-				'value'             => $current_cost,
-				'description'       => __( 'Used for profit estimate. Syncs with Cost of Goods value.', 'one-ba-auctions' ),
-				'desc_tip'          => true,
-			)
-		);
-		woocommerce_wp_select(
-			array(
-				'id'            => '_tax_status',
-				'label'         => __( 'Tax status', 'woocommerce' ),
-				'options'       => $tax_statuses,
-				'value'         => $product_obj ? $product_obj->get_tax_status( 'edit' ) : '',
-				'wrapper_class' => 'show_if_auction',
-			)
-		);
-		woocommerce_wp_select(
-			array(
-				'id'            => '_tax_class',
-				'label'         => __( 'Tax class', 'woocommerce' ),
-				'options'       => $tax_class_options,
-				'value'         => $product_obj ? $product_obj->get_tax_class( 'edit' ) : '',
-				'wrapper_class' => 'show_if_auction',
-			)
-		);
-		woocommerce_wp_checkbox(
-			array(
-				'id'            => '_is_bid_product',
-				'label'         => __( 'Is bid fee product', 'one-ba-auctions' ),
-				'description'   => __( 'Mark this product to be used as the bid fee.', 'one-ba-auctions' ),
-				'wrapper_class' => 'show_if_auction',
-			)
-		);
-		woocommerce_wp_checkbox(
-			array(
-				'id'            => '_is_membership_plan_points',
-				'label'         => __( 'Is membership (grants points)', 'one-ba-auctions' ),
-				'description'   => __( 'When purchased, grants points and marks user as having membership.', 'one-ba-auctions' ),
-				'wrapper_class' => 'show_if_auction',
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'                => '_points_amount',
-				'label'             => __( 'Points granted', 'one-ba-auctions' ),
-				'type'              => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '0',
-				),
-				'wrapper_class'     => 'show_if_auction',
-			)
-		);
-		echo '</div>';
-
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_required_participants',
-				'label'       => __( 'Required participants', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '1',
-				),
-			)
-		);
-
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_live_timer_seconds',
-				'label'       => __( 'Live timer (seconds)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '1',
-				),
-			)
-		);
-
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_prelive_timer_seconds',
-				'label'       => __( 'Pre-live timer (seconds)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '1',
-				),
-			)
-		);
-
-		woocommerce_wp_select(
-			array(
-				'id'      => '_auction_status',
-				'label'   => __( 'Auction status', 'one-ba-auctions' ),
-				'options' => array(
-					'registration' => __( 'Registration', 'one-ba-auctions' ),
-					'pre_live'     => __( 'Pre-live', 'one-ba-auctions' ),
-					'live'         => __( 'Live', 'one-ba-auctions' ),
-					'ended'        => __( 'Ended', 'one-ba-auctions' ),
-				),
-			)
-		);
-
-		woocommerce_wp_checkbox(
-			array(
-				'id'          => '_oba_autobid_enabled',
-				'label'       => __( 'Enable autobid for this auction', 'one-ba-auctions' ),
-				'description' => __( 'Allow users to enable autobid for this auction.', 'one-ba-auctions' ),
-			)
-		);
-
-		woocommerce_wp_select(
-			array(
-				'id'          => '_bid_product_id',
-				'label'       => __( 'Bid fee product', 'one-ba-auctions' ),
-				'options'     => $bid_products,
-				'desc_tip'    => true,
-				'description' => __( 'Product representing cost per bid.', 'one-ba-auctions' ),
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_registration_points',
-				'label'       => __( 'Registration points required', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '0',
-				),
-				'description' => __( 'Points deducted from user on registration (no WC order).', 'one-ba-auctions' ),
-				'desc_tip'    => true,
-			)
-		);
-		woocommerce_wp_checkbox(
-			array(
-				'id'          => '_allow_live_join',
-				'label'       => __( 'Allow live joining', 'one-ba-auctions' ),
-				'description' => __( 'Let users join during live stage for extra points.', 'one-ba-auctions' ),
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_live_join_points',
-				'label'       => __( 'Live join points required', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '0',
-				),
-				'description' => __( 'Points charged when a user joins during live stage.', 'one-ba-auctions' ),
-				'desc_tip'    => true,
-			)
-		);
-		woocommerce_wp_checkbox(
-			array(
-				'id'          => '_oba_buy_now_enabled',
-				'label'       => __( 'Enable Buy It Now', 'one-ba-auctions' ),
-				'description' => __( 'Show Buy It Now tab and allow direct purchase alongside auction.', 'one-ba-auctions' ),
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
-				'id'          => '_oba_buy_now_points',
-				'label'       => __( 'Points granted on Buy It Now', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '1',
-					'min'  => '0',
-				),
-				'description' => __( 'Points awarded to the buyer when purchasing via Buy It Now.', 'one-ba-auctions' ),
-				'desc_tip'    => true,
-			)
-		);
+		// Sub-tab navigation.
 		?>
-		<p>
-			<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
-			<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( ( $current_pts * $points_rate ) - $current_cost ) ); ?></span>
-			<br><span class="description"><?php esc_html_e( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' ); ?></span>
-		</p>
+		<div class="oba-auction-subtabs">
+			<ul class="oba-auction-subtab-nav">
+				<li class="active" data-panel="pricing"><?php esc_html_e( 'Pricing', 'one-ba-auctions' ); ?></li>
+				<li data-panel="settings"><?php esc_html_e( 'Auction settings', 'one-ba-auctions' ); ?></li>
+				<li data-panel="status"><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></li>
+				<li data-panel="other"><?php esc_html_e( 'Other settings', 'one-ba-auctions' ); ?></li>
+			</ul>
+
+			<div class="oba-auction-subtab-panel is-active" data-panel="pricing">
+				<div class="options_group oba-auction-pricing">
+					<?php
+					woocommerce_wp_text_input(
+						array(
+							'id'            => '_regular_price',
+							'label'         => __( 'Regular price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+							'data_type'     => 'price',
+							'wrapper_class' => 'show_if_auction',
+							'value'         => $product_obj ? $product_obj->get_regular_price( 'edit' ) : '',
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'            => '_sale_price',
+							'label'         => __( 'Sale price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+							'data_type'     => 'price',
+							'wrapper_class' => 'show_if_auction',
+							'value'         => $product_obj ? $product_obj->get_sale_price( 'edit' ) : '',
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_wc_cog_cost',
+							'label'             => __( 'Cost of goods', 'one-ba-auctions' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+							'type'              => 'number',
+							'custom_attributes' => array(
+								'step' => '0.01',
+								'min'  => '0',
+							),
+							'wrapper_class'     => 'show_if_auction',
+							'value'             => $current_cost,
+							'description'       => __( 'Used for profit estimate. Syncs with Cost of Goods value.', 'one-ba-auctions' ),
+							'desc_tip'          => true,
+						)
+					);
+					woocommerce_wp_select(
+						array(
+							'id'            => '_tax_status',
+							'label'         => __( 'Tax status', 'woocommerce' ),
+							'options'       => $tax_statuses,
+							'value'         => $product_obj ? $product_obj->get_tax_status( 'edit' ) : '',
+							'wrapper_class' => 'show_if_auction',
+						)
+					);
+					woocommerce_wp_select(
+						array(
+							'id'            => '_tax_class',
+							'label'         => __( 'Tax class', 'woocommerce' ),
+							'options'       => $tax_class_options,
+							'value'         => $product_obj ? $product_obj->get_tax_class( 'edit' ) : '',
+							'wrapper_class' => 'show_if_auction',
+						)
+					);
+					?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="settings">
+				<div class="options_group">
+					<?php
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_required_participants',
+							'label'       => __( 'Required participants', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '1',
+							),
+						)
+					);
+
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_live_timer_seconds',
+							'label'       => __( 'Live timer (seconds)', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '1',
+							),
+						)
+					);
+
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_prelive_timer_seconds',
+							'label'       => __( 'Pre-live timer (seconds)', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '1',
+							),
+						)
+					);
+
+					woocommerce_wp_select(
+						array(
+							'id'          => '_bid_product_id',
+							'label'       => __( 'Bid fee product', 'one-ba-auctions' ),
+							'options'     => $bid_products,
+							'desc_tip'    => true,
+							'description' => __( 'Product representing cost per bid.', 'one-ba-auctions' ),
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_registration_points',
+							'label'       => __( 'Registration points required', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '0',
+							),
+							'description' => __( 'Points deducted from user on registration (no WC order).', 'one-ba-auctions' ),
+							'desc_tip'    => true,
+						)
+					);
+					?>
+				</div>
+				<p>
+					<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
+					<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( ( $current_pts * $points_rate ) - $current_cost ) ); ?></span>
+					<br><span class="description"><?php esc_html_e( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' ); ?></span>
+				</p>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="status">
+				<div class="options_group">
+					<?php
+					woocommerce_wp_select(
+						array(
+							'id'      => '_auction_status',
+							'label'   => __( 'Auction status', 'one-ba-auctions' ),
+							'options' => array(
+								'registration' => __( 'Registration', 'one-ba-auctions' ),
+								'pre_live'     => __( 'Pre-live', 'one-ba-auctions' ),
+								'live'         => __( 'Live', 'one-ba-auctions' ),
+								'ended'        => __( 'Ended', 'one-ba-auctions' ),
+							),
+						)
+					);
+					?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="other">
+				<div class="options_group">
+					<?php
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => '_oba_autobid_enabled',
+							'label'       => __( 'Enable autobid for this auction', 'one-ba-auctions' ),
+							'description' => __( 'Allow users to enable autobid for this auction.', 'one-ba-auctions' ),
+						)
+					);
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => '_allow_live_join',
+							'label'       => __( 'Allow live joining', 'one-ba-auctions' ),
+							'description' => __( 'Let users join during live stage for extra points.', 'one-ba-auctions' ),
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_live_join_points',
+							'label'       => __( 'Live join points required', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '0',
+							),
+							'description' => __( 'Points charged when a user joins during live stage.', 'one-ba-auctions' ),
+							'desc_tip'    => true,
+						)
+					);
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => '_oba_buy_now_enabled',
+							'label'       => __( 'Enable Buy It Now', 'one-ba-auctions' ),
+							'description' => __( 'Show Buy It Now tab and allow direct purchase alongside auction.', 'one-ba-auctions' ),
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_oba_buy_now_points',
+							'label'       => __( 'Points granted on Buy It Now', 'one-ba-auctions' ),
+							'type'        => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '0',
+							),
+							'description' => __( 'Points awarded to the buyer when purchasing via Buy It Now.', 'one-ba-auctions' ),
+							'desc_tip'    => true,
+						)
+					);
+					?>
+				</div>
+			</div>
+		</div>
+		<style>
+			.oba-auction-subtab-nav{display:flex;gap:6px;margin:0 0 12px;padding:0;list-style:none;}
+			.oba-auction-subtab-nav li{padding:6px 10px;border:1px solid #dcdcde;border-radius:4px;cursor:pointer;background:#f6f7f7;}
+			.oba-auction-subtab-nav li.active{background:#2271b1;color:#fff;border-color:#2271b1;}
+			.oba-auction-subtab-panel{display:none;}
+			.oba-auction-subtab-panel.is-active{display:block;}
+		</style>
 		<script>
 			jQuery(function($){
 				const rate = <?php echo wp_json_encode( $points_rate ); ?>;
@@ -355,7 +365,6 @@ class OBA_Product_Type {
 			'_oba_autobid_enabled',
 			'_bid_product_id',
 			'_registration_points',
-			'_product_cost',
 			'_allow_live_join',
 			'_live_join_points',
 			'_oba_buy_now_enabled',
@@ -365,9 +374,6 @@ class OBA_Product_Type {
 			'_sale_price',
 			'_tax_status',
 			'_tax_class',
-			'_is_bid_product',
-			'_is_membership_plan_points',
-			'_points_amount',
 		);
 
 		foreach ( $fields as $field ) {
@@ -493,12 +499,29 @@ class OBA_Product_Type {
 					}
 				}
 
+				function obaInitSubTabs() {
+					const $nav = $('.oba-auction-subtab-nav');
+					if (!$nav.length) { return; }
+					$nav.off('click', 'li').on('click', 'li', function(e){
+						e.preventDefault();
+						const target = $(this).data('panel');
+						$(this).addClass('active').siblings().removeClass('active');
+						$('.oba-auction-subtab-panel').removeClass('is-active').hide();
+						$('.oba-auction-subtab-panel[data-panel="'+target+'"]').addClass('is-active').show();
+					});
+					// Ensure only active panel is visible on load.
+					$('.oba-auction-subtab-panel').hide();
+					$('.oba-auction-subtab-panel.is-active').show();
+				}
+
 				obaShowAuctionFields();
 				obaMaybeOpenAuctionTab();
+				obaInitSubTabs();
 
 				$(document.body).on('woocommerce-product-type-change', function() {
 					obaShowAuctionFields();
 					obaMaybeOpenAuctionTab();
+					obaInitSubTabs();
 				});
 			});
 		</script>
