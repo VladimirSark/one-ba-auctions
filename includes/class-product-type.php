@@ -92,6 +92,18 @@ class OBA_Product_Type {
 		$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
 		$product_obj  = $current_id ? wc_get_product( $current_id ) : null;
 
+		$tax_statuses = function_exists( 'wc_get_product_tax_statuses' )
+			? wc_get_product_tax_statuses()
+			: array(
+				'taxable'  => __( 'Taxable', 'woocommerce' ),
+				'shipping' => __( 'Shipping only', 'woocommerce' ),
+				'none'     => __( 'None', 'woocommerce' ),
+			);
+
+		$tax_class_options = function_exists( 'wc_get_product_tax_class_options' )
+			? wc_get_product_tax_class_options()
+			: array( '' => __( 'Standard', 'woocommerce' ) );
+
 		// Core pricing & tax fields, moved from General tab for auction products.
 		echo '<div class="options_group oba-auction-pricing">';
 		woocommerce_wp_text_input(
@@ -131,7 +143,7 @@ class OBA_Product_Type {
 			array(
 				'id'            => '_tax_status',
 				'label'         => __( 'Tax status', 'woocommerce' ),
-				'options'       => wc_get_product_tax_statuses(),
+				'options'       => $tax_statuses,
 				'value'         => $product_obj ? $product_obj->get_tax_status( 'edit' ) : '',
 				'wrapper_class' => 'show_if_auction',
 			)
@@ -140,7 +152,7 @@ class OBA_Product_Type {
 			array(
 				'id'            => '_tax_class',
 				'label'         => __( 'Tax class', 'woocommerce' ),
-				'options'       => wc_get_product_tax_class_options(),
+				'options'       => $tax_class_options,
 				'value'         => $product_obj ? $product_obj->get_tax_class( 'edit' ) : '',
 				'wrapper_class' => 'show_if_auction',
 			)
