@@ -82,8 +82,98 @@ class OBA_Product_Type {
 		$settings     = OBA_Settings::get_settings();
 		$current_id   = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$current_pts  = $current_id ? (float) get_post_meta( $current_id, '_registration_points', true ) : 0;
-		$current_cost = $current_id ? (float) get_post_meta( $current_id, '_product_cost', true ) : 0;
+		$current_cost = 0;
+		if ( $current_id ) {
+			$current_cost = (float) get_post_meta( $current_id, '_wc_cog_cost', true );
+			if ( ! $current_cost ) {
+				$current_cost = (float) get_post_meta( $current_id, '_product_cost', true );
+			}
+		}
 		$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
+		$product_obj  = $current_id ? wc_get_product( $current_id ) : null;
+
+		// Core pricing & tax fields, moved from General tab for auction products.
+		echo '<div class="options_group oba-auction-pricing">';
+		woocommerce_wp_text_input(
+			array(
+				'id'            => '_regular_price',
+				'label'         => __( 'Regular price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+				'data_type'     => 'price',
+				'wrapper_class' => 'show_if_auction',
+				'value'         => $product_obj ? $product_obj->get_regular_price( 'edit' ) : '',
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'            => '_sale_price',
+				'label'         => __( 'Sale price', 'woocommerce' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+				'data_type'     => 'price',
+				'wrapper_class' => 'show_if_auction',
+				'value'         => $product_obj ? $product_obj->get_sale_price( 'edit' ) : '',
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'                => '_wc_cog_cost',
+				'label'             => __( 'Cost of goods', 'one-ba-auctions' ) . ' (' . get_woocommerce_currency_symbol() . ')',
+				'type'              => 'number',
+				'custom_attributes' => array(
+					'step' => '0.01',
+					'min'  => '0',
+				),
+				'wrapper_class'     => 'show_if_auction',
+				'value'             => $current_cost,
+				'description'       => __( 'Used for profit estimate. Syncs with Cost of Goods value.', 'one-ba-auctions' ),
+				'desc_tip'          => true,
+			)
+		);
+		woocommerce_wp_select(
+			array(
+				'id'            => '_tax_status',
+				'label'         => __( 'Tax status', 'woocommerce' ),
+				'options'       => wc_get_product_tax_statuses(),
+				'value'         => $product_obj ? $product_obj->get_tax_status( 'edit' ) : '',
+				'wrapper_class' => 'show_if_auction',
+			)
+		);
+		woocommerce_wp_select(
+			array(
+				'id'            => '_tax_class',
+				'label'         => __( 'Tax class', 'woocommerce' ),
+				'options'       => wc_get_product_tax_class_options(),
+				'value'         => $product_obj ? $product_obj->get_tax_class( 'edit' ) : '',
+				'wrapper_class' => 'show_if_auction',
+			)
+		);
+		woocommerce_wp_checkbox(
+			array(
+				'id'            => '_is_bid_product',
+				'label'         => __( 'Is bid fee product', 'one-ba-auctions' ),
+				'description'   => __( 'Mark this product to be used as the bid fee.', 'one-ba-auctions' ),
+				'wrapper_class' => 'show_if_auction',
+			)
+		);
+		woocommerce_wp_checkbox(
+			array(
+				'id'            => '_is_membership_plan_points',
+				'label'         => __( 'Is membership (grants points)', 'one-ba-auctions' ),
+				'description'   => __( 'When purchased, grants points and marks user as having membership.', 'one-ba-auctions' ),
+				'wrapper_class' => 'show_if_auction',
+			)
+		);
+		woocommerce_wp_text_input(
+			array(
+				'id'                => '_points_amount',
+				'label'             => __( 'Points granted', 'one-ba-auctions' ),
+				'type'              => 'number',
+				'custom_attributes' => array(
+					'step' => '1',
+					'min'  => '0',
+				),
+				'wrapper_class'     => 'show_if_auction',
+			)
+		);
+		echo '</div>';
 
 		woocommerce_wp_text_input(
 			array(
@@ -153,19 +243,6 @@ class OBA_Product_Type {
 		);
 		woocommerce_wp_text_input(
 			array(
-				'id'          => '_product_cost',
-				'label'       => __( 'Cost of product (store currency)', 'one-ba-auctions' ),
-				'type'        => 'number',
-				'custom_attributes' => array(
-					'step' => '0.01',
-					'min'  => '0',
-				),
-				'description' => __( 'Internal cost used to estimate profit.', 'one-ba-auctions' ),
-				'desc_tip'    => true,
-			)
-		);
-		woocommerce_wp_text_input(
-			array(
 				'id'          => '_registration_points',
 				'label'       => __( 'Registration points required', 'one-ba-auctions' ),
 				'type'        => 'number',
@@ -221,7 +298,7 @@ class OBA_Product_Type {
 		<p>
 			<strong><?php esc_html_e( 'Profit (approx.):', 'one-ba-auctions' ); ?></strong>
 			<span id="oba_reg_points_value"><?php echo wp_kses_post( wc_price( ( $current_pts * $points_rate ) - $current_cost ) ); ?></span>
-			<br><span class="description"><?php esc_html_e( 'Points × participants × point value minus cost.', 'one-ba-auctions' ); ?></span>
+			<br><span class="description"><?php esc_html_e( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' ); ?></span>
 		</p>
 		<script>
 			jQuery(function($){
@@ -230,7 +307,7 @@ class OBA_Product_Type {
 				let cost = <?php echo wp_json_encode( $current_cost ); ?>;
 				function calc() {
 					const pts = parseFloat($('#_registration_points').val() || 0);
-					cost = parseFloat($('#_product_cost').val() || cost || 0);
+					cost = parseFloat($('#_wc_cog_cost').val() || cost || 0);
 					const val = (pts * rate * (participants || 1)) - cost;
 					$('#oba_reg_points_value').text(obaFormatPrice(val));
 				}
@@ -271,6 +348,14 @@ class OBA_Product_Type {
 			'_live_join_points',
 			'_oba_buy_now_enabled',
 			'_oba_buy_now_points',
+			'_wc_cog_cost',
+			'_regular_price',
+			'_sale_price',
+			'_tax_status',
+			'_tax_class',
+			'_is_bid_product',
+			'_is_membership_plan_points',
+			'_points_amount',
 		);
 
 		foreach ( $fields as $field ) {
@@ -284,6 +369,12 @@ class OBA_Product_Type {
 			if ( '' !== $value || in_array( $field, array( '_live_timer_seconds', '_prelive_timer_seconds' ), true ) ) {
 				update_post_meta( $product_id, $field, $value );
 			}
+		}
+
+		// Keep legacy cost field in sync for calculations.
+		if ( isset( $_POST['_wc_cog_cost'] ) ) {
+			$mirror = wc_clean( wp_unslash( $_POST['_wc_cog_cost'] ) );
+			update_post_meta( $product_id, '_product_cost', $mirror );
 		}
 
 		// Enforce cron-safe live timer if autobid enabled for this auction.
@@ -356,6 +447,11 @@ class OBA_Product_Type {
 					const $tabs = $('.product_data_tabs');
 					const $auctionTabLink = $tabs.find('a[href="#oba_auction_product_data"]');
 					const $generalTabLink = $tabs.find('a[href="#general_product_data"]');
+					const $linkedTabLink = $tabs.find('a[href="#linked_product_data"]');
+					const $variationsTabLink = $tabs.find('a[href="#variable_product_options"]');
+					const $generalPanel = $('#general_product_data');
+					const $linkedPanel = $('#linked_product_data');
+					const $variationsPanel = $('#variable_product_options');
 
 					if (!type || !$tabs.length) { return; }
 
@@ -364,11 +460,24 @@ class OBA_Product_Type {
 						if ($auctionTabLink.length) {
 							$auctionTabLink.trigger('click');
 						}
+						// Hide tabs we don't want for auction products.
+						$generalTabLink.closest('li').hide();
+						$linkedTabLink.closest('li').hide();
+						$variationsTabLink.closest('li').hide();
+						$generalPanel.hide();
+						$linkedPanel.hide();
+						$variationsPanel.hide();
 					} else {
 						// Return to General tab for non-auction types.
 						if ($generalTabLink.length) {
 							$generalTabLink.trigger('click');
 						}
+						$generalTabLink.closest('li').show();
+						$linkedTabLink.closest('li').show();
+						$variationsTabLink.closest('li').show();
+						$generalPanel.show();
+						$linkedPanel.show();
+						$variationsPanel.show();
 					}
 				}
 
