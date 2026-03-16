@@ -350,9 +350,34 @@ class OBA_Product_Type {
 				function obaShowAuctionFields() {
 					$('.show_if_simple, .show_if_grouped, .show_if_external, .show_if_variable').addClass('show_if_auction');
 				}
+
+				function obaMaybeOpenAuctionTab() {
+					const type = $('#product-type').val();
+					const $tabs = $('.product_data_tabs');
+					const $auctionTabLink = $tabs.find('a[href="#oba_auction_product_data"]');
+					const $generalTabLink = $tabs.find('a[href="#general_product_data"]');
+
+					if (!type || !$tabs.length) { return; }
+
+					if (type === 'auction') {
+						// Switch to Auction tab automatically so the merchant sees the fields immediately.
+						if ($auctionTabLink.length) {
+							$auctionTabLink.trigger('click');
+						}
+					} else {
+						// Return to General tab for non-auction types.
+						if ($generalTabLink.length) {
+							$generalTabLink.trigger('click');
+						}
+					}
+				}
+
 				obaShowAuctionFields();
+				obaMaybeOpenAuctionTab();
+
 				$(document.body).on('woocommerce-product-type-change', function() {
 					obaShowAuctionFields();
+					obaMaybeOpenAuctionTab();
 				});
 			});
 		</script>
