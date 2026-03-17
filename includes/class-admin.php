@@ -36,6 +36,8 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_save_membership', array( $this, 'handle_save_membership' ) );
 		add_filter( 'bulk_actions-edit-product', array( $this, 'register_bulk_actions' ) );
 		add_filter( 'handle_bulk_actions-edit-product', array( $this, 'handle_bulk_actions' ), 10, 3 );
+		add_filter( 'manage_edit-product_columns', array( $this, 'add_product_list_columns' ) );
+		add_action( 'manage_product_posts_custom_column', array( $this, 'render_product_list_columns' ), 10, 2 );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			$this->register_cli();
@@ -1629,8 +1631,48 @@ class OBA_Admin {
 					'subject' => isset( $tpl['subject'] ) ? sanitize_text_field( wp_unslash( $tpl['subject'] ) ) : '',
 					'body'    => isset( $tpl['body'] ) ? wp_kses_post( $tpl['body'] ) : '',
 				);
-			}
 		}
+	}
+
+	/**
+	 * Add auction stats columns to Products list (toggleable via Screen Options).
+	 */
+	public function add_product_list_columns( $columns ) {
+		$columns['oba_participants'] = __( 'Participants', 'one-ba-auctions' );
+		$columns['oba_profit']       = __( 'Est. profit', 'one-ba-auctions' );
+		return $columns;
+	}
+
+	public function render_product_list_columns( $column, $post_id ) {
+		if ( ! in_array( $column, array( 'oba_participants', 'oba_profit' ), true ) ) {
+			return;
+		}
+		$product = wc_get_product( $post_id );
+		if ( ! $product || 'auction' !== $product->get_type() ) {
+			echo '—';
+			return;
+		}
+
+		$repo        = $this->repo ?: new OBA_Auction_Repository();
+		$registered  = $repo->get_participant_count( $post_id );
+		$required    = (int) get_post_meta( $post_id, '_required_participants', true );
+		$reg_points  = (float) get_post_meta( $post_id, '_registration_points', true );
+		$settings    = OBA_Settings::get_settings();
+		$points_rate = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
+		$cog         = (float) get_post_meta( $post_id, '_wc_cog_cost', true );
+		if ( ! $cog ) {
+			$cog = (float) get_post_meta( $post_id, '_product_cost', true );
+		}
+		if ( 'oba_participants' === $column ) {
+			echo esc_html( "{$registered}/" . ( $required ?: '—' ) );
+			return;
+		}
+		if ( 'oba_profit' === $column ) {
+			$profit = ( $reg_points * $registered * $points_rate ) - $cog;
+			echo wp_kses_post( wc_price( $profit ) );
+			return;
+		}
+	}
 		$settings                     = OBA_Settings::get_settings();
 		$settings['email_templates']  = $new;
 		update_option( OBA_Settings::OPTION_KEY, $settings );
