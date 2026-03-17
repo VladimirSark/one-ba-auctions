@@ -154,6 +154,12 @@ $stage_tips = array(
 	.oba-tab-panel { display:none; }
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
+	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
+	.oba-buy-row {display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+	.oba-buy-row .price{margin:0;}
+	.oba-buy-points{margin-top:8px; color:#475569; font-weight:600;}
+	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
+	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -173,6 +179,26 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
+		<?php if ( $buy_now_enabled ) : ?>
+			<div class="oba-buy-panel">
+				<div class="oba-buy-row">
+					<?php echo wp_kses_post( $price_html ); ?>
+					<?php woocommerce_simple_add_to_cart(); ?>
+				</div>
+				<?php if ( $buy_now_points > 0 ) : ?>
+					<div class="oba-buy-points">
+						<?php
+						printf(
+							esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ),
+							$buy_now_points,
+							esc_html( $points_suffix )
+						);
+						?>
+					</div>
+				<?php endif; ?>
+			</div>
+			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
+		<?php endif; ?>
 		<div class="oba-auction-panel">
 			<div class="oba-guest-banner">
 				<div>

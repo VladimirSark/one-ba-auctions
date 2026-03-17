@@ -10,6 +10,7 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'maybe_suppress_default_summary' ), 1 );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -19,10 +20,6 @@ class OBA_Frontend {
 		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
 		add_shortcode( 'oba_auction', array( $this, 'shortcode_single_auction' ) );
 		add_shortcode( 'oba_buy_points', array( $this, 'shortcode_buy_points' ) );
-		// Render add-to-cart for auctions that have Buy Now enabled. Hook into both the standard
-		// single summary and the product-type specific hook to cover custom themes.
-		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
-		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
 	}
 
 	public function enqueue_heartbeat() {
@@ -748,5 +745,21 @@ class OBA_Frontend {
 			return '';
 		}
 		return sprintf( esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ), $pts );
+	}
+
+	/**
+	 * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+	 */
+	public function maybe_suppress_default_summary() {
+		global $product;
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
+			return;
+		}
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		remove_all_actions( 'woocommerce_auction_add_to_cart' );
 	}
 }
