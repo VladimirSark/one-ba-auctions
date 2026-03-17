@@ -10,6 +10,7 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		add_action( 'template_redirect', array( $this, 'strip_default_summary_for_auction' ) );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -162,6 +163,24 @@ class OBA_Frontend {
 	public function maybe_inject_buy_now_summary() {
 		// Deprecated: no-op. Buy Now block is handled inside oba-single-auction template.
 		return;
+	}
+
+	/**
+	 * Remove default WC price/add-to-cart for auction products so only custom panels show.
+	 */
+	public function strip_default_summary_for_auction() {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		}
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
 	}
 
 	public function render_buy_now_summary() {

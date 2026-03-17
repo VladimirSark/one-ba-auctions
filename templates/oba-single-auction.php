@@ -184,8 +184,8 @@ $stage_tips = array(
 				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
 					<button type="submit" class="button button-primary oba-buy-now-btn">
-						<span class="oba-buy-price-inline"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
 						<span class="oba-buy-now-label"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></span>
+						<span class="oba-buy-price-inline"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
 					</button>
 				</form>
 				<?php if ( $buy_now_points > 0 ) : ?>
