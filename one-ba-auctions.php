@@ -20,6 +20,14 @@ require_once OBA_PLUGIN_DIR . 'includes/class-plugin.php';
 
 register_activation_hook( __FILE__, array( 'OBA_Activator', 'activate' ) );
 
+// Load translations at init (avoids early JIT loading notice in WP 6.7+).
+add_action(
+	'init',
+	static function() {
+		load_plugin_textdomain( 'one-ba-auctions', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+);
+
 add_action(
 	'plugins_loaded',
 	static function () {
