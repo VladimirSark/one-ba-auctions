@@ -110,4 +110,8 @@ if ( false ) {
 	__( 'Cost of goods', 'one-ba-auctions' );
 	__( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' );
 	__( 'Statistics are available after the auction has activity. Save the product to refresh data.', 'one-ba-auctions' );
+	__( 'Days since publish:', 'one-ba-auctions' );
+	__( 'Participants:', 'one-ba-auctions' );
+	__( 'Estimated profit:', 'one-ba-auctions' );
+	__( 'Profit = registration points × registered × point value minus cost of goods.', 'one-ba-auctions' );
 }

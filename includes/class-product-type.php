@@ -450,7 +450,19 @@ class OBA_Product_Type {
 
 			<div class="oba-auction-subtab-panel" data-panel="stats">
 				<div class="options_group">
-					<p><?php esc_html_e( 'Statistics are available after the auction has activity. Save the product to refresh data.', 'one-ba-auctions' ); ?></p>
+					<?php
+					$published_at = $current_id ? get_post_time( 'U', true, $current_id ) : 0;
+					$days_since   = $published_at ? max( 0, floor( ( time() - $published_at ) / DAY_IN_SECONDS ) ) : 0;
+					$required     = (int) get_post_meta( $current_id, '_required_participants', true );
+					$registered   = $current_id ? $this->repo->get_participant_count( $current_id ) : 0;
+					$reg_points   = (float) get_post_meta( $current_id, '_registration_points', true );
+					$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
+					$est_profit   = ( $reg_points * $registered * $points_rate ) - $current_cost;
+					?>
+					<p><strong><?php esc_html_e( 'Days since publish:', 'one-ba-auctions' ); ?></strong> <?php echo esc_html( $days_since ); ?></p>
+					<p><strong><?php esc_html_e( 'Participants:', 'one-ba-auctions' ); ?></strong> <?php echo esc_html( $registered ); ?> / <?php echo esc_html( $required ?: '—' ); ?></p>
+					<p><strong><?php esc_html_e( 'Estimated profit:', 'one-ba-auctions' ); ?></strong> <?php echo wp_kses_post( wc_price( $est_profit ) ); ?></p>
+					<p class="description"><?php esc_html_e( 'Profit = registration points × registered × point value minus cost of goods.', 'one-ba-auctions' ); ?></p>
 				</div>
 			</div>
 		</div>

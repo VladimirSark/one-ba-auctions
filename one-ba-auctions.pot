@@ -802,16 +802,28 @@ msgstr ""
 msgid "Statistics"
 msgstr ""
 
-#: includes/class-product-type.php:147
+#: includes/class-product-type.php:149
 msgid "Cost of goods"
 msgstr ""
 
-#: includes/class-product-type.php:247
+#: includes/class-product-type.php:251
 msgid "Points × participants × point value minus cost of goods."
 msgstr ""
 
+#: includes/class-product-type.php:269
+msgid "Days since publish:"
+msgstr ""
+
+#: includes/class-product-type.php:270
+msgid "Participants:"
+msgstr ""
+
+#: includes/class-product-type.php:271
+msgid "Estimated profit:"
+msgstr ""
+
 #: includes/class-product-type.php:272
-msgid "Statistics are available after the auction has activity. Save the product to refresh data."
+msgid "Profit = registration points × registered × point value minus cost of goods."
 msgstr ""
 
 #: includes/class-admin.php:1005
