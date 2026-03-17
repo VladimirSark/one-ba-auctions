@@ -5,7 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class OBA_Product_Type {
 
+	private $repo;
+
 	public function hooks() {
+		$this->repo = new OBA_Auction_Repository();
 		add_filter( 'product_type_selector', array( $this, 'register_type' ) );
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'add_product_tab' ) );
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'ensure_core_tabs_visible' ), 20 );
@@ -454,7 +457,7 @@ class OBA_Product_Type {
 					$published_at = $current_id ? get_post_time( 'U', true, $current_id ) : 0;
 					$days_since   = $published_at ? max( 0, floor( ( time() - $published_at ) / DAY_IN_SECONDS ) ) : 0;
 					$required     = (int) get_post_meta( $current_id, '_required_participants', true );
-					$registered   = $current_id ? $this->repo->get_participant_count( $current_id ) : 0;
+					$registered   = ( $current_id && $this->repo ) ? $this->repo->get_participant_count( $current_id ) : 0;
 					$reg_points   = (float) get_post_meta( $current_id, '_registration_points', true );
 					$points_rate  = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
 					$est_profit   = ( $reg_points * $registered * $points_rate ) - $current_cost;
