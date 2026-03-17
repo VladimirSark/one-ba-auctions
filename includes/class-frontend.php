@@ -186,8 +186,6 @@ class OBA_Frontend {
 		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
 			return;
 		}
-		// Price.
-		woocommerce_template_single_price();
 		// Simple add to cart form (works because purchasable filter is already in place).
 		woocommerce_simple_add_to_cart();
 	}
