@@ -104,6 +104,32 @@ class OBA_Product_Type {
 			? wc_get_product_tax_class_options()
 			: array( '' => __( 'Standard', 'woocommerce' ) );
 
+		$backorder_options = function_exists( 'wc_get_product_backorder_options' )
+			? wc_get_product_backorder_options()
+			: array(
+				'no'     => __( 'Do not allow', 'woocommerce' ),
+				'notify' => __( 'Allow, but notify customer', 'woocommerce' ),
+				'yes'    => __( 'Allow', 'woocommerce' ),
+			);
+
+		$shipping_class_options = function_exists( 'wc_get_product_shipping_class_options' )
+			? wc_get_product_shipping_class_options()
+			: ( function() {
+				$options = array( '' => __( 'No shipping class', 'woocommerce' ) );
+				$terms = get_terms(
+					array(
+						'taxonomy'   => 'product_shipping_class',
+						'hide_empty' => false,
+					)
+				);
+				if ( ! is_wp_error( $terms ) && $terms ) {
+					foreach ( $terms as $term ) {
+						$options[ $term->term_id ] = $term->name;
+					}
+				}
+				return $options;
+			} )();
+
 		// Sub-tab navigation.
 		?>
 		<div class="oba-auction-subtabs">
@@ -208,7 +234,7 @@ class OBA_Product_Type {
 						array(
 							'id'      => '_backorders',
 							'label'   => __( 'Allow backorders?', 'woocommerce' ),
-							'options' => wc_get_product_backorder_options(),
+							'options' => $backorder_options,
 						)
 					);
 					woocommerce_wp_text_input(
@@ -272,7 +298,7 @@ class OBA_Product_Type {
 						array(
 							'id'      => 'product_shipping_class',
 							'label'   => __( 'Shipping class', 'woocommerce' ),
-							'options' => wc_get_product_shipping_class_options(),
+							'options' => $shipping_class_options,
 						)
 					);
 					?>
