@@ -640,6 +640,12 @@ class OBA_Product_Type {
 			return;
 		}
 
+		// If the content already contains the manual auction shortcode, leave the default product view intact.
+		$content = get_post_field( 'post_content', $product->get_id() );
+		if ( $content && function_exists( 'has_shortcode' ) && has_shortcode( $content, 'oba_auction' ) ) {
+			return;
+		}
+
 		// Remove add-to-cart/price; keep gallery/title/description intact.
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
