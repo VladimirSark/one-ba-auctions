@@ -176,16 +176,9 @@ $stage_tips = array(
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
 		<div style="margin-bottom:6px;font-weight:700;font-size:15px;"><?php esc_html_e( 'Choose the way to get this product:', 'one-ba-auctions' ); ?></div>
-		<div class="oba-tab-nav">
-			<?php if ( $buy_now_enabled ) : ?>
-				<button type="button" class="oba-tab-btn is-active" data-tab="buy-now"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
-				<button type="button" class="oba-tab-btn" data-tab="auction"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></button>
-			<?php else : ?>
-				<button type="button" class="oba-tab-btn is-active" data-tab="auction"><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></button>
-			<?php endif; ?>
-		</div>
+
 		<?php if ( $buy_now_enabled ) : ?>
-		<div class="oba-tab-panel oba-buy-panel is-active" data-panel="buy-now">
+		<div class="oba-buy-panel">
 			<?php if ( $buy_now_points > 0 ) : ?>
 				<div class="oba-buy-points">
 					<?php
@@ -201,11 +194,11 @@ $stage_tips = array(
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
 					<button type="submit" class="button button-primary"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
 				</form>
-				<button type="button" class="button oba-tab-btn" data-tab="auction"><?php esc_html_e( 'Register for auction', 'one-ba-auctions' ); ?></button>
 			</div>
 		</div>
 		<?php endif; ?>
-		<div class="oba-tab-panel oba-auction-panel <?php echo $buy_now_enabled ? '' : 'is-active'; ?>" data-panel="auction">
+
+		<div class="oba-auction-panel">
 			<div class="oba-guest-banner">
 				<div>
 					<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
@@ -498,25 +491,7 @@ $stage_tips = array(
 </div>
 <script>
 (function($){
-	function setTab(tab){
-		$('.oba-tab-btn').removeClass('is-active');
-		$('.oba-tab-panel').removeClass('is-active');
-		$('.oba-tab-btn[data-tab="'+tab+'"]').addClass('is-active');
-		$('.oba-tab-panel[data-panel="'+tab+'"]').addClass('is-active');
-		$('.oba-auction-wrap').attr('data-auction-tab', tab === 'auction' ? 'auction' : 'buy');
-	}
-	$(document).on('click', '.oba-tab-btn', function(e){
-		e.preventDefault();
-		const tab = $(this).data('tab');
-		setTab(tab);
-		if (tab === 'auction') {
-			const target = $('.oba-auction-panel');
-			if (target.length) {
-				$('html, body').animate({ scrollTop: target.offset().top - 20 }, 200);
-			}
-		}
-	});
-	// Initialize price visibility state on load.
-	setTab($('.oba-tab-btn.is-active').data('tab') || 'auction');
+	// Keep price hidden on the page (auction-first view).
+	$('.oba-auction-wrap').attr('data-auction-tab', 'auction');
 })(jQuery);
 </script>
