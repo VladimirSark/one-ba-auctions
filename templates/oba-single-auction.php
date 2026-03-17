@@ -177,7 +177,7 @@ $stage_tips = array(
 		?>
 		<div style="margin-bottom:6px;font-weight:700;font-size:15px;"><?php esc_html_e( 'Choose the way to get this product:', 'one-ba-auctions' ); ?></div>
 
-		<?php if ( $buy_now_enabled ) : ?>
+		<?php if ( $buy_now_enabled && ! defined( 'OBA_EMBED_AUCTION_ONLY' ) ) : ?>
 		<div class="oba-buy-panel">
 			<?php if ( $buy_now_points > 0 ) : ?>
 				<div class="oba-buy-points">

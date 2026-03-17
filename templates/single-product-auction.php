@@ -59,11 +59,21 @@ get_header( 'shop' );
 		</div>
 	</div>
 
-	<div class="oba-auction-row oba-auction-bottom">
-		<div class="oba-auction-col-full">
-			<?php echo do_shortcode( '[oba_auction]' ); ?>
-		</div>
+<div class="oba-auction-row oba-auction-bottom">
+	<div class="oba-auction-col-full">
+		<?php
+		if ( ! defined( 'OBA_EMBED_AUCTION_ONLY' ) ) {
+			define( 'OBA_EMBED_AUCTION_ONLY', true );
+		}
+		wc_get_template(
+			'oba-single-auction.php',
+			array( 'product' => $product ),
+			'',
+			OBA_PLUGIN_DIR . 'templates/'
+		);
+		?>
 	</div>
+</div>
 
 	<div class="oba-auction-row oba-auction-desc">
 		<div class="oba-auction-col-full">
