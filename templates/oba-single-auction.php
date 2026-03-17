@@ -155,11 +155,13 @@ $stage_tips = array(
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
 	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
-	.oba-buy-row {display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
+	.oba-buy-row {display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
 	.oba-buy-row .price{margin:0;}
 	.oba-buy-price{display:flex; align-items:center; gap:6px; font-weight:600;}
 	.oba-price-label{color:#334155;}
-	.oba-buy-points{margin-top:8px; color:#475569; font-weight:600;}
+	.oba-buy-points{color:#475569; font-weight:600; margin:0;}
+	.oba-buy-panel .single_add_to_cart_button{display:inline-flex; align-items:center; gap:8px; padding:10px 12px;}
+	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
 	/* Hide theme price in summary; re-show inside our panel */
@@ -190,19 +192,25 @@ $stage_tips = array(
 			<div class="oba-buy-panel">
 				<div class="oba-buy-row">
 					<div class="oba-buy-price"><span class="oba-price-label"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $price_html ); ?></div>
-					<?php woocommerce_simple_add_to_cart(); ?>
+					<?php if ( $buy_now_points > 0 ) : ?>
+						<div class="oba-buy-points">
+							<?php
+							printf(
+								esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ),
+								$buy_now_points,
+								esc_html( $points_suffix )
+							);
+							?>
+						</div>
+					<?php endif; ?>
+					<form class="cart" method="post" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>">
+						<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
+						<button type="submit" class="single_add_to_cart_button button button-primary" aria-label="<?php esc_attr_e( 'Add to cart', 'woocommerce' ); ?>">
+							<i class="fa-solid fa-cart-arrow-down" aria-hidden="true"></i>
+							<span class="screen-reader-text"><?php esc_html_e( 'Add to cart', 'woocommerce' ); ?></span>
+						</button>
+					</form>
 				</div>
-				<?php if ( $buy_now_points > 0 ) : ?>
-					<div class="oba-buy-points">
-						<?php
-						printf(
-							esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ),
-							$buy_now_points,
-							esc_html( $points_suffix )
-						);
-						?>
-					</div>
-				<?php endif; ?>
 			</div>
 			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<?php endif; ?>
