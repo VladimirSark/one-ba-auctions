@@ -153,11 +153,6 @@ $stage_tips = array(
 	.oba-tab-nav button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
 	.oba-tab-panel { display:none; }
 	.oba-tab-panel.is-active { display:block; }
-	.oba-buy-panel { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; margin-bottom:16px; }
-	.oba-buy-price { font-size:22px; font-weight:700; margin:8px 0; }
-	.oba-buy-points { color:#0f172a; font-weight:600; margin:6px 0; }
-	.oba-buy-now-btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;}
-	.oba-buy-price-inline{font-weight:700;font-size:18px;line-height:1;}
 	.button,.button-primary{border-radius:10px;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
@@ -178,31 +173,6 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
-		<?php if ( $buy_now_enabled ) : ?>
-		<div class="oba-buy-panel">
-			<span class="oba-buy-price" style="display:block;"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
-			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
-				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
-					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
-					<button type="submit" class="button button-primary oba-buy-now-btn">
-						<span class="oba-buy-now-label"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></span>
-						<span class="oba-buy-price-inline"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
-					</button>
-				</form>
-				<?php if ( $buy_now_points > 0 ) : ?>
-					<div class="oba-buy-points" style="width:100%;margin-top:6px;">
-						<?php
-						printf(
-							esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ),
-							(int) $buy_now_points
-						);
-						?>
-					</div>
-				<?php endif; ?>
-			</div>
-		</div>
-		<?php endif; ?>
-
 		<div class="oba-auction-panel">
 			<div class="oba-guest-banner">
 				<div>
