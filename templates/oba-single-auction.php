@@ -156,6 +156,9 @@ $stage_tips = array(
 	.oba-buy-panel { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; margin-bottom:16px; }
 	.oba-buy-price { font-size:22px; font-weight:700; margin:8px 0; }
 	.oba-buy-points { color:#0f172a; font-weight:600; margin:6px 0; }
+	.oba-buy-now-btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;}
+	.oba-buy-price-inline{font-weight:700;font-size:18px;line-height:1;}
+	.button,.button-primary{border-radius:10px;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -180,8 +183,10 @@ $stage_tips = array(
 			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
 				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
-					<span class="price" style="display:block;font-size:22px;font-weight:700;margin-bottom:8px;"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
-					<button type="submit" class="button button-primary"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
+					<button type="submit" class="button button-primary oba-buy-now-btn">
+						<span class="oba-buy-price-inline"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
+						<span class="oba-buy-now-label"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></span>
+					</button>
 				</form>
 				<?php if ( $buy_now_points > 0 ) : ?>
 					<div class="oba-buy-points" style="width:100%;margin-top:6px;">
