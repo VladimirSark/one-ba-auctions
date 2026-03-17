@@ -156,9 +156,6 @@ $stage_tips = array(
 	.oba-buy-panel { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fff; margin-bottom:16px; }
 	.oba-buy-price { font-size:22px; font-weight:700; margin:8px 0; }
 	.oba-buy-points { color:#0f172a; font-weight:600; margin:6px 0; }
-	.oba-auction-panel { width:100%; clear:both; margin-top:16px; }
-	.oba-phase-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; align-items:start; }
-	.oba-phase-grid .oba-phase-card { height:100%; }
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -219,7 +216,6 @@ $stage_tips = array(
 			</div>
 		</div>
 		<div class="oba-col-right">
-			<div class="oba-phase-grid">
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>1.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step1_label', __( 'Registration', 'one-ba-auctions' ) ) ); ?></span></div>
@@ -434,20 +430,16 @@ $stage_tips = array(
 							<h4 class="oba-lose-title"><?php echo esc_html( $get( 'loser_msg', __( 'You did not win this auction.', 'one-ba-auctions' ) ) ); ?></h4>
 							<p class="oba-lose-stat oba-lose-bids"><?php esc_html_e( 'Bids placed:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-count">0</span></p>
 							<p class="oba-lose-stat oba-lose-value"><?php esc_html_e( 'Bids value:', 'one-ba-auctions' ); ?> <span class="oba-lose-bids-value">0</span></p>
-								<p class="oba-lose-save" style="display:none;">
-									<span class="oba-save-prefix"><?php esc_html_e( 'If you win, you would save around', 'one-ba-auctions' ); ?></span>
-									<span class="oba-save-highlight oba-lose-save-value">0</span>
-									<span class="oba-save-suffix"><?php esc_html_e( 'from regular price in other stores.', 'one-ba-auctions' ); ?></span>
-								</p>
-								<a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Return to home page', 'one-ba-auctions' ); ?></a>
-							</div>
+							<p class="oba-lose-save" style="display:none;">
+								<span class="oba-save-prefix"><?php esc_html_e( 'If you win, you would save around', 'one-ba-auctions' ); ?></span>
+								<span class="oba-save-highlight oba-lose-save-value">0</span>
+								<span class="oba-save-suffix"><?php esc_html_e( 'from regular price in other stores.', 'one-ba-auctions' ); ?></span>
+							</p>
+							<a class="button" href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php esc_html_e( 'Return to home page', 'one-ba-auctions' ); ?></a>
 						</div>
 					</div>
 				</div>
-			</div><!-- /.oba-phase-grid -->
 			</div>
-		</div>
-	</div>
 
 			<div class="oba-alert oba-alert-error" style="display:none;"></div>
 			<div class="oba-alert oba-alert-info oba-success-banner" style="display:none;"></div>
