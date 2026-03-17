@@ -160,6 +160,9 @@ $stage_tips = array(
 	.oba-buy-points{margin-top:8px; color:#475569; font-weight:600;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
+	/* Hide theme price in summary; re-show inside our panel */
+	.oba-auction-wrap .summary .price{display:none;}
+	.oba-auction-wrap .oba-buy-panel .price{display:inline-block!important;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
