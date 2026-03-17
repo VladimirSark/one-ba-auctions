@@ -177,13 +177,105 @@ class OBA_Product_Type {
 
 			<div class="oba-auction-subtab-panel" data-panel="inventory">
 				<div class="options_group">
-					<?php do_action( 'woocommerce_product_options_inventory_product_data' ); ?>
+					<?php
+					woocommerce_wp_text_input(
+						array(
+							'id'          => '_sku',
+							'label'       => __( 'SKU', 'woocommerce' ),
+							'desc_tip'    => true,
+							'description' => __( 'Unique identifier for stock control.', 'woocommerce' ),
+						)
+					);
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => '_manage_stock',
+							'label'       => __( 'Manage stock?', 'woocommerce' ),
+							'description' => __( 'Enable stock management at product level', 'woocommerce' ),
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_stock',
+							'label'             => __( 'Stock quantity', 'woocommerce' ),
+							'type'              => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '0',
+							),
+						)
+					);
+					woocommerce_wp_select(
+						array(
+							'id'      => '_backorders',
+							'label'   => __( 'Allow backorders?', 'woocommerce' ),
+							'options' => wc_get_product_backorder_options(),
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_low_stock_amount',
+							'label'             => __( 'Low stock threshold', 'woocommerce' ),
+							'type'              => 'number',
+							'custom_attributes' => array(
+								'step' => '1',
+								'min'  => '0',
+							),
+						)
+					);
+					woocommerce_wp_select(
+						array(
+							'id'      => '_stock_status',
+							'label'   => __( 'Stock status', 'woocommerce' ),
+							'options' => wc_get_product_stock_status_options(),
+						)
+					);
+					?>
 				</div>
 			</div>
 
 			<div class="oba-auction-subtab-panel" data-panel="shipping">
 				<div class="options_group">
-					<?php do_action( 'woocommerce_product_options_shipping' ); ?>
+					<?php
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_weight',
+							'label'             => __( 'Weight (kg)', 'woocommerce' ),
+							'type'              => 'text',
+							'data_type'         => 'decimal',
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_length',
+							'label'             => __( 'Length (cm)', 'woocommerce' ),
+							'type'              => 'text',
+							'data_type'         => 'decimal',
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_width',
+							'label'             => __( 'Width (cm)', 'woocommerce' ),
+							'type'              => 'text',
+							'data_type'         => 'decimal',
+						)
+					);
+					woocommerce_wp_text_input(
+						array(
+							'id'                => '_height',
+							'label'             => __( 'Height (cm)', 'woocommerce' ),
+							'type'              => 'text',
+							'data_type'         => 'decimal',
+						)
+					);
+					woocommerce_wp_select(
+						array(
+							'id'      => 'product_shipping_class',
+							'label'   => __( 'Shipping class', 'woocommerce' ),
+							'options' => wc_get_product_shipping_class_options(),
+						)
+					);
+					?>
 				</div>
 			</div>
 
@@ -395,6 +487,17 @@ class OBA_Product_Type {
 			'_sale_price',
 			'_tax_status',
 			'_tax_class',
+			'_sku',
+			'_manage_stock',
+			'_stock',
+			'_backorders',
+			'_low_stock_amount',
+			'_stock_status',
+			'_weight',
+			'_length',
+			'_width',
+			'_height',
+			'product_shipping_class',
 		);
 
 		foreach ( $fields as $field ) {
@@ -414,6 +517,40 @@ class OBA_Product_Type {
 		if ( isset( $_POST['_wc_cog_cost'] ) ) {
 			$mirror = wc_clean( wp_unslash( $_POST['_wc_cog_cost'] ) );
 			update_post_meta( $product_id, '_product_cost', $mirror );
+		}
+
+		// Sync inventory/shipping fields via product object to keep WC internals happy.
+		$product = wc_get_product( $product_id );
+		if ( $product ) {
+			if ( isset( $_POST['_sku'] ) ) {
+				$product->set_sku( wc_clean( wp_unslash( $_POST['_sku'] ) ) );
+			}
+			$product->set_manage_stock( isset( $_POST['_manage_stock'] ) ? 'yes' : 'no' );
+			if ( isset( $_POST['_stock'] ) && '' !== $_POST['_stock'] ) {
+				$product->set_stock_quantity( wc_clean( wp_unslash( $_POST['_stock'] ) ) );
+			}
+			if ( isset( $_POST['_backorders'] ) ) {
+				$product->set_backorders( wc_clean( wp_unslash( $_POST['_backorders'] ) ) );
+			}
+			if ( isset( $_POST['_low_stock_amount'] ) && $_POST['_low_stock_amount'] !== '' ) {
+				$product->set_low_stock_amount( wc_clean( wp_unslash( $_POST['_low_stock_amount'] ) ) );
+			}
+			if ( isset( $_POST['_stock_status'] ) ) {
+				$product->set_stock_status( wc_clean( wp_unslash( $_POST['_stock_status'] ) ) );
+			}
+			if ( isset( $_POST['_weight'] ) ) {
+				$product->set_weight( wc_clean( wp_unslash( $_POST['_weight'] ) ) );
+			}
+			foreach ( array( '_length' => 'length', '_width' => 'width', '_height' => 'height' ) as $key => $prop ) {
+				if ( isset( $_POST[ $key ] ) ) {
+					$setter = 'set_' . $prop;
+					$product->{$setter}( wc_clean( wp_unslash( $_POST[ $key ] ) ) );
+				}
+			}
+			if ( isset( $_POST['product_shipping_class'] ) ) {
+				$product->set_shipping_class_id( absint( $_POST['product_shipping_class'] ) );
+			}
+			$product->save();
 		}
 
 		// Enforce cron-safe live timer if autobid enabled for this auction.
