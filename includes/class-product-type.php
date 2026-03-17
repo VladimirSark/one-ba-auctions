@@ -15,7 +15,7 @@ class OBA_Product_Type {
 		add_filter( 'woocommerce_product_type_options', array( $this, 'enable_virtual_downloadable' ) );
 		add_action( 'woocommerce_product_data_panels', array( $this, 'render_fields' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_fields' ) );
-		add_action( 'woocommerce_single_product_summary', array( $this, 'render_frontend_wrapper' ), 5 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_frontend_wrapper' ), 35 );
 		add_action( 'woocommerce_before_single_product', array( $this, 'render_explainer_bar' ), 1 );
 		add_action( 'init', array( $this, 'register_product_class' ) );
 		add_action( 'admin_footer', array( $this, 'admin_footer_scripts' ) );
@@ -634,8 +634,19 @@ class OBA_Product_Type {
 	}
 
 	public function render_frontend_wrapper() {
-		// Do nothing: auction UI is rendered only via the [oba_auction] shortcode now.
-		return;
+		global $product;
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		if ( ! defined( 'OBA_EMBED_AUCTION_ONLY' ) ) {
+			define( 'OBA_EMBED_AUCTION_ONLY', true );
+		}
+		wc_get_template(
+			'oba-single-auction.php',
+			array( 'product' => $product ),
+			'',
+			OBA_PLUGIN_DIR . 'templates/'
+		);
 	}
 
 	public function render_explainer_bar() {}
