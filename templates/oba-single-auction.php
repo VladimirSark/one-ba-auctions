@@ -157,6 +157,8 @@ $stage_tips = array(
 	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
 	.oba-buy-row {display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
 	.oba-buy-row .price{margin:0;}
+	.oba-buy-price{display:flex; align-items:center; gap:6px; font-weight:600;}
+	.oba-price-label{color:#334155;}
 	.oba-buy-points{margin-top:8px; color:#475569; font-weight:600;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
@@ -185,7 +187,7 @@ $stage_tips = array(
 		<?php if ( $buy_now_enabled ) : ?>
 			<div class="oba-buy-panel">
 				<div class="oba-buy-row">
-					<?php echo wp_kses_post( $price_html ); ?>
+					<div class="oba-buy-price"><span class="oba-price-label"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $price_html ); ?></div>
 					<?php woocommerce_simple_add_to_cart(); ?>
 				</div>
 				<?php if ( $buy_now_points > 0 ) : ?>
