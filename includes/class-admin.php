@@ -1631,7 +1631,14 @@ class OBA_Admin {
 					'subject' => isset( $tpl['subject'] ) ? sanitize_text_field( wp_unslash( $tpl['subject'] ) ) : '',
 					'body'    => isset( $tpl['body'] ) ? wp_kses_post( $tpl['body'] ) : '',
 				);
+			}
 		}
+		$settings                     = OBA_Settings::get_settings();
+		$settings['email_templates']  = $new;
+		update_option( OBA_Settings::OPTION_KEY, $settings );
+
+		wp_redirect( admin_url( 'admin.php?page=oba-emails&updated=1' ) );
+		exit;
 	}
 
 	/**
@@ -1672,13 +1679,6 @@ class OBA_Admin {
 			echo wp_kses_post( wc_price( $profit ) );
 			return;
 		}
-	}
-		$settings                     = OBA_Settings::get_settings();
-		$settings['email_templates']  = $new;
-		update_option( OBA_Settings::OPTION_KEY, $settings );
-
-		wp_redirect( admin_url( 'admin.php?page=oba-emails&updated=1' ) );
-		exit;
 	}
 
 	public function handle_send_test_email() {
