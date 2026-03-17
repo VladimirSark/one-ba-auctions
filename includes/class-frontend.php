@@ -23,6 +23,8 @@ class OBA_Frontend {
 		// single summary and the product-type specific hook to cover custom themes.
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
 		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+		// If Buy Now is enabled, show price + add-to-cart inline, next to each other.
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_inline_price_cart' ), 9 );
 	}
 
 	public function enqueue_heartbeat() {
@@ -184,6 +186,39 @@ class OBA_Frontend {
 		$rendered = true;
 		// Simple add to cart form (works because purchasable filter is already in place).
 		woocommerce_simple_add_to_cart();
+	}
+
+	/**
+	 * Place price and add-to-cart on the same row for auction products with Buy Now enabled.
+	 */
+	public function render_inline_price_cart() {
+		static $done = false;
+		if ( $done ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
+			return;
+		}
+		$done = true;
+
+		// Avoid duplicate price/cart rendering later in the hook stack.
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
+		remove_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
+		remove_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+
+		if ( ! defined( 'OBA_INLINE_PRICE_STYLE' ) ) {
+			define( 'OBA_INLINE_PRICE_STYLE', true );
+			echo '<style>.oba-inline-price-cart{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;}.oba-inline-price-cart .price{margin:0;}</style>';
+		}
+
+		echo '<div class="oba-inline-price-cart">';
+		woocommerce_template_single_price();
+		woocommerce_simple_add_to_cart();
+		echo '</div>';
 	}
 
 	private function build_i18n( $settings ) {
