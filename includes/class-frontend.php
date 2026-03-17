@@ -11,7 +11,6 @@ class OBA_Frontend {
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
-		add_action( 'template_redirect', array( $this, 'maybe_inject_buy_now_summary' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
 		add_shortcode( 'oba_ended_auctions', array( $this, 'shortcode_ended_auctions' ) );
@@ -161,26 +160,8 @@ class OBA_Frontend {
 	 * For auction products with Buy It Now enabled, inject price + add-to-cart so default WC purchase flow shows.
 	 */
 	public function maybe_inject_buy_now_summary() {
-		if ( ! is_product() && ! is_singular( 'product' ) ) {
-			return;
-		}
-		global $product;
-		if ( ! $product instanceof WC_Product ) {
-			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
-		}
-		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
-			return;
-		}
-		$buy_now = $product->get_meta( '_oba_buy_now_enabled' );
-
-		// Always hide default price/add-to-cart for auction products; we render our own when needed.
-		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
-		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
-
-		if ( 'yes' === $buy_now ) {
-			// Insert our buy-now panel (price + add to cart + points hint).
-			add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 25 );
-		}
+		// Deprecated: no-op. Buy Now block is handled inside oba-single-auction template.
+		return;
 	}
 
 	public function render_buy_now_summary() {
