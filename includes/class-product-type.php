@@ -109,6 +109,8 @@ class OBA_Product_Type {
 		<div class="oba-auction-subtabs">
 			<ul class="oba-auction-subtab-nav">
 				<li class="active" data-panel="pricing"><?php esc_html_e( 'Pricing', 'one-ba-auctions' ); ?></li>
+				<li data-panel="inventory"><?php esc_html_e( 'Inventory', 'one-ba-auctions' ); ?></li>
+				<li data-panel="shipping"><?php esc_html_e( 'Shipping', 'one-ba-auctions' ); ?></li>
 				<li data-panel="settings"><?php esc_html_e( 'Auction settings', 'one-ba-auctions' ); ?></li>
 				<li data-panel="status"><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></li>
 				<li data-panel="other"><?php esc_html_e( 'Other settings', 'one-ba-auctions' ); ?></li>
@@ -169,6 +171,18 @@ class OBA_Product_Type {
 						)
 					);
 					?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="inventory">
+				<div class="options_group">
+					<?php do_action( 'woocommerce_product_options_inventory_product_data' ); ?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="shipping">
+				<div class="options_group">
+					<?php do_action( 'woocommerce_product_options_shipping' ); ?>
 				</div>
 			</div>
 
@@ -467,9 +481,13 @@ class OBA_Product_Type {
 					const $generalTabLink = $tabs.find('a[href="#general_product_data"]');
 					const $linkedTabLink = $tabs.find('a[href="#linked_product_data"]');
 					const $variationsTabLink = $tabs.find('a[href="#variable_product_options"]');
+					const $inventoryTabLink = $tabs.find('a[href="#inventory_product_data"]');
+					const $shippingTabLink = $tabs.find('a[href="#shipping_product_data"]');
 					const $generalPanel = $('#general_product_data');
 					const $linkedPanel = $('#linked_product_data');
 					const $variationsPanel = $('#variable_product_options');
+					const $inventoryPanel = $('#inventory_product_data');
+					const $shippingPanel = $('#shipping_product_data');
 
 					if (!type || !$tabs.length) { return; }
 
@@ -482,9 +500,13 @@ class OBA_Product_Type {
 						$generalTabLink.closest('li').hide();
 						$linkedTabLink.closest('li').hide();
 						$variationsTabLink.closest('li').hide();
+						$inventoryTabLink.closest('li').hide();
+						$shippingTabLink.closest('li').hide();
 						$generalPanel.hide();
 						$linkedPanel.hide();
 						$variationsPanel.hide();
+						$inventoryPanel.hide();
+						$shippingPanel.hide();
 					} else {
 						// Return to General tab for non-auction types.
 						if ($generalTabLink.length) {
@@ -493,9 +515,13 @@ class OBA_Product_Type {
 						$generalTabLink.closest('li').show();
 						$linkedTabLink.closest('li').show();
 						$variationsTabLink.closest('li').show();
+						$inventoryTabLink.closest('li').show();
+						$shippingTabLink.closest('li').show();
 						$generalPanel.show();
 						$linkedPanel.show();
 						$variationsPanel.show();
+						$inventoryPanel.show();
+						$shippingPanel.show();
 					}
 				}
 

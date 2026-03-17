@@ -101,6 +101,8 @@ if ( false ) {
 	__( 'Table of ended auctions with winners and totals.', 'one-ba-auctions' );
 	__( 'limit (default: %s)', 'one-ba-auctions' );
 	__( 'Pricing', 'one-ba-auctions' );
+	__( 'Inventory', 'one-ba-auctions' );
+	__( 'Shipping', 'one-ba-auctions' );
 	__( 'Auction settings', 'one-ba-auctions' );
 	__( 'Status', 'one-ba-auctions' );
 	__( 'Other settings', 'one-ba-auctions' );

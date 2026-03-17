@@ -779,22 +779,30 @@ msgid "Pricing"
 msgstr ""
 
 #: includes/class-product-type.php:121
-msgid "Auction settings"
+msgid "Inventory"
 msgstr ""
 
 #: includes/class-product-type.php:122
-msgid "Status"
+msgid "Shipping"
 msgstr ""
 
 #: includes/class-product-type.php:123
+msgid "Auction settings"
+msgstr ""
+
+#: includes/class-product-type.php:124
+msgid "Status"
+msgstr ""
+
+#: includes/class-product-type.php:125
 msgid "Other settings"
 msgstr ""
 
-#: includes/class-product-type.php:144
+#: includes/class-product-type.php:146
 msgid "Cost of goods"
 msgstr ""
 
-#: includes/class-product-type.php:239
+#: includes/class-product-type.php:243
 msgid "Points × participants × point value minus cost of goods."
 msgstr ""
 
