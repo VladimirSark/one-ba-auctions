@@ -180,6 +180,7 @@ $stage_tips = array(
 		?>
 		<?php if ( $buy_now_enabled ) : ?>
 		<div class="oba-buy-panel">
+			<span class="oba-buy-price" style="display:block;"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
 			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
 				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
