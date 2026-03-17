@@ -155,7 +155,7 @@ $stage_tips = array(
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
 	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
-	.oba-buy-row {display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+	.oba-buy-row {display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
 	.oba-buy-row .price{margin:0;}
 	.oba-buy-price{display:flex; align-items:center; gap:6px; font-weight:600;}
 	.oba-price-label{color:#334155;}
@@ -164,7 +164,9 @@ $stage_tips = array(
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
 	/* Hide theme price in summary; re-show inside our panel */
 	.oba-auction-wrap .summary .price{display:none;}
-	.oba-auction-wrap .oba-buy-panel .price{display:inline-block!important;}
+	.oba-auction-wrap .oba-buy-panel .price,
+	.oba-auction-wrap .oba-buy-panel .woocommerce-Price-amount,
+	.oba-auction-wrap .oba-buy-panel .woocommerce-price-suffix{display:inline-block!important;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
