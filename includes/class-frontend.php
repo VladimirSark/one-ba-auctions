@@ -17,6 +17,7 @@ class OBA_Frontend {
 		add_shortcode( 'oba_upcoming_auctions', array( $this, 'shortcode_upcoming_auctions' ) );
 		add_shortcode( 'oba_live_auctions', array( $this, 'shortcode_live_auctions' ) );
 		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
+		add_shortcode( 'oba_auction', array( $this, 'shortcode_single_auction' ) );
 	}
 
 	public function enqueue_heartbeat() {
@@ -94,6 +95,49 @@ class OBA_Frontend {
 			'currency_decimals' => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
 			'autobid_window_seconds' => isset( $settings['autobid_window_seconds'] ) ? (int) $settings['autobid_window_seconds'] : 300,
 			'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
+			)
+		);
+	}
+
+	/**
+	 * Force-enqueue assets and localize data for a specific auction product (used by shortcode).
+	 */
+	private function enqueue_assets_for_product( WC_Product $product ) {
+		$settings = OBA_Settings::get_settings();
+
+		wp_enqueue_style(
+			'oba-auction',
+			OBA_PLUGIN_URL . 'assets/css/auction.css',
+			array(),
+			OBA_VERSION
+		);
+
+		wp_enqueue_script(
+			'oba-auction',
+			OBA_PLUGIN_URL . 'assets/js/auction.js',
+			array( 'jquery' ),
+			OBA_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'oba-auction',
+			'obaAuction',
+			array(
+				'ajax_url'     => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'oba_auction' ),
+				'auction_id'   => $product->get_id(),
+				'poll_interval'=> (int) $settings['poll_interval_ms'],
+				'terms_text'   => wp_kses_post( $settings['terms_text'] ),
+				'membership_links' => $settings['membership_links'],
+				'membership_labels'=> $settings['membership_labels'],
+				'login_url'    => $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ),
+				'i18n'         => $this->build_i18n( $settings ),
+				'currency_symbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '€',
+				'currency_code'   => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
+				'currency_decimals' => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
+				'autobid_window_seconds' => isset( $settings['autobid_window_seconds'] ) ? (int) $settings['autobid_window_seconds'] : 300,
+				'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
 			)
 		);
 	}
@@ -597,6 +641,62 @@ class OBA_Frontend {
 			<?php endforeach; ?>
 		</div>
 		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render a single auction block via shortcode: [oba_auction id="123"]
+	 */
+	public function shortcode_single_auction( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'id' => 0,
+			),
+			$atts
+		);
+
+		$auction_id = absint( $atts['id'] );
+
+		// If no ID passed, try current product context or queried object.
+		if ( ! $auction_id ) {
+			global $product;
+			if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
+				$auction_id = $product->get_id();
+			} else {
+				$q_id = get_queried_object_id();
+				$q_product = $q_id ? wc_get_product( $q_id ) : null;
+				if ( $q_product && 'auction' === $q_product->get_type() ) {
+					$auction_id = $q_product->get_id();
+				}
+			}
+		}
+
+		if ( ! $auction_id ) {
+			return '';
+		}
+
+		$product = wc_get_product( $auction_id );
+		if ( ! $product || 'auction' !== $product->get_type() ) {
+			return '';
+		}
+
+		// Enqueue assets + localization regardless of context.
+		$this->enqueue_assets_for_product( $product );
+
+		ob_start();
+		// Set global product context so the template behaves correctly.
+		$prev_product = isset( $GLOBALS['product'] ) ? $GLOBALS['product'] : null;
+		$GLOBALS['product'] = $product;
+
+		wc_get_template(
+			'oba-single-auction.php',
+			array( 'product' => $product ),
+			'',
+			OBA_PLUGIN_DIR . 'templates/'
+		);
+
+		$GLOBALS['product'] = $prev_product;
+
 		return ob_get_clean();
 	}
 }
