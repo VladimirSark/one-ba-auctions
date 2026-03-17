@@ -175,25 +175,24 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
-		<div style="margin-bottom:6px;font-weight:700;font-size:15px;"><?php esc_html_e( 'Choose the way to get this product:', 'one-ba-auctions' ); ?></div>
-
 		<?php if ( $buy_now_enabled ) : ?>
 		<div class="oba-buy-panel">
-			<?php if ( $buy_now_points > 0 ) : ?>
-				<div class="oba-buy-points">
-					<?php
-					printf(
-						esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ),
-						(int) $buy_now_points
-					);
-					?>
-				</div>
-			<?php endif; ?>
 			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
 				<form class="cart" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', get_permalink( $product->get_id() ) ) ); ?>" method="post" enctype="multipart/form-data" style="margin:0;">
 					<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
+					<span class="price" style="display:block;font-size:22px;font-weight:700;margin-bottom:8px;"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
 					<button type="submit" class="button button-primary"><?php esc_html_e( 'Buy it now', 'one-ba-auctions' ); ?></button>
 				</form>
+				<?php if ( $buy_now_points > 0 ) : ?>
+					<div class="oba-buy-points" style="width:100%;margin-top:6px;">
+						<?php
+						printf(
+							esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ),
+							(int) $buy_now_points
+						);
+						?>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php endif; ?>

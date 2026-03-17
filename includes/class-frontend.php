@@ -175,7 +175,9 @@ class OBA_Frontend {
 		if ( 'yes' !== $buy_now ) {
 			return;
 		}
-		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 9 );
+		// Remove default add-to-cart to avoid duplication; our template renders its own form.
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 25 );
 	}
 
 	public function render_buy_now_summary() {
