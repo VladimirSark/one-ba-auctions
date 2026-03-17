@@ -9,11 +9,9 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
-			add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
-			add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
-			add_action( 'template_redirect', array( $this, 'maybe_inject_buy_now_summary' ) );
-			add_filter( 'woocommerce_locate_template', array( $this, 'locate_auction_template' ), 1, 3 );
-			add_filter( 'template_include', array( $this, 'maybe_template_include' ), 5 );
+		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
+		add_action( 'template_redirect', array( $this, 'maybe_inject_buy_now_summary' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
 		add_shortcode( 'oba_ended_auctions', array( $this, 'shortcode_ended_auctions' ) );
@@ -190,47 +188,6 @@ class OBA_Frontend {
 		}
 		// Simple add to cart form (works because purchasable filter is already in place).
 		woocommerce_simple_add_to_cart();
-	}
-
-	/**
-	 * Use a custom single-product template for auction products.
-	 */
-	public function locate_auction_template( $template, $template_name, $template_path ) {
-		if ( 'single-product.php' !== $template_name ) {
-			return $template;
-		}
-		$pid = get_queried_object_id();
-		if ( ! $pid ) {
-			return $template;
-		}
-		$product = wc_get_product( $pid );
-		if ( ! $product || 'auction' !== $product->get_type() ) {
-			return $template;
-		}
-		$custom = OBA_PLUGIN_DIR . 'templates/single-product-auction.php';
-		if ( file_exists( $custom ) ) {
-			return $custom;
-		}
-		return $template;
-	}
-
-	/**
-	 * Fallback template selection via template_include to catch themes that bypass wc_locate_template.
-	 */
-	public function maybe_template_include( $template ) {
-		if ( ! is_product() ) {
-			return $template;
-		}
-		$pid = get_queried_object_id();
-		$product = $pid ? wc_get_product( $pid ) : null;
-		if ( ! $product || 'auction' !== $product->get_type() ) {
-			return $template;
-		}
-		$custom = OBA_PLUGIN_DIR . 'templates/single-product-auction.php';
-		if ( file_exists( $custom ) ) {
-			return $custom;
-		}
-		return $template;
 	}
 
 	private function build_i18n( $settings ) {
