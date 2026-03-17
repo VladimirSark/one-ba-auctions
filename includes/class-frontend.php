@@ -172,12 +172,15 @@ class OBA_Frontend {
 			return;
 		}
 		$buy_now = $product->get_meta( '_oba_buy_now_enabled' );
-		if ( 'yes' !== $buy_now ) {
-			return;
-		}
-		// Remove default add-to-cart to avoid duplication; our template renders its own form.
+
+		// Always hide default price/add-to-cart for auction products; we render our own when needed.
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
 		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
-		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 25 );
+
+		if ( 'yes' === $buy_now ) {
+			// Insert our buy-now panel (price + add to cart + points hint).
+			add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 25 );
+		}
 	}
 
 	public function render_buy_now_summary() {
