@@ -19,6 +19,10 @@ class OBA_Frontend {
 		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
 		add_shortcode( 'oba_auction', array( $this, 'shortcode_single_auction' ) );
 		add_shortcode( 'oba_buy_points', array( $this, 'shortcode_buy_points' ) );
+		// Render add-to-cart for auctions that have Buy Now enabled. Hook into both the standard
+		// single summary and the product-type specific hook to cover custom themes.
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
+		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
 	}
 
 	public function enqueue_heartbeat() {
@@ -166,6 +170,10 @@ class OBA_Frontend {
 	}
 
 	public function render_buy_now_summary() {
+		static $rendered = false;
+		if ( $rendered ) {
+			return;
+		}
 		global $product;
 		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
 			return;
@@ -173,6 +181,7 @@ class OBA_Frontend {
 		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
 			return;
 		}
+		$rendered = true;
 		// Simple add to cart form (works because purchasable filter is already in place).
 		woocommerce_simple_add_to_cart();
 	}
