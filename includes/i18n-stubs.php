@@ -106,6 +106,8 @@ if ( false ) {
 	__( 'Auction settings', 'one-ba-auctions' );
 	__( 'Status', 'one-ba-auctions' );
 	__( 'Other settings', 'one-ba-auctions' );
+	__( 'Statistics', 'one-ba-auctions' );
 	__( 'Cost of goods', 'one-ba-auctions' );
 	__( 'Points × participants × point value minus cost of goods.', 'one-ba-auctions' );
+	__( 'Statistics are available after the auction has activity. Save the product to refresh data.', 'one-ba-auctions' );
 }

@@ -112,8 +112,9 @@ class OBA_Product_Type {
 				<li data-panel="inventory"><?php esc_html_e( 'Inventory', 'one-ba-auctions' ); ?></li>
 				<li data-panel="shipping"><?php esc_html_e( 'Shipping', 'one-ba-auctions' ); ?></li>
 				<li data-panel="settings"><?php esc_html_e( 'Auction settings', 'one-ba-auctions' ); ?></li>
-				<li data-panel="status"><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></li>
 				<li data-panel="other"><?php esc_html_e( 'Other settings', 'one-ba-auctions' ); ?></li>
+				<li data-panel="status"><?php esc_html_e( 'Status', 'one-ba-auctions' ); ?></li>
+				<li data-panel="stats"><?php esc_html_e( 'Statistics', 'one-ba-auctions' ); ?></li>
 			</ul>
 
 			<div class="oba-auction-subtab-panel is-active" data-panel="pricing">
@@ -256,25 +257,6 @@ class OBA_Product_Type {
 				</p>
 			</div>
 
-			<div class="oba-auction-subtab-panel" data-panel="status">
-				<div class="options_group">
-					<?php
-					woocommerce_wp_select(
-						array(
-							'id'      => '_auction_status',
-							'label'   => __( 'Auction status', 'one-ba-auctions' ),
-							'options' => array(
-								'registration' => __( 'Registration', 'one-ba-auctions' ),
-								'pre_live'     => __( 'Pre-live', 'one-ba-auctions' ),
-								'live'         => __( 'Live', 'one-ba-auctions' ),
-								'ended'        => __( 'Ended', 'one-ba-auctions' ),
-							),
-						)
-					);
-					?>
-				</div>
-			</div>
-
 			<div class="oba-auction-subtab-panel" data-panel="other">
 				<div class="options_group">
 					<?php
@@ -326,6 +308,31 @@ class OBA_Product_Type {
 						)
 					);
 					?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="status">
+				<div class="options_group">
+					<?php
+					woocommerce_wp_select(
+						array(
+							'id'      => '_auction_status',
+							'label'   => __( 'Auction status', 'one-ba-auctions' ),
+							'options' => array(
+								'registration' => __( 'Registration', 'one-ba-auctions' ),
+								'pre_live'     => __( 'Pre-live', 'one-ba-auctions' ),
+								'live'         => __( 'Live', 'one-ba-auctions' ),
+								'ended'        => __( 'Ended', 'one-ba-auctions' ),
+							),
+						)
+					);
+					?>
+				</div>
+			</div>
+
+			<div class="oba-auction-subtab-panel" data-panel="stats">
+				<div class="options_group">
+					<p><?php esc_html_e( 'Statistics are available after the auction has activity. Save the product to refresh data.', 'one-ba-auctions' ); ?></p>
 				</div>
 			</div>
 		</div>
