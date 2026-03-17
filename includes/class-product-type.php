@@ -240,6 +240,13 @@ class OBA_Product_Type {
 							'options' => $backorder_options,
 						)
 					);
+					woocommerce_wp_checkbox(
+						array(
+							'id'          => '_sold_individually',
+							'label'       => __( 'Sold individually', 'woocommerce' ),
+							'description' => __( 'Limit purchases to 1 item per order', 'woocommerce' ),
+						)
+					);
 					woocommerce_wp_text_input(
 						array(
 							'id'                => '_low_stock_amount',
@@ -534,6 +541,7 @@ class OBA_Product_Type {
 			'_backorders',
 			'_low_stock_amount',
 			'_stock_status',
+			'_sold_individually',
 			'_weight',
 			'_length',
 			'_width',
@@ -578,6 +586,11 @@ class OBA_Product_Type {
 			}
 			if ( isset( $_POST['_stock_status'] ) ) {
 				$product->set_stock_status( wc_clean( wp_unslash( $_POST['_stock_status'] ) ) );
+			}
+			if ( isset( $_POST['_sold_individually'] ) ) {
+				$product->set_sold_individually( 'yes' );
+			} else {
+				$product->set_sold_individually( 'no' );
 			}
 			if ( isset( $_POST['_weight'] ) ) {
 				$product->set_weight( wc_clean( wp_unslash( $_POST['_weight'] ) ) );
