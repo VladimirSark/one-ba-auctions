@@ -26,10 +26,13 @@ get_header( 'shop' );
 	<div class="oba-auction-row oba-auction-top">
 		<div class="oba-auction-col oba-auction-media">
 			<?php
-			/**
-			 * WooCommerce hook: product images
-			 */
-			do_action( 'woocommerce_before_single_product_summary' );
+			// Render core gallery template directly to avoid theme overrides requiring custom helpers.
+			wc_get_template(
+				'single-product/product-image.php',
+				array(),
+				'',
+				trailingslashit( WC()->plugin_path() ) . 'templates/'
+			);
 			?>
 		</div>
 		<div class="oba-auction-col oba-auction-buy">
