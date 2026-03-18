@@ -172,7 +172,8 @@ $stage_tips = array(
 	/* Hide originals in summary; we re-render inside buy panel */
 	.summary.entry-summary .product_title,
 	.summary.entry-summary .price,
-	.summary.entry-summary form.cart{display:none!important;}
+	.summary.entry-summary form.cart,
+	.summary.entry-summary .single_add_to_cart_button{display:none!important;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
