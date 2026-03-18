@@ -157,6 +157,10 @@ $stage_tips = array(
 	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px;} 
 	.oba-buy-panel .product_title{font-size:1.25rem!important; margin:0!important; line-height:1.2;}
 	.oba-buy-panel .price{display:flex!important; align-items:baseline; gap:8px; font-size:0.95rem; color:#718096; margin:0;}
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-Price-amount,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-price-suffix,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price bdi{display:flex!important; visibility:visible!important; opacity:1!important;}
 	.oba-price-prefix{color:#718096;}
 	.oba-buy-panel .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
 	.oba-buy-panel .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
