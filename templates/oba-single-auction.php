@@ -175,6 +175,10 @@ $stage_tips = array(
 	.single-product.product-type-auction .summary form.cart:not(.oba-moved),
 	.single-product.product-type-auction .summary .single_add_to_cart_button:not(.oba-moved),
 	.single-product.product-type-auction .summary .quantity:not(.oba-moved){display:none!important;}
+	/* Extra guard: hide any title/price/cart outside buy panel within auction wrap */
+	.oba-auction-wrap h1.product_title:not(.oba-buy-panel *),
+	.oba-auction-wrap .price:not(.oba-buy-panel *),
+	.oba-auction-wrap form.cart:not(.oba-buy-panel *){display:none!important;}
 	</style>
 	<script>
 	(function($){
