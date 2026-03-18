@@ -154,9 +154,9 @@ $stage_tips = array(
 	.oba-tab-panel { display:none; }
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
-	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px;} 
-	.oba-buy-panel .product_title{font-size:1.25rem!important; margin:0!important; line-height:1.2;}
-	.oba-buy-panel .price{display:flex!important; align-items:baseline; gap:8px; font-size:0.95rem; color:#718096; margin:0;}
+	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px; text-align:center;} 
+	.oba-buy-panel .product_title{font-size:1.65rem!important; margin:0!important; line-height:1.2; text-align:center;}
+	.oba-buy-panel .price{display:flex!important; justify-content:center; align-items:baseline; gap:8px; font-size:17px; color:#718096; margin:0;}
 	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price,
 	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-Price-amount,
 	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-price-suffix,
@@ -164,8 +164,10 @@ $stage_tips = array(
 	.oba-price-prefix{color:#718096;}
 	.oba-buy-panel .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
 	.oba-buy-panel .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
-	.oba-buy-panel .single_add_to_cart_button{width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+	.oba-buy-panel form.cart{display:flex; flex-direction:column; gap:12px;}
+	.oba-buy-panel .single_add_to_cart_button{order:1; width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
 	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
+	.oba-buy-panel .quantity{order:2; width:100%;}
 	.oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}

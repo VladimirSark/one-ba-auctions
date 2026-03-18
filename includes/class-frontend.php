@@ -207,14 +207,16 @@ class OBA_Frontend {
 			<?php endif; ?>
 		</div>
 		<style>
-		.oba-buy-panel-global{border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px;}
-		.oba-buy-panel-global .product_title{font-size:1.25rem!important; margin:0!important; line-height:1.2;}
-		.oba-buy-panel-global .price{display:flex!important; align-items:baseline; gap:8px; font-size:0.95rem; color:#718096; margin:0;}
+		.oba-buy-panel-global{border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px; text-align:center;}
+		.oba-buy-panel-global .product_title{font-size:1.65rem!important; margin:0!important; line-height:1.2; text-align:center;}
+		.oba-buy-panel-global .price{display:flex!important; justify-content:center; align-items:baseline; gap:8px; font-size:17px; color:#718096; margin:0;}
 		.oba-price-prefix{color:#718096;}
 		.oba-buy-panel-global .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
 		.oba-buy-panel-global .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
-		.oba-buy-panel-global .single_add_to_cart_button{width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+		.oba-buy-panel-global form.cart{display:flex; flex-direction:column; gap:12px;}
+		.oba-buy-panel-global .single_add_to_cart_button{order:1; width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
 		.oba-buy-panel-global .single_add_to_cart_button i{font-size:16px;}
+		.oba-buy-panel-global .quantity{order:2; width:100%;}
 		.oba-buy-panel-global .oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
 		/* Hide originals on single product pages after we render panel */
 		.single-product .summary .product_title,
