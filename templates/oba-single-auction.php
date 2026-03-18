@@ -210,6 +210,28 @@ $stage_tips = array(
 			});
 		});
 	})(jQuery);
+	// Move tabs/related into the left column on desktop to scroll with the gallery.
+	document.addEventListener('DOMContentLoaded', function(){
+		const adjustProductLayout = () => {
+			const tabs = document.querySelector('.woocommerce-tabs');
+			const related = document.querySelector('.single_product_summary_related');
+			const galleryCol = document.querySelector('.product_content_wrapper > .row > .columns:nth-child(1)');
+			const firstRow = document.querySelector('.product_content_wrapper > .row');
+			if (window.innerWidth > 1024) {
+				if (tabs && galleryCol && !galleryCol.contains(tabs)) { galleryCol.appendChild(tabs); }
+				if (related && galleryCol && !galleryCol.contains(related)) { galleryCol.appendChild(related); }
+			} else {
+				if (tabs && firstRow && firstRow.parentNode) {
+					firstRow.parentNode.insertBefore(tabs, firstRow.nextSibling);
+				}
+				if (related && firstRow && firstRow.parentNode) {
+					firstRow.parentNode.insertBefore(related, firstRow.nextSibling);
+				}
+			}
+		};
+		window.addEventListener('resize', adjustProductLayout);
+		adjustProductLayout();
+	});
 	</script>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
