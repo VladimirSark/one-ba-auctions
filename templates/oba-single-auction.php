@@ -154,11 +154,21 @@ $stage_tips = array(
 	.oba-tab-panel { display:none; }
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
-	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
-	.oba-buy-points{color:#475569; font-weight:600; margin:0;}
+	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px;} 
+	.oba-buy-panel .product_title{font-size:1.25rem!important; margin:0!important; line-height:1.2;}
+	.oba-buy-panel .price{display:flex!important; align-items:baseline; gap:8px; font-size:0.95rem; color:#718096; margin:0;}
+	.oba-price-prefix{color:#718096;}
+	.oba-buy-panel .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
+	.oba-buy-panel .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
+	.oba-buy-panel .single_add_to_cart_button{width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
+	.oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
-	/* Leave native price rendering intact now that buy panel is informational only */
+	/* Hide originals in summary; we re-render inside buy panel */
+	.summary.entry-summary .product_title,
+	.summary.entry-summary .price,
+	.summary.entry-summary form.cart{display:none!important;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -178,9 +188,14 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
-		<?php if ( $buy_now_enabled && $buy_now_points > 0 ) : ?>
+		<?php if ( $buy_now_enabled ) : ?>
 			<div class="oba-buy-panel">
-				<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $buy_now_points, esc_html( $points_suffix ) ); ?></p>
+				<h1 class="product_title entry-title"><?php echo esc_html( $product->get_name() ); ?></h1>
+				<p class="price"><span class="oba-price-prefix"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $price_html ); ?></p>
+				<?php woocommerce_simple_add_to_cart(); ?>
+				<?php if ( $buy_now_points > 0 ) : ?>
+					<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $buy_now_points, esc_html( $points_suffix ) ); ?></p>
+				<?php endif; ?>
 			</div>
 			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<?php endif; ?>
