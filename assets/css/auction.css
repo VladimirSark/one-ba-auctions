@@ -122,27 +122,35 @@
 		width: 100% !important;
 	}
 
-	/* 2. Left column: gallery + tabs */
+	/* 2. Left column: gallery + tabs (scrollable) */
 	.product_content_wrapper > .row > .columns:nth-child(1) {
 		flex: 0 0 60% !important;
 		max-width: 60% !important;
+		max-height: calc(100vh - 140px) !important;
+		overflow-y: auto !important;
+		overflow-x: hidden !important;
+		padding-right: 12px;
+		box-sizing: border-box;
 	}
 
-	/* 3. Right column: sticky panel */
+	/* 3. Right column: static, compact */
 	.product_content_wrapper > .row > .columns:nth-child(3) {
 		flex: 0 0 35% !important;
 		max-width: 35% !important;
-		position: sticky !important;
-		top: 150px !important; /* adjust if header height differs */
-		height: fit-content !important;
+		position: static !important;
+		height: auto !important;
 		margin-left: auto !important;
-		z-index: 10;
+		z-index: 1;
 	}
 
 	/* 4. Compact right panel */
-	.product_infos { transform: scale(0.9); transform-origin: top left; width: 111%; }
-	.product_infos .product_title { font-size: 1.4rem !important; margin-bottom: 5px !important; }
-	.oba-buy-panel, .oba-auction-wrap { padding: 10px !important; margin: 5px 0 !important; border-radius: 4px !important; }
+	.product_infos { transform: scale(0.86); transform-origin: top left; width: 116%; }
+	.product_infos .product_title { font-size: 1.25rem !important; margin-bottom: 6px !important; }
+	.oba-buy-panel, .oba-auction-wrap { padding: 10px !important; margin: 6px 0 !important; border-radius: 4px !important; }
+	.oba-auction-wrap .oba-phase-card { padding: 14px !important; }
+	.oba-auction-wrap .oba-phase-title { font-size: 0.95rem !important; }
+	.oba-auction-wrap .button, .oba-auction-wrap .button-primary { padding: 10px 12px !important; font-size: 0.92rem !important; }
+	.oba-buy-panel .single_add_to_cart_button { padding: 12px 14px !important; font-size: 0.95rem !important; }
 
 	/* 5. Hide spacers / redundant columns */
 	.product_content_wrapper > .row > .columns:nth-child(2),
@@ -150,7 +158,7 @@
 	.product_summary_top,
 	.product_meta { display: none !important; }
 
-	/* 6. Ensure sticky works when ancestors had overflow hidden */
+	/* 6. Ensure sticky elements elsewhere don't clip */
 	#st-container, .st-container, .st-content { overflow: visible !important; }
 }
 
