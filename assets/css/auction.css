@@ -120,6 +120,7 @@
 		align-items: flex-start !important;
 		max-width: 100% !important;
 		width: 100% !important;
+		gap: 12px !important;
 	}
 
 	/* 2. Left column: gallery + tabs (scrollable) */
@@ -129,7 +130,7 @@
 		max-height: calc(100vh - 140px) !important;
 		overflow-y: auto !important;
 		overflow-x: hidden !important;
-		padding-right: 12px;
+		padding: 12px !important;
 		background: #fff;
 	}
 
@@ -150,18 +151,18 @@
 		max-width: 35% !important;
 		position: static !important;
 		height: auto !important;
-		margin-left: auto !important;
+		margin-left: 0 !important;
 		z-index: 1;
 	}
 
 	/* 4. Compact right panel */
-	.product_infos { transform: scale(0.86); transform-origin: top left; width: 116%; }
-	.product_infos .product_title { font-size: 1.25rem !important; margin-bottom: 6px !important; }
-	.oba-buy-panel, .oba-auction-wrap { padding: 10px !important; margin: 6px 0 !important; border-radius: 4px !important; }
-	.oba-auction-wrap .oba-phase-card { padding: 14px !important; }
-	.oba-auction-wrap .oba-phase-title { font-size: 0.95rem !important; }
-	.oba-auction-wrap .button, .oba-auction-wrap .button-primary { padding: 10px 12px !important; font-size: 0.92rem !important; }
-	.oba-buy-panel .single_add_to_cart_button { padding: 12px 14px !important; font-size: 0.95rem !important; }
+	.product_infos { transform: scale(0.9); transform-origin: top left; width: 111%; }
+	.product_infos .product_title { font-size: 1.2rem !important; margin-bottom: 4px !important; }
+	.oba-buy-panel, .oba-auction-wrap { padding: 12px !important; margin: 6px 0 !important; border-radius: 8px !important; }
+	.oba-auction-wrap .oba-phase-card { padding: 12px !important; }
+	.oba-auction-wrap .oba-phase-title { font-size: 0.9rem !important; }
+	.oba-auction-wrap .button, .oba-auction-wrap .button-primary { padding: 9px 10px !important; font-size: 0.88rem !important; }
+	.oba-buy-panel .single_add_to_cart_button { padding: 12px 14px !important; font-size: 0.9rem !important; }
 
 	/* 5. Hide spacers / redundant columns */
 	.product_content_wrapper > .row > .columns:nth-child(2),
