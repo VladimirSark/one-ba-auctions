@@ -227,17 +227,7 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
-		<?php if ( $buy_now_enabled ) : ?>
-			<div class="oba-buy-panel">
-				<h1 class="product_title entry-title"><?php echo esc_html( $product->get_name() ); ?></h1>
-				<p class="price"><span class="oba-price-prefix"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $price_html ); ?></p>
-				<?php woocommerce_simple_add_to_cart(); ?>
-				<?php if ( $buy_now_points > 0 ) : ?>
-					<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $buy_now_points, esc_html( $points_suffix ) ); ?></p>
-				<?php endif; ?>
-			</div>
-			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
-		<?php endif; ?>
+		<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<div class="oba-auction-panel">
 			<div class="oba-guest-banner">
 				<div>

@@ -10,6 +10,7 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_global_buy_panel' ), 1 );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -174,15 +175,71 @@ class OBA_Frontend {
 			return;
 		}
 		global $product;
-		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
-			return;
-		}
-		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
+		if ( ! $product instanceof WC_Product ) {
 			return;
 		}
 		$rendered = true;
 		// Simple add to cart form (works because purchasable filter is already in place).
 		woocommerce_simple_add_to_cart();
+	}
+
+	/**
+	 * Global buy panel for all products: title, price, add-to-cart, optional points line.
+	 */
+	public function render_global_buy_panel() {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+		$settings      = OBA_Settings::get_settings();
+		$points_suffix = isset( $settings['translations']['points_suffix'] ) && $settings['translations']['points_suffix'] ? $settings['translations']['points_suffix'] : __( 'pts', 'one-ba-auctions' );
+		$points        = (int) $product->get_meta( '_oba_buy_now_points' );
+		?>
+		<div class="oba-buy-panel oba-buy-panel-global">
+			<h1 class="product_title entry-title oba-moved"><?php echo esc_html( $product->get_name() ); ?></h1>
+			<p class="price oba-moved"><span class="oba-price-prefix"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+			<?php woocommerce_simple_add_to_cart(); ?>
+			<?php if ( $points > 0 ) : ?>
+				<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $points, esc_html( $points_suffix ) ); ?></p>
+			<?php endif; ?>
+		</div>
+		<style>
+		.oba-buy-panel-global{border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px;}
+		.oba-buy-panel-global .product_title{font-size:1.25rem!important; margin:0!important; line-height:1.2;}
+		.oba-buy-panel-global .price{display:flex!important; align-items:baseline; gap:8px; font-size:0.95rem; color:#718096; margin:0;}
+		.oba-price-prefix{color:#718096;}
+		.oba-buy-panel-global .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
+		.oba-buy-panel-global .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
+		.oba-buy-panel-global .single_add_to_cart_button{width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+		.oba-buy-panel-global .single_add_to_cart_button i{font-size:16px;}
+		.oba-buy-panel-global .oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
+		/* Hide originals on single product pages after we render panel */
+		.single-product .summary .product_title,
+		.single-product .summary p.price,
+		.single-product .summary .price,
+		.single-product .summary form.cart,
+		.single-product .summary .single_add_to_cart_button,
+		.single-product .summary .quantity{display:none!important;}
+		</style>
+		<script>
+		jQuery(function($){
+			var $products = $('.single-product .product');
+			$products.each(function(){
+				var $panel = $(this).find('.oba-buy-panel-global').first();
+				var $summary = $(this).find('.summary, .entry-summary').first();
+				if(!$panel.length || !$summary.length) return;
+				['h1.product_title','p.price','form.cart'].forEach(function(sel){
+					var $el = $summary.find(sel).first();
+					if($el.length){ $el.addClass('oba-moved').appendTo($panel); }
+				});
+				$summary.find('h1.product_title, p.price, .price, form.cart, .single_add_to_cart_button, .quantity').not('.oba-buy-panel-global *').hide();
+			});
+		});
+		</script>
+		<?php
 	}
 
 	private function build_i18n( $settings ) {
@@ -736,10 +793,7 @@ class OBA_Frontend {
 		$atts = shortcode_atts( array(), $atts );
 		global $product;
 		$ctx = $product instanceof WC_Product ? $product : ( function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null );
-		if ( ! $ctx || 'auction' !== $ctx->get_type() ) {
-			return '';
-		}
-		if ( 'yes' !== $ctx->get_meta( '_oba_buy_now_enabled' ) ) {
+		if ( ! $ctx ) {
 			return '';
 		}
 		$pts = (int) $ctx->get_meta( '_oba_buy_now_points' );
