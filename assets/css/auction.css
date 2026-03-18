@@ -848,3 +848,8 @@
 .oba-auction-wrap[data-auction-tab="auction"] .oba-auction-panel p.price,
 .oba-auction-wrap[data-auction-tab="auction"] .oba-auction-panel .woocommerce-Price-amount,
 .oba-auction-wrap[data-auction-tab="auction"] .oba-auction-panel .woocommerce-price-suffix { display:none !important; }
+.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price,
+.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel p.price,
+.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-Price-amount,
+.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-price-suffix,
+.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price bdi { display:flex !important; visibility:visible !important; opacity:1 !important; }
