@@ -170,10 +170,11 @@ $stage_tips = array(
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
 	/* Hide originals in summary; we re-render inside buy panel */
-	.summary.entry-summary .product_title,
-	.summary.entry-summary .price,
-	.summary.entry-summary form.cart,
-	.summary.entry-summary .single_add_to_cart_button{display:none!important;}
+	.single-product.product-type-auction .summary.entry-summary .product_title,
+	.single-product.product-type-auction .summary.entry-summary .price,
+	.single-product.product-type-auction .summary.entry-summary form.cart,
+	.single-product.product-type-auction .summary.entry-summary .single_add_to_cart_button,
+	.single-product.product-type-auction .summary.entry-summary .quantity{display:none!important;}
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
