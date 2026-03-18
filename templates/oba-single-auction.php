@@ -201,6 +201,10 @@ $stage_tips = array(
 				['h1.product_title','p.price','form.cart','.single_add_to_cart_button','.quantity'].forEach(function(sel){
 					$summary.find(sel).not('.oba-buy-panel *').hide();
 				});
+				// Extra guard: hide theme-rendered elements outside summary for this product only.
+				['h1.product_title','p.price','.price','.product_title','.cart','.single_add_to_cart_button','.quantity'].forEach(function(sel){
+					$product.find(sel).not('.oba-buy-panel *').hide();
+				});
 			});
 		});
 	})(jQuery);
