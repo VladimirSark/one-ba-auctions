@@ -586,9 +586,13 @@ class OBA_Product_Type {
 			if ( isset( $_POST['_stock_status'] ) ) {
 				$product->set_stock_status( wc_clean( wp_unslash( $_POST['_stock_status'] ) ) );
 			}
-			$sold_individually = isset( $_POST['_sold_individually'] ) ? 'yes' : 'no';
-			$product->set_sold_individually( $sold_individually );
-			update_post_meta( $product_id, '_sold_individually', $sold_individually );
+			$sold_individually = false;
+			if ( isset( $_POST['_sold_individually'] ) ) {
+				$value             = wc_clean( wp_unslash( $_POST['_sold_individually'] ) );
+				$sold_individually = wc_string_to_bool( $value ); // Handles hidden "0" field from WC checkboxes.
+			}
+			$product->set_sold_individually( $sold_individually ? 'yes' : 'no' );
+			update_post_meta( $product_id, '_sold_individually', $sold_individually ? 'yes' : 'no' );
 			if ( isset( $_POST['_weight'] ) ) {
 				$product->set_weight( wc_clean( wp_unslash( $_POST['_weight'] ) ) );
 			}
