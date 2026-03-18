@@ -158,6 +158,10 @@ $stage_tips = array(
 	.oba-buy-points{color:#475569; font-weight:600; margin:0;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
+	.oba-phase-grid{display:flex; gap:12px; flex-wrap:wrap;}
+	.oba-phase-card{flex:1 1 calc(25% - 12px); min-width:240px; margin:0;}
+	@media(max-width:960px){.oba-phase-card{flex:1 1 calc(50% - 12px);} }
+	@media(max-width:640px){.oba-phase-card{flex:1 1 100%;}}
 	/* Leave native price rendering intact now that buy panel is informational only */
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
@@ -184,7 +188,7 @@ $stage_tips = array(
 			</div>
 			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<?php endif; ?>
-		<div class="oba-auction-panel">
+	<div class="oba-auction-panel oba-phase-grid">
 			<div class="oba-guest-banner">
 				<div>
 					<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
@@ -201,7 +205,7 @@ $stage_tips = array(
 				<?php endif; ?>
 			</div>
 		</div>
-		<div class="oba-col-right">
+        <div class="oba-col-right oba-phase-grid">
 			<div class="oba-card oba-phase-card" data-step="registration">
 				<div class="oba-phase-header">
 					<div class="oba-phase-title"><span>1.</span><span class="oba-phase-label"><?php echo esc_html( $get( 'step1_label', __( 'Registration', 'one-ba-auctions' ) ) ); ?></span></div>

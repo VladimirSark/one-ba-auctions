@@ -15,7 +15,8 @@ class OBA_Product_Type {
 		add_filter( 'woocommerce_product_type_options', array( $this, 'enable_virtual_downloadable' ) );
 		add_action( 'woocommerce_product_data_panels', array( $this, 'render_fields' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_fields' ) );
-		add_action( 'woocommerce_single_product_summary', array( $this, 'render_frontend_wrapper' ), 35 );
+		// Render auction UI below the product summary but above tabs.
+		add_action( 'woocommerce_after_single_product_summary', array( $this, 'render_frontend_wrapper' ), 5 );
 		add_action( 'woocommerce_before_single_product', array( $this, 'render_explainer_bar' ), 1 );
 		add_action( 'init', array( $this, 'register_product_class' ) );
 		add_action( 'admin_footer', array( $this, 'admin_footer_scripts' ) );
