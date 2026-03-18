@@ -197,6 +197,10 @@ $stage_tips = array(
 						$el.addClass('oba-moved').appendTo($panel);
 					}
 				});
+				// Hide any remaining title/price/cart in the summary for this auction product only.
+				['h1.product_title','p.price','form.cart','.single_add_to_cart_button','.quantity'].forEach(function(sel){
+					$summary.find(sel).not('.oba-buy-panel *').hide();
+				});
 			});
 		});
 	})(jQuery);
