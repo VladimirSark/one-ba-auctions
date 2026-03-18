@@ -130,9 +130,17 @@
 		overflow-y: auto !important;
 		overflow-x: hidden !important;
 		padding-right: 12px;
-		border: 1px solid #e2e8f0;
-		border-radius: 12px;
 		background: #fff;
+	}
+
+	/* Match card styling on both columns */
+	.product_content_wrapper > .row > .columns:nth-child(1),
+	.product_content_wrapper > .row > .columns:nth-child(3) {
+		border: 1px solid #e2e8f0 !important;
+		border-radius: 12px !important;
+		box-shadow: 0 10px 30px rgba(15,23,42,0.08) !important;
+		background: #fff !important;
+		padding: 12px !important;
 		box-sizing: border-box;
 	}
 
