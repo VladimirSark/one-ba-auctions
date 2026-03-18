@@ -111,21 +111,6 @@
 	gap: 18px;
 }
 
-/* Two-column on desktop and sticky media column to reuse whitespace under images */
-@media (min-width: 961px) {
-	.oba-layout { grid-template-columns: 1.05fr 0.95fr; align-items:start; }
-	.single-product .product .woocommerce-product-gallery,
-	.single-product .product .images,
-	.single-product .product .woocommerce-product-gallery__wrapper {
-		position: sticky;
-		top: 80px;
-	}
-	.single-product .product .woocommerce-product-gallery__wrapper {
-		max-height: calc(100vh - 140px);
-		overflow: auto;
-	}
-}
-
 .oba-card {
 	background: #fff;
 	border: 1px solid #e5e7eb;
