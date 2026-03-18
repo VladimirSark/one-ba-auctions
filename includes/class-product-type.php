@@ -541,7 +541,6 @@ class OBA_Product_Type {
 			'_backorders',
 			'_low_stock_amount',
 			'_stock_status',
-			'_sold_individually',
 			'_weight',
 			'_length',
 			'_width',
@@ -587,11 +586,9 @@ class OBA_Product_Type {
 			if ( isset( $_POST['_stock_status'] ) ) {
 				$product->set_stock_status( wc_clean( wp_unslash( $_POST['_stock_status'] ) ) );
 			}
-			if ( isset( $_POST['_sold_individually'] ) ) {
-				$product->set_sold_individually( 'yes' );
-			} else {
-				$product->set_sold_individually( 'no' );
-			}
+			$sold_individually = isset( $_POST['_sold_individually'] ) ? 'yes' : 'no';
+			$product->set_sold_individually( $sold_individually );
+			update_post_meta( $product_id, '_sold_individually', $sold_individually );
 			if ( isset( $_POST['_weight'] ) ) {
 				$product->set_weight( wc_clean( wp_unslash( $_POST['_weight'] ) ) );
 			}
