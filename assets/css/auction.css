@@ -853,3 +853,14 @@
 .oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-Price-amount,
 .oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-price-suffix,
 .oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price bdi { display:flex !important; visibility:visible !important; opacity:1 !important; }
+
+/* Hide theme title/price/cart in the default summary for auction products only (we re-render inside Buy panel) */
+.single-product.product-type-auction .summary .product_title:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary p.price:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary .price:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary form.cart:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary .single_add_to_cart_button:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary .quantity:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary .woocommerce-Price-amount:not(.oba-buy-panel *),
+.single-product.product-type-auction .summary .woocommerce-price-suffix:not(.oba-buy-panel *)
+{ display:none !important; }
