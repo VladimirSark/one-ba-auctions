@@ -10,7 +10,6 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
-		add_action( 'woocommerce_single_product_summary', array( $this, 'maybe_suppress_default_summary' ), 1 );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );

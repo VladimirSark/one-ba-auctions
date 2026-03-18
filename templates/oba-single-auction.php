@@ -155,20 +155,10 @@ $stage_tips = array(
 	.oba-tab-panel.is-active { display:block; }
 	.button,.button-primary{border-radius:10px;}
 	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:12px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06);} 
-	.oba-buy-row {display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
-	.oba-buy-row .price{margin:0;}
-	.oba-buy-price{display:flex; align-items:center; gap:6px; font-weight:600;}
-	.oba-price-label{color:#334155;}
 	.oba-buy-points{color:#475569; font-weight:600; margin:0;}
-	.oba-buy-panel .single_add_to_cart_button{display:inline-flex; align-items:center; gap:8px; padding:10px 12px;}
-	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
 	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
 	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
-	/* Hide any theme-rendered price, re-show only inside our Buy panel */
-	.oba-auction-wrap .price{display:none;}
-	.oba-auction-wrap .oba-buy-panel .price,
-	.oba-auction-wrap .oba-buy-panel .woocommerce-Price-amount,
-	.oba-auction-wrap .oba-buy-panel .woocommerce-price-suffix{display:inline-block!important;}
+	/* Leave native price rendering intact now that buy panel is informational only */
 	</style>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
@@ -188,29 +178,9 @@ $stage_tips = array(
 		$description   = apply_filters( 'the_content', $product->get_description() );
 		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
 		?>
-		<?php if ( $buy_now_enabled ) : ?>
+		<?php if ( $buy_now_enabled && $buy_now_points > 0 ) : ?>
 			<div class="oba-buy-panel">
-				<div class="oba-buy-row">
-					<div class="oba-buy-price"><span class="oba-price-label"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $price_html ); ?></div>
-					<?php if ( $buy_now_points > 0 ) : ?>
-						<div class="oba-buy-points">
-							<?php
-							printf(
-								esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ),
-								$buy_now_points,
-								esc_html( $points_suffix )
-							);
-							?>
-						</div>
-					<?php endif; ?>
-					<form class="cart" method="post" action="<?php echo esc_url( apply_filters( 'woocommerce_add_to_cart_form_action', $product->get_permalink() ) ); ?>">
-						<input type="hidden" name="add-to-cart" value="<?php echo esc_attr( $product->get_id() ); ?>" />
-						<button type="submit" class="single_add_to_cart_button button button-primary" aria-label="<?php esc_attr_e( 'Add to cart', 'woocommerce' ); ?>">
-							<i class="fa-solid fa-cart-arrow-down" aria-hidden="true"></i>
-							<span class="screen-reader-text"><?php esc_html_e( 'Add to cart', 'woocommerce' ); ?></span>
-						</button>
-					</form>
-				</div>
+				<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $buy_now_points, esc_html( $points_suffix ) ); ?></p>
 			</div>
 			<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<?php endif; ?>
