@@ -235,9 +235,6 @@
 	color: #334155;
 	font-size: 14px;
 }
-.oba-price-suffix {
-	font-weight: 500;
-}
 .oba-buy-form {
 	display: flex;
 	flex-direction: column;
@@ -295,6 +292,23 @@
 }
 .oba-tab-panel.is-active {
 	display: block;
+}
+.oba-sc-divider {
+	text-align: center;
+	margin: 10px 0;
+	color: #475569;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.oba-sc-divider:before,
+.oba-sc-divider:after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: #e2e8f0;
 }
 .oba-tab-panel h2,
 .oba-tab-panel h1,

@@ -111,7 +111,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 					$price_html = $product->get_price_html();
 					echo '<span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ';
 					echo wp_kses_post( $price_html );
-					echo ' <span class="oba-price-suffix">' . esc_html__( 'su PVM', 'one-ba-auctions' ) . '</span>';
 					?>
 				</div>
 				<div class="oba-buy-form">
@@ -132,6 +131,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</div>
 				<?php endif; ?>
 			</div>
+		</div>
+		<div class="oba-sc-divider">
+			<span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span>
 		</div>
 		<div class="oba-sc-card oba-sc-auction">
 			<div class="oba-sc-label">AUCTION</div>
