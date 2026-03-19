@@ -10,7 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'OBA_VERSION', '0.1.0' );
+// During development, bump this to bust browser/CDN caches. For production, pin a release version.
+define( 'OBA_VERSION', ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? time() : '0.1.0' );
 define( 'OBA_PLUGIN_FILE', __FILE__ );
 define( 'OBA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OBA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
