@@ -151,7 +151,7 @@
 .oba-sc-title {
 	margin: 0;
 	padding: 12px;
-	font-size: 24.487px;
+	font-size: 24.487px !important;
 	line-height: 1.25;
 	color: #0f172a;
 }
