@@ -93,7 +93,7 @@ class OBA_Admin {
 
 		$post_id = wp_insert_post( array(
 			'post_title'   => $product->get_name(),
-			'post_content' => '[oba_auction id="' . $product_id . '"]',
+			'post_content' => '[oba_auction id="' . $product_id . '" layout="landing"]',
 			'post_status'  => 'publish',
 			'post_type'    => 'post',
 		) );
