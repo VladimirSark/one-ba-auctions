@@ -75,6 +75,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						// WooCommerce attributes/weight table
 						if ( function_exists( 'woocommerce_product_additional_information_tab' ) ) {
 							ob_start();
+							remove_all_actions( 'woocommerce_product_additional_information_heading' );
 							woocommerce_product_additional_information_tab();
 							$additional = ob_get_clean();
 							echo $additional; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -87,7 +88,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php
 						if ( comments_open( $product->get_id() ) || get_comments_number( $product->get_id() ) ) {
 							ob_start();
+							add_filter( 'woocommerce_product_reviews_heading', '__return_empty_string' );
 							comments_template();
+							remove_filter( 'woocommerce_product_reviews_heading', '__return_empty_string' );
 							$reviews = ob_get_clean();
 							echo $reviews; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						} else {
