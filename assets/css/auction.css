@@ -173,6 +173,7 @@
 	flex-direction: column;
 	gap: 12px;
 	align-items: center;
+	min-height: 600px;
 }
 .oba-media-main {
 	width: 100%;
