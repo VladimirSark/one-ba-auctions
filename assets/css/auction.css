@@ -216,6 +216,45 @@
 .thumb-placeholder {
 	height: 70px;
 }
+.oba-details-tabs {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.oba-tabs-nav {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.oba-tabs-nav li {
+	cursor: pointer;
+	padding: 8px 12px;
+	border-radius: 10px;
+	border: 1px solid #d7dde6;
+	background: #f8fafc;
+	font-weight: 700;
+	color: #0f172a;
+}
+.oba-tabs-nav li.is-active {
+	background: #0f172a;
+	color: #fff;
+	border-color: #0f172a;
+}
+.oba-tabs-body {
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 12px 14px;
+	background: #fff;
+}
+.oba-tab-panel {
+	display: none;
+}
+.oba-tab-panel.is-active {
+	display: block;
+}
 /* Woo gallery inside media panel */
 .oba-sc-gallery .woocommerce-product-gallery {
 	margin: 8px 0 0;

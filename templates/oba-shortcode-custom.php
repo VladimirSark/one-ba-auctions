@@ -57,7 +57,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		<div class="oba-sc-card oba-sc-info">
 			<div class="oba-sc-label">DETAILS</div>
-			<div class="oba-sc-placeholder"></div>
+			<div class="oba-details-tabs">
+				<ul class="oba-tabs-nav">
+					<li class="is-active" data-tab="description"><?php esc_html_e( 'Description', 'one-ba-auctions' ); ?></li>
+					<li data-tab="additional"><?php esc_html_e( 'Additional Information', 'one-ba-auctions' ); ?></li>
+					<li data-tab="reviews"><?php esc_html_e( 'Reviews', 'one-ba-auctions' ); ?></li>
+				</ul>
+				<div class="oba-tabs-body">
+					<div class="oba-tab-panel is-active" data-tab="description">
+						<?php
+						$desc = apply_filters( 'the_content', $product->get_description() );
+						echo $desc ? $desc : '<p>' . esc_html__( 'No description available.', 'one-ba-auctions' ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						?>
+					</div>
+					<div class="oba-tab-panel" data-tab="additional">
+						<?php
+						// WooCommerce attributes/weight table
+						if ( function_exists( 'woocommerce_product_additional_information_tab' ) ) {
+							ob_start();
+							woocommerce_product_additional_information_tab();
+							$additional = ob_get_clean();
+							echo $additional; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						} else {
+							echo '<p>' . esc_html__( 'No additional information.', 'one-ba-auctions' ) . '</p>';
+						}
+						?>
+					</div>
+					<div class="oba-tab-panel" data-tab="reviews">
+						<?php
+						if ( comments_open( $product->get_id() ) || get_comments_number( $product->get_id() ) ) {
+							ob_start();
+							comments_template();
+							$reviews = ob_get_clean();
+							echo $reviews; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						} else {
+							echo '<p>' . esc_html__( 'Reviews are closed.', 'one-ba-auctions' ) . '</p>';
+						}
+						?>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="oba-sc-right">
