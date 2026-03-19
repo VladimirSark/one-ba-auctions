@@ -22,6 +22,7 @@ require_once OBA_PLUGIN_DIR . 'includes/class-email.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-admin.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-payment-gateway.php';
 require_once OBA_PLUGIN_DIR . 'includes/class-claim-checkout.php';
+require_once OBA_PLUGIN_DIR . 'patterns/oba-auction-landing.php';
 
 class OBA_Plugin {
 
