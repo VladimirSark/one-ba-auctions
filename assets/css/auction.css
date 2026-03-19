@@ -155,10 +155,13 @@
 		flex: 0 0 auto !important;
 	}
 	.product_content_wrapper > .row > .columns:nth-child(1) .woocommerce-tabs {
+		display: block !important;
+		visibility: visible !important;
 		flex: 1 1 auto !important;
 		overflow-y: auto !important;
 		margin-top: 12px !important;
 		padding-right: 4px !important;
+		max-height: none !important;
 	}
 	.product_content_wrapper > .row > .columns:nth-child(1) .single_product_summary_related {
 		flex: 0 0 auto !important;
@@ -182,12 +185,12 @@
 		max-width: 40% !important;
 		position: sticky !important;
 		top: 120px !important;
-		height: calc(100vh - 140px) !important;
-		max-height: calc(100vh - 140px) !important;
+		height: auto !important;
+		max-height: none !important;
 		align-self: flex-start !important;
 		margin-left: 0 !important;
 		z-index: 1;
-		overflow: auto !important;
+		overflow: visible !important;
 	}
 
 	/* 4. Compact right panel */
