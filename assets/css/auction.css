@@ -142,10 +142,27 @@
 		height: auto !important;
 		max-height: none !important;
 		align-self: stretch !important;
+		display: flex !important;
+		flex-direction: column !important;
 		overflow-y: auto !important;
 		overflow-x: hidden !important;
 		padding: 8px !important;
 		background: #fff;
+	}
+
+	/* Left column panels: keep gallery static, make tabs/description scrollable */
+	.product_content_wrapper > .row > .columns:nth-child(1) .woocommerce-product-gallery {
+		flex: 0 0 auto !important;
+	}
+	.product_content_wrapper > .row > .columns:nth-child(1) .woocommerce-tabs {
+		flex: 1 1 auto !important;
+		overflow-y: auto !important;
+		margin-top: 12px !important;
+		padding-right: 4px !important;
+	}
+	.product_content_wrapper > .row > .columns:nth-child(1) .single_product_summary_related {
+		flex: 0 0 auto !important;
+		margin-top: 12px !important;
 	}
 
 	/* Match card styling on both columns */
