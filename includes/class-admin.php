@@ -38,9 +38,6 @@ class OBA_Admin {
 		add_filter( 'handle_bulk_actions-edit-product', array( $this, 'handle_bulk_actions' ), 10, 3 );
 		add_filter( 'manage_edit-product_columns', array( $this, 'add_product_list_columns' ) );
 		add_action( 'manage_product_posts_custom_column', array( $this, 'render_product_list_columns' ), 10, 2 );
-		add_filter( 'post_row_actions', array( $this, 'add_create_post_action' ), 10, 2 );
-		add_action( 'admin_init', array( $this, 'handle_create_post_action' ) );
-		add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			$this->register_cli();
@@ -53,82 +50,6 @@ class OBA_Admin {
 
 	private function can_manage() {
 		return current_user_can( 'manage_woocommerce' ) || current_user_can( 'manage_options' ) || current_user_can( 'read' );
-	}
-
-	public function add_create_post_action( $actions, $post ) {
-		if ( 'product' !== $post->post_type ) {
-			return $actions;
-		}
-		$product = wc_get_product( $post->ID );
-		if ( ! $product || 'auction' !== $product->get_type() ) {
-			return $actions;
-		}
-		$url = wp_nonce_url( add_query_arg( array( 'action' => 'oba_create_auction_post', 'product_id' => $post->ID ), admin_url( 'admin.php' ) ), 'oba_create_auction_post_' . $post->ID );
-		$actions['oba_create_post'] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Create auction post', 'one-ba-auctions' ) . '</a>';
-		return $actions;
-	}
-
-	public function handle_create_post_action() {
-		if ( ! isset( $_GET['action'] ) || 'oba_create_auction_post' !== $_GET['action'] ) {
-			return;
-		}
-		$product_id = isset( $_GET['product_id'] ) ? absint( $_GET['product_id'] ) : 0;
-		if ( ! $product_id || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'oba_create_auction_post_' . $product_id ) ) {
-			return;
-		}
-		if ( ! current_user_can( 'publish_posts' ) ) {
-			wp_die( esc_html__( 'You do not have permission to create posts.', 'one-ba-auctions' ) );
-		}
-		$product = wc_get_product( $product_id );
-		if ( ! $product || 'auction' !== $product->get_type() ) {
-			wp_safe_redirect( add_query_arg( 'oba_created_post', 'invalid', admin_url( 'edit.php?post_type=product' ) ) );
-			exit;
-		}
-
-		$existing = get_post_meta( $product_id, '_oba_generated_post_id', true );
-		if ( $existing && get_post( $existing ) ) {
-			wp_safe_redirect( add_query_arg( array( 'oba_created_post' => $existing, 'oba_created_status' => 'exists' ), admin_url( 'edit.php?post_type=product' ) ) );
-			exit;
-		}
-
-		$post_id = wp_insert_post( array(
-			'post_title'   => $product->get_name(),
-			'post_content' => '[oba_auction id="' . $product_id . '"]',
-			'post_status'  => 'publish',
-			'post_type'    => 'post',
-		) );
-
-		if ( ! is_wp_error( $post_id ) && $post_id ) {
-			update_post_meta( $post_id, '_oba_source_product', $product_id );
-			update_post_meta( $product_id, '_oba_generated_post_id', $post_id );
-			wp_safe_redirect( add_query_arg( array( 'oba_created_post' => $post_id, 'oba_created_status' => 'new' ), admin_url( 'edit.php?post_type=product' ) ) );
-			exit;
-		}
-
-		wp_safe_redirect( add_query_arg( 'oba_created_post', 'error', admin_url( 'edit.php?post_type=product' ) ) );
-		exit;
-	}
-
-	public function render_admin_notices() {
-		if ( ! isset( $_GET['oba_created_post'] ) ) {
-			return;
-		}
-		$status = isset( $_GET['oba_created_status'] ) ? sanitize_text_field( wp_unslash( $_GET['oba_created_status'] ) ) : 'new';
-		$post_id = absint( $_GET['oba_created_post'] );
-		if ( 'error' === $_GET['oba_created_post'] ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'Could not create auction post.', 'one-ba-auctions' ) . '</p></div>';
-			return;
-		}
-		if ( 'invalid' === $_GET['oba_created_post'] ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'Invalid auction product.', 'one-ba-auctions' ) . '</p></div>';
-			return;
-		}
-		$url = $post_id ? get_edit_post_link( $post_id ) : '';
-		$message = ( 'exists' === $status ) ? __( 'Auction post already exists. Opening existing post.', 'one-ba-auctions' ) : __( 'Auction post created.', 'one-ba-auctions' );
-		if ( $url ) {
-			$message .= ' <a href="' . esc_url( $url ) . '">' . esc_html__( 'Edit post', 'one-ba-auctions' ) . '</a>';
-		}
-		echo '<div class="notice notice-success is-dismissible"><p>' . wp_kses_post( $message ) . '</p></div>';
 	}
 
 	public function register_menu() {
