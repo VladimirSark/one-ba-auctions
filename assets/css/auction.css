@@ -255,6 +255,12 @@
 .oba-tab-panel.is-active {
 	display: block;
 }
+.oba-tab-panel h2,
+.oba-tab-panel h1,
+.oba-tab-panel h3 {
+	font-size: 20px !important;
+	margin-top: 0;
+}
 /* Woo gallery inside media panel */
 .oba-sc-gallery .woocommerce-product-gallery {
 	margin: 8px 0 0;
