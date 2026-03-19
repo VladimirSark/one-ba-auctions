@@ -173,7 +173,8 @@
 	flex-direction: column;
 	gap: 12px;
 	align-items: center;
-	min-height: 600px;
+	min-height: 380px;
+	padding: 12px 12px 16px;
 }
 .oba-media-main {
 	width: 100%;
@@ -181,7 +182,7 @@
 	justify-content: center;
 }
 .oba-media-main img {
-	max-width: 90%;
+	max-width: 70%;
 	height: auto;
 	object-fit: contain;
 	border-radius: 10px;
@@ -204,15 +205,15 @@
 	margin: 0;
 }
 .oba-thumb-list img {
-	width: 80px;
-	height: 80px;
+	width: 68px;
+	height: 68px;
 	object-fit: cover;
 	border: 1px solid #e2e8f0;
 	border-radius: 8px;
 	box-shadow: 0 2px 6px rgba(15,23,42,0.05);
 }
 .thumb-placeholder {
-	height: 90px;
+	height: 70px;
 }
 /* Woo gallery inside media panel */
 .oba-sc-gallery .woocommerce-product-gallery {
