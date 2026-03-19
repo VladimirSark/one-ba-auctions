@@ -216,6 +216,41 @@
 .thumb-placeholder {
 	height: 70px;
 }
+.oba-buy-block {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.oba-buy-title {
+	margin: 0;
+	font-size: 20px;
+	line-height: 1.3;
+	color: #0f172a;
+}
+.oba-buy-price {
+	font-size: 18px;
+	font-weight: 700;
+	color: #0f172a;
+}
+.oba-buy-form {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.oba-buy-form .quantity {
+	max-width: 140px;
+}
+.oba-buy-form button,
+.oba-buy-form .single_add_to_cart_button {
+	width: 100%;
+}
+.oba-buy-points-line {
+	font-size: 14px;
+	font-weight: 600;
+	color: #334155;
+	border-top: 1px solid #e2e8f0;
+	padding-top: 8px;
+}
 .oba-details-tabs {
 	display: flex;
 	flex-direction: column;
