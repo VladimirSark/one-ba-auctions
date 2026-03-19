@@ -111,15 +111,6 @@
 	gap: 18px;
 }
 
-/* Auction landing layout (shortcode) */
-.oba-landing__cols{display:flex;flex-direction:column;gap:16px;}
-.oba-landing__left,.oba-landing__right{background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:12px;}
-@media(min-width:1025px){
-	.oba-landing__cols{flex-direction:row;gap:16px;}
-	.oba-landing__left{flex:0 0 60%;max-width:60%;max-height:calc(100vh - 140px);overflow:auto;}
-	.oba-landing__right{flex:0 0 35%;max-width:35%;}
-}
-
 /* === Split-screen sticky layout (desktop only) === */
 @media only screen and (min-width: 1025px) {
 	/* 1. Reset container layout */

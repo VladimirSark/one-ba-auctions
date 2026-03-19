@@ -739,7 +739,6 @@ class OBA_Frontend {
 		$atts = shortcode_atts(
 			array(
 				'id' => 0,
-				'layout' => 'landing',
 			),
 			$atts
 		);
@@ -777,40 +776,12 @@ class OBA_Frontend {
 		$prev_product = isset( $GLOBALS['product'] ) ? $GLOBALS['product'] : null;
 		$GLOBALS['product'] = $product;
 
-		if ( 'landing' === $atts['layout'] ) {
-			$gallery = '';
-			$tabs    = '';
-			if ( function_exists( 'woocommerce_show_product_images' ) ) {
-				ob_start();
-				woocommerce_show_product_images();
-				$gallery = ob_get_clean();
-			}
-			if ( function_exists( 'woocommerce_output_product_data_tabs' ) ) {
-				ob_start();
-				woocommerce_output_product_data_tabs();
-				$tabs = ob_get_clean();
-			}
-			?>
-			<div class="oba-landing">
-				<div class="oba-landing__cols">
-					<div class="oba-landing__left">
-						<?php echo $gallery; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php echo $tabs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
-					<div class="oba-landing__right">
-						<?php wc_get_template( 'oba-single-auction.php', array( 'product' => $product ), '', OBA_PLUGIN_DIR . 'templates/' ); ?>
-					</div>
-				</div>
-			</div>
-			<?php
-		} else {
-			wc_get_template(
-				'oba-single-auction.php',
-				array( 'product' => $product ),
-				'',
-				OBA_PLUGIN_DIR . 'templates/'
-			);
-		}
+		wc_get_template(
+			'oba-single-auction.php',
+			array( 'product' => $product ),
+			'',
+			OBA_PLUGIN_DIR . 'templates/'
+		);
 
 		$GLOBALS['product'] = $prev_product;
 
