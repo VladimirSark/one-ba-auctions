@@ -148,6 +148,13 @@
 .oba-sc-placeholder.title-placeholder {
 	height: 90px;
 }
+.oba-sc-title {
+	margin: 0;
+	padding: 12px;
+	font-size: 24px;
+	line-height: 1.25;
+	color: #0f172a;
+}
 .oba-sc-label {
 	position: absolute;
 	top: 10px;
