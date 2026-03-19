@@ -19,17 +19,41 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="oba-sc-left">
 		<div class="oba-sc-card oba-sc-gallery">
 			<div class="oba-sc-label">MEDIA</div>
-			<?php
-			// WooCommerce product images (main + thumbnails)
-			if ( function_exists( 'woocommerce_show_product_images' ) ) {
-				ob_start();
-				woocommerce_show_product_images();
-				$gallery = ob_get_clean();
-				echo $gallery; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			} else {
-				echo '<div class="oba-sc-placeholder"></div>'; // fallback
-			}
-			?>
+			<div class="oba-media-main">
+				<?php
+				// Render main image only.
+				if ( function_exists( 'wc_get_gallery_image_html' ) && $product instanceof WC_Product ) {
+					$attachment_ids = $product->get_gallery_image_ids();
+					$main_id        = $product->get_image_id();
+					if ( $main_id ) {
+						echo wc_get_gallery_image_html( $main_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					} elseif ( ! empty( $attachment_ids ) ) {
+						echo wc_get_gallery_image_html( $attachment_ids[0] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					} else {
+						echo '<div class="oba-sc-placeholder"></div>';
+					}
+				}
+				?>
+			</div>
+			<div class="oba-media-thumbs">
+				<?php
+				if ( function_exists( 'wc_get_gallery_image_html' ) && $product instanceof WC_Product ) {
+					$thumb_ids = $product->get_gallery_image_ids();
+					if ( $product->get_image_id() ) {
+						$thumb_ids = array_diff( $thumb_ids, array( $product->get_image_id() ) );
+					}
+					if ( ! empty( $thumb_ids ) ) {
+						echo '<div class="oba-thumb-list">';
+						foreach ( $thumb_ids as $tid ) {
+							echo wc_get_gallery_image_html( $tid, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						}
+						echo '</div>';
+					} else {
+						echo '<div class="oba-sc-placeholder thumb-placeholder"></div>';
+					}
+				}
+				?>
+			</div>
 		</div>
 		<div class="oba-sc-card oba-sc-info">
 			<div class="oba-sc-label">DETAILS</div>

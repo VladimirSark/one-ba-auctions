@@ -167,6 +167,52 @@
 	font-weight: 700;
 	letter-spacing: 0.5px;
 }
+/* Media split: main + thumbs */
+.oba-sc-gallery {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: center;
+}
+.oba-media-main {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+.oba-media-main img {
+	max-width: 90%;
+	height: auto;
+	object-fit: contain;
+	border-radius: 10px;
+	box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+}
+.oba-media-thumbs {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+.oba-thumb-list {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+.oba-thumb-list li,
+.oba-thumb-list figure {
+	list-style: none;
+	margin: 0;
+}
+.oba-thumb-list img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	box-shadow: 0 2px 6px rgba(15,23,42,0.05);
+}
+.thumb-placeholder {
+	height: 90px;
+}
 /* Woo gallery inside media panel */
 .oba-sc-gallery .woocommerce-product-gallery {
 	margin: 8px 0 0;
