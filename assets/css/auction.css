@@ -116,12 +116,16 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 14px;
+	max-width: 1280px;
+	margin: 32px auto;
+	padding: 0 16px 24px;
 }
 .oba-sc-left,
 .oba-sc-right {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
+	height: auto;
 }
 .oba-sc-header {
 	grid-column: 1 / -1;
@@ -136,13 +140,13 @@
 	position: relative;
 }
 .oba-sc-placeholder {
-	height: 140px;
+	height: 180px;
 	border: 1px dashed #cbd5e1;
 	border-radius: 10px;
-	background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+	background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #e2e8f0 10px, #e2e8f0 20px);
 }
 .oba-sc-placeholder.title-placeholder {
-	height: 70px;
+	height: 90px;
 }
 .oba-sc-label {
 	position: absolute;
@@ -161,12 +165,8 @@
 		grid-template-columns: 60% 40%;
 		align-items: stretch;
 	}
-	.oba-sc-left,
-	.oba-sc-right {
-		height: calc(100vh - 160px);
-	}
 	.oba-sc-left {
-		overflow-y: auto;
+		overflow-y: visible;
 	}
 	.oba-sc-right {
 		position: sticky;
