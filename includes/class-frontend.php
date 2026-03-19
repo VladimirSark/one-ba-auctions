@@ -738,7 +738,8 @@ class OBA_Frontend {
 	public function shortcode_single_auction( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'id' => 0,
+				'id'     => 0,
+				'layout' => 'custom', // custom | legacy
 			),
 			$atts
 		);
@@ -776,8 +777,10 @@ class OBA_Frontend {
 		$prev_product = isset( $GLOBALS['product'] ) ? $GLOBALS['product'] : null;
 		$GLOBALS['product'] = $product;
 
+		$template = 'legacy' === $atts['layout'] ? 'oba-single-auction.php' : 'oba-shortcode-custom.php';
+
 		wc_get_template(
-			'oba-single-auction.php',
+			$template,
 			array( 'product' => $product ),
 			'',
 			OBA_PLUGIN_DIR . 'templates/'

@@ -111,6 +111,43 @@
 	gap: 18px;
 }
 
+/* === Custom shortcode shell === */
+.oba-shortcode-custom {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 14px;
+}
+.oba-sc-left,
+.oba-sc-right {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.oba-sc-card {
+	border: 1px solid #d7dde6;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+	min-height: 160px;
+}
+@media only screen and (min-width: 1025px) {
+	.oba-shortcode-custom {
+		grid-template-columns: 60% 40%;
+		align-items: stretch;
+	}
+	.oba-sc-left,
+	.oba-sc-right {
+		height: calc(100vh - 160px);
+	}
+	.oba-sc-left {
+		overflow-y: auto;
+	}
+	.oba-sc-right {
+		position: sticky;
+		top: 120px;
+	}
+}
+
 /* Hide theme summary bits for auction products (we re-render inside panels) */
 .single-product.product-type-auction .product_infos .product_summary_top,
 .single-product.product-type-auction .product_infos .product_summary_middle,
