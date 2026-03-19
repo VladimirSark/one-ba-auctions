@@ -106,14 +106,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="oba-sc-card oba-sc-buy">
 			<div class="oba-sc-label">BUY</div>
 			<div class="oba-buy-block">
-				<h2 class="oba-buy-title"><?php echo esc_html( $product->get_title() ); ?></h2>
 				<div class="oba-buy-price">
 					<?php
-					if ( function_exists( 'woocommerce_template_single_price' ) ) {
-						woocommerce_template_single_price();
-					} else {
-						echo wp_kses_post( $product->get_price_html() );
-					}
+					$price_html = $product->get_price_html();
+					echo '<span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ';
+					echo wp_kses_post( $price_html );
+					echo ' <span class="oba-price-suffix">' . esc_html__( 'su PVM', 'one-ba-auctions' ) . '</span>';
 					?>
 				</div>
 				<div class="oba-buy-form">
