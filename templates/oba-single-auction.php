@@ -169,14 +169,23 @@ $stage_tips = array(
 	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
 	.oba-buy-panel .quantity{order:2; width:100%;}
 	.oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
-	.oba-divider{display:flex; align-items:center; gap:8px; margin:14px 0; color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:0.5px;}
-	.oba-divider:before,.oba-divider:after{content:""; flex:1; height:1px; background:#e2e8f0;}
+	.oba-divider{display:none!important;}
+	.oba-divider:before,.oba-divider:after{display:none;}
 	/* Hide originals in summary; we re-render inside buy panel */
 	.single-product.product-type-auction .summary .product_title:not(.oba-moved),
 	.single-product.product-type-auction .summary .price:not(.oba-moved),
 	.single-product.product-type-auction .summary form.cart:not(.oba-moved),
 	.single-product.product-type-auction .summary .single_add_to_cart_button:not(.oba-moved),
 	.single-product.product-type-auction .summary .quantity:not(.oba-moved){display:none!important;}
+	/* Hide theme summary pieces within product_infos to avoid duplicates */
+	.single-product.product-type-auction .product_infos .product_summary_top,
+	.single-product.product-type-auction .product_infos .product_summary_middle,
+	.single-product.product-type-auction .product_infos > p.price:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > .price:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > form.cart:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > .cart,
+	.single-product.product-type-auction .product_infos > .single_add_to_cart_button,
+	.single-product.product-type-auction .product_infos > .quantity{display:none!important;}
 	/* Extra guard: hide any title/price/cart outside buy panel within auction wrap */
 	.oba-auction-wrap h1.product_title:not(.oba-buy-panel *),
 	.oba-auction-wrap .price:not(.oba-buy-panel *),

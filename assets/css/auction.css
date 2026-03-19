@@ -111,6 +111,18 @@
 	gap: 18px;
 }
 
+/* Hide theme summary bits for auction products (we re-render inside panels) */
+.single-product.product-type-auction .product_infos .product_summary_top,
+.single-product.product-type-auction .product_infos .product_summary_middle,
+.single-product.product-type-auction .product_infos > p.price:not(.oba-buy-panel *),
+.single-product.product-type-auction .product_infos > .price:not(.oba-buy-panel *),
+.single-product.product-type-auction .product_infos > form.cart:not(.oba-buy-panel *),
+.single-product.product-type-auction .product_infos > .cart,
+.single-product.product-type-auction .product_infos > .single_add_to_cart_button,
+.single-product.product-type-auction .product_infos > .quantity {
+	display: none !important;
+}
+
 /* === Split-screen sticky layout (desktop only) === */
 @media only screen and (min-width: 1025px) {
 	/* 1. Reset container layout */
