@@ -110,3 +110,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const navItems = document.querySelectorAll('.oba-tabs-nav li');
+	const panels = document.querySelectorAll('.oba-tab-panel');
+	if (!navItems.length || !panels.length) return;
+	navItems.forEach(item => {
+		item.addEventListener('click', () => {
+			const tab = item.getAttribute('data-tab');
+			navItems.forEach(li => li.classList.remove('is-active'));
+			panels.forEach(p => p.classList.remove('is-active'));
+			item.classList.add('is-active');
+			const active = document.querySelector('.oba-tab-panel[data-tab="'+tab+'"]');
+			if (active) active.classList.add('is-active');
+		});
+	});
+});
+</script>
