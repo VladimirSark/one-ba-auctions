@@ -139,8 +139,8 @@
 	.product_content_wrapper > .row > .columns:nth-child(1) {
 		flex: 0 0 60% !important;
 		max-width: 60% !important;
-		height: auto !important;
-		max-height: none !important;
+		height: calc(100vh - 140px) !important;
+		max-height: calc(100vh - 140px) !important;
 		align-self: stretch !important;
 		display: flex !important;
 		flex-direction: column !important;
@@ -180,12 +180,14 @@
 	.product_content_wrapper > .row > .columns:nth-child(3) {
 		flex: 0 0 40% !important;
 		max-width: 40% !important;
-		position: static !important;
-		height: auto !important;
-		max-height: none !important;
-		align-self: stretch !important;
+		position: sticky !important;
+		top: 120px !important;
+		height: calc(100vh - 140px) !important;
+		max-height: calc(100vh - 140px) !important;
+		align-self: flex-start !important;
 		margin-left: 0 !important;
 		z-index: 1;
+		overflow: auto !important;
 	}
 
 	/* 4. Compact right panel */
