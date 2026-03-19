@@ -130,6 +130,7 @@
 		display: flex !important;
 		flex-wrap: nowrap !important;
 		align-items: flex-start !important;
+		align-items: stretch !important;
 		max-width: 100% !important;
 		width: 100% !important;
 		gap: 10px !important;
@@ -140,6 +141,7 @@
 		flex: 0 0 60% !important;
 		max-width: 60% !important;
 		max-height: calc(100vh - 140px) !important;
+		min-height: calc(100vh - 140px) !important;
 		overflow-y: auto !important;
 		overflow-x: hidden !important;
 		padding: 8px !important;
@@ -162,6 +164,7 @@
 		flex: 0 0 40% !important;
 		max-width: 40% !important;
 		position: static !important;
+		min-height: calc(100vh - 140px) !important;
 		height: auto !important;
 		margin-left: 0 !important;
 		z-index: 1;
