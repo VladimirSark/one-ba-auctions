@@ -19,7 +19,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="oba-sc-left">
 		<div class="oba-sc-card oba-sc-gallery">
 			<div class="oba-sc-label">MEDIA</div>
-			<div class="oba-sc-placeholder"></div>
+			<?php
+			// WooCommerce product images (main + thumbnails)
+			if ( function_exists( 'woocommerce_show_product_images' ) ) {
+				ob_start();
+				woocommerce_show_product_images();
+				$gallery = ob_get_clean();
+				echo $gallery; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} else {
+				echo '<div class="oba-sc-placeholder"></div>'; // fallback
+			}
+			?>
 		</div>
 		<div class="oba-sc-card oba-sc-info">
 			<div class="oba-sc-label">DETAILS</div>
