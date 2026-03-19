@@ -10,6 +10,8 @@ class OBA_Frontend {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
 		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
 		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		// Override single auction product template with our shortcode-only layout.
+		add_filter( 'template_include', array( $this, 'override_single_auction_template' ), 50 );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_global_buy_panel' ), 1 );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
@@ -23,6 +25,27 @@ class OBA_Frontend {
 		// Ensure Buy Now add-to-cart shows for auction products with Buy Now enabled.
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
 		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+	}
+
+	/**
+	 * Force auction products to render using the custom shortcode-only template (no theme WC layout).
+	 */
+	public function override_single_auction_template( $template ) {
+		if ( ! is_singular( 'product' ) ) {
+			return $template;
+		}
+
+		$product = wc_get_product( get_queried_object_id() );
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return $template;
+		}
+
+		$custom = trailingslashit( OBA_PLUGIN_DIR ) . 'templates/oba-single-shortcode-only.php';
+		if ( file_exists( $custom ) ) {
+			return $custom;
+		}
+
+		return $template;
 	}
 
 	public function enqueue_heartbeat() {

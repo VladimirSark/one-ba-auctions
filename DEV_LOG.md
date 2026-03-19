@@ -10,6 +10,11 @@
 - **Files/Classes:** `includes/class-frontend.php` (shortcode switch), `templates/oba-shortcode-custom.php` (new template), `assets/css/auction.css` (scaffold styling, placeholders).
 - **Notes:** Content is not wired yet; panels are empty placeholders ready to be populated. Default single-product auction layout still has recent split/sticky tweaks and hides duplicate summary elements.
 
+## 2026-03-19 — Force auction products to use shortcode-only page
+- **Summary:** Plugin now overrides single auction product rendering to use our custom shortcode layout automatically—no theme edits needed. Auction product pages bypass all default WooCommerce product output and display `[oba_auction layout="custom"]` only.
+- **Files/Classes:** `includes/class-frontend.php` (template override filter), `templates/oba-single-shortcode-only.php` (new template shell).
+- **Notes:** Other product types remain untouched. Shortcode auto-detects current product ID.
+
 ## 2026-01-07 — Live join points + guest/login prompt
 - **Summary:** Added optional “join during live” flow: auctions can allow late joiners for a higher points fee than registration. During live, unregistered users see a “Participate in auction (X pts)” CTA (with T&C checkbox) instead of the bid button; click deducts live-join points and registers the user. Guests now see a blurred auction UI with a login/signup prompt banner, and all action buttons open the configured login link in a new tab.
 - **Files/Classes:** `includes/class-auction-engine.php`, `includes/class-auction-repository.php`, `includes/class-product-type.php`, `includes/class-ajax-controller.php`, `includes/class-frontend.php`, `assets/js/auction.js`, `templates/oba-single-auction.php`.
