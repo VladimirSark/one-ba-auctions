@@ -125,12 +125,12 @@
 
 	/* 2. Left column: gallery + tabs (scrollable) */
 	.product_content_wrapper > .row > .columns:nth-child(1) {
-		flex: 0 0 58% !important;
-		max-width: 58% !important;
+		flex: 0 0 60% !important;
+		max-width: 60% !important;
 		max-height: calc(100vh - 140px) !important;
 		overflow-y: auto !important;
 		overflow-x: hidden !important;
-		padding: 10px !important;
+		padding: 8px !important;
 		background: #fff;
 	}
 
@@ -138,17 +138,17 @@
 	.product_content_wrapper > .row > .columns:nth-child(1),
 	.product_content_wrapper > .row > .columns:nth-child(3) {
 		border: 1px solid #d7dde6 !important;
-		border-radius: 10px !important;
-		box-shadow: 0 4px 14px rgba(15,23,42,0.06) !important;
+		border-radius: 12px !important;
+		box-shadow: 0 3px 10px rgba(15,23,42,0.05) !important;
 		background: #fff !important;
-		padding: 10px !important;
+		padding: 8px !important;
 		box-sizing: border-box;
 	}
 
 	/* 3. Right column: static, compact */
 	.product_content_wrapper > .row > .columns:nth-child(3) {
-		flex: 0 0 38% !important;
-		max-width: 38% !important;
+		flex: 0 0 40% !important;
+		max-width: 40% !important;
 		position: static !important;
 		height: auto !important;
 		margin-left: 0 !important;
@@ -156,13 +156,13 @@
 	}
 
 	/* 4. Compact right panel */
-	.product_infos { transform: scale(0.9); transform-origin: top left; width: 108%; }
-	.product_infos .product_title { font-size: 1.15rem !important; margin-bottom: 4px !important; }
-	.oba-buy-panel, .oba-auction-wrap { padding: 10px !important; margin: 6px 0 !important; border-radius: 8px !important; }
-	.oba-auction-wrap .oba-phase-card { padding: 10px !important; }
-	.oba-auction-wrap .oba-phase-title { font-size: 0.9rem !important; }
-	.oba-auction-wrap .button, .oba-auction-wrap .button-primary { padding: 8px 10px !important; font-size: 0.86rem !important; }
-	.oba-buy-panel .single_add_to_cart_button { padding: 10px 12px !important; font-size: 0.88rem !important; }
+	.product_infos { transform: scale(0.9); transform-origin: top left; width: 106%; }
+	.product_infos .product_title { font-size: 1.1rem !important; margin-bottom: 4px !important; }
+	.oba-buy-panel, .oba-auction-wrap { padding: 8px !important; margin: 6px 0 !important; border-radius: 8px !important; }
+	.oba-auction-wrap .oba-phase-card { padding: 8px !important; }
+	.oba-auction-wrap .oba-phase-title { font-size: 0.88rem !important; }
+	.oba-auction-wrap .button, .oba-auction-wrap .button-primary { padding: 7px 9px !important; font-size: 0.84rem !important; }
+	.oba-buy-panel .single_add_to_cart_button { padding: 9px 11px !important; font-size: 0.86rem !important; }
 
 	/* 5. Hide spacers / redundant columns */
 	.product_content_wrapper > .row > .columns:nth-child(2),
