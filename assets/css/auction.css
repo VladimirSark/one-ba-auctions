@@ -293,6 +293,15 @@
 .oba-tab-panel.is-active {
 	display: block;
 }
+.oba-sc-buy .price,
+.oba-sc-buy p.price,
+.oba-sc-buy form.cart,
+.oba-sc-buy .quantity,
+.oba-sc-buy .single_add_to_cart_button {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
 .oba-sc-divider {
 	text-align: center;
 	margin: 10px 0;
