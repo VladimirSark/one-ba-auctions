@@ -123,6 +123,9 @@
 	flex-direction: column;
 	gap: 12px;
 }
+.oba-sc-header {
+	grid-column: 1 / -1;
+}
 .oba-sc-card {
 	border: 1px solid #d7dde6;
 	border-radius: 14px;
@@ -130,12 +133,28 @@
 	box-shadow: 0 6px 18px rgba(15,23,42,0.06);
 	min-height: 160px;
 	padding: 12px;
+	position: relative;
 }
 .oba-sc-placeholder {
 	height: 140px;
 	border: 1px dashed #cbd5e1;
 	border-radius: 10px;
 	background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+}
+.oba-sc-placeholder.title-placeholder {
+	height: 70px;
+}
+.oba-sc-label {
+	position: absolute;
+	top: 10px;
+	left: 12px;
+	padding: 4px 8px;
+	border-radius: 999px;
+	background: #0f172a;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.5px;
 }
 @media only screen and (min-width: 1025px) {
 	.oba-shortcode-custom {
