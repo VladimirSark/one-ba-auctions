@@ -1303,22 +1303,22 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-shortcode-custom {
 		grid-template-columns: 1fr;
 	}
-	.oba-sc-right {
-		position: static;
-		top: auto;
-	}
 	.oba-sc-left,
 	.oba-sc-right {
 		max-height: none;
 		overflow: visible;
+		display: contents;
 	}
-	/* Reorder for mobile: title, media, buy, auction, details */
+	.oba-sc-right {
+		position: static;
+		top: auto;
+	}
+	/* Mobile order: Title, Media, Buy, Auction, Details */
 	.oba-sc-header { order: 1; }
-	.oba-sc-left .oba-sc-gallery { order: 2; }
-	.oba-sc-right { order: 3; }
-	.oba-sc-right .oba-sc-buy { order: 1; }
-	.oba-sc-right .oba-sc-auction { order: 2; margin-top: 12px; }
-	.oba-sc-left .oba-sc-info { order: 4; }
+	.oba-sc-gallery { order: 2; }
+	.oba-sc-buy { order: 3; }
+	.oba-sc-auction { order: 4; }
+	.oba-sc-info { order: 5; }
 }
 
 @media (max-width: 640px) {
