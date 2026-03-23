@@ -242,14 +242,11 @@
 	gap: 6px;
 	white-space: nowrap;
 }
+.oba-buy-block {
+	flex: 1 1 auto;
+}
 .oba-buy-form {
-	display: flex !important;
-	flex-direction: row !important;
-	flex-wrap: nowrap !important;
-	align-items: stretch !important;
-	gap: 12px !important;
-	width: 100% !important;
-	box-sizing: border-box !important;
+	flex: 1 1 auto;
 }
 .oba-buy-inline {
 	display: flex !important;
@@ -269,6 +266,7 @@
 	width: 100% !important;
 	margin: 0 !important;
 	padding: 0 !important;
+	flex: 1 1 auto;
 }
 .oba-buy-form .quantity {
 	max-width: 65px !important;
