@@ -255,7 +255,7 @@
 	display: flex !important;
 	flex-direction: row !important;
 	flex-wrap: nowrap !important;
-	align-items: stretch !important;
+	align-items: center !important;
 	gap: 12px !important;
 	width: 100% !important;
 	box-sizing: border-box !important;
@@ -264,7 +264,7 @@
 	display: flex !important;
 	flex-direction: row !important;
 	flex-wrap: nowrap !important;
-	align-items: stretch !important;
+	align-items: center !important;
 	gap: 10px !important;
 	width: auto !important;
 	margin: 0 !important;
