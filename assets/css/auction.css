@@ -242,6 +242,11 @@
 	gap: 6px;
 	white-space: nowrap;
 }
+.oba-price-prefix {
+	font-weight: 700;
+	color: #334155;
+	font-size: 14px;
+}
 .oba-buy-block {
 	flex: 1 1 auto;
 }

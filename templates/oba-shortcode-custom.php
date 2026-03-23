@@ -110,7 +110,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<div class="oba-buy-price">
 						<?php
 						$price_html = $product->get_price_html();
-						echo '<span class="oba-price-pill">' . wp_kses_post( $price_html ) . '</span>';
+						echo '<span class="oba-price-pill"><span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ' . wp_kses_post( $price_html ) . '</span>';
 						?>
 					</div>
 					<div class="oba-buy-form">
