@@ -243,19 +243,41 @@
 	white-space: nowrap;
 }
 .oba-buy-form {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: stretch !important;
+	gap: 12px !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+}
+.oba-buy-inline {
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: stretch !important;
+	gap: 12px !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
 }
 .oba-buy-form form.cart {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: stretch !important;
+	gap: 10px !important;
+	width: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 .oba-buy-form .quantity {
-	max-width: 140px;
-	display: flex;
-	align-items: center;
+	max-width: 65px !important;
+	width: 65px !important;
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	margin: 0 !important;
+	flex-shrink: 0 !important;
 }
 
 /* Force show buy elements inside custom layout even if global hides exist */
@@ -285,16 +307,22 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .sing
 	order: 1;
 	justify-content: center;
 	width: auto !important;
-	display: inline-flex !important;
-	margin-bottom: 0 !important;
-	flex: 1 1 auto;
+	display: flex !important;
+	margin: 0 !important;
+	flex-grow: 1 !important;
+	padding: 12px 20px !important;
+	white-space: nowrap !important;
+	border-radius: 4px !important;
+	font-size: 14px !important;
+	font-weight: 700 !important;
+	text-transform: uppercase !important;
 }
 body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity {
 	order: 2;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-	width: auto !important;
+	width: 65px !important;
 	margin: 0 !important;
 	gap: 6px;
 	display: inline-flex !important;
