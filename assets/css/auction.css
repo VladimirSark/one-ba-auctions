@@ -1300,6 +1300,25 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-explainer {
 		grid-template-columns: repeat(2, 1fr);
 	}
+	.oba-shortcode-custom {
+		grid-template-columns: 1fr;
+	}
+	.oba-sc-right {
+		position: static;
+		top: auto;
+	}
+	.oba-sc-left,
+	.oba-sc-right {
+		max-height: none;
+		overflow: visible;
+	}
+	/* Reorder for mobile: title, media, buy, auction, details */
+	.oba-sc-header { order: 1; }
+	.oba-sc-left .oba-sc-gallery { order: 2; }
+	.oba-sc-right { order: 3; }
+	.oba-sc-right .oba-sc-buy { order: 1; }
+	.oba-sc-right .oba-sc-auction { order: 2; margin-top: 12px; }
+	.oba-sc-left .oba-sc-info { order: 4; }
 }
 
 @media (max-width: 640px) {
