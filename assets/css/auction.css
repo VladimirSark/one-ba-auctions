@@ -307,7 +307,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 .oba-buy-form button,
 .oba-buy-form .single_add_to_cart_button {
-	width: 100%;
+	width: auto !important;
+	flex: 1 1 auto;
 }
 .oba-buy-points-line {
 	font-size: 14px;
