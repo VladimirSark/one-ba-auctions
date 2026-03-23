@@ -8,6 +8,11 @@ class OBA_Frontend {
 	public function hooks() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_heartbeat' ) );
+		// Fallback: force enqueue on template redirect in case themes skip normal product checks.
+		add_action( 'template_redirect', array( $this, 'ensure_assets_on_product' ) );
+		// Override single auction product template with our shortcode-only layout.
+		add_filter( 'template_include', array( $this, 'override_single_auction_template' ), 50 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_global_buy_panel' ), 1 );
 		add_action( 'wp_footer', array( $this, 'render_points_pill' ) );
 		add_shortcode( 'oba_credits_balance', array( $this, 'shortcode_balance' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'render_archive_teaser' ), 15 );
@@ -15,6 +20,32 @@ class OBA_Frontend {
 		add_shortcode( 'oba_upcoming_auctions', array( $this, 'shortcode_upcoming_auctions' ) );
 		add_shortcode( 'oba_live_auctions', array( $this, 'shortcode_live_auctions' ) );
 		add_shortcode( 'oba_recent_ended_auctions', array( $this, 'shortcode_recent_ended_auctions' ) );
+		add_shortcode( 'oba_auction', array( $this, 'shortcode_single_auction' ) );
+		add_shortcode( 'oba_buy_points', array( $this, 'shortcode_buy_points' ) );
+		// Ensure Buy Now add-to-cart shows for auction products with Buy Now enabled.
+		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
+		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+	}
+
+	/**
+	 * Force auction products to render using the custom shortcode-only template (no theme WC layout).
+	 */
+	public function override_single_auction_template( $template ) {
+		if ( ! is_singular( 'product' ) ) {
+			return $template;
+		}
+
+		$product = wc_get_product( get_queried_object_id() );
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return $template;
+		}
+
+		$custom = trailingslashit( OBA_PLUGIN_DIR ) . 'templates/oba-single-shortcode-only.php';
+		if ( file_exists( $custom ) ) {
+			return $custom;
+		}
+
+		return $template;
 	}
 
 	public function enqueue_heartbeat() {
@@ -44,11 +75,14 @@ class OBA_Frontend {
 	}
 
 	public function enqueue_assets() {
-		if ( ! is_product() ) {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
 			return;
 		}
 
 		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		}
 
 		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
 			return;
@@ -91,6 +125,146 @@ class OBA_Frontend {
 			'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
 			)
 		);
+	}
+
+	/**
+	 * Force-enqueue assets and localize data for a specific auction product (used by shortcode).
+	 */
+	private function enqueue_assets_for_product( WC_Product $product ) {
+		$settings = OBA_Settings::get_settings();
+
+		wp_enqueue_style(
+			'oba-auction',
+			OBA_PLUGIN_URL . 'assets/css/auction.css',
+			array(),
+			OBA_VERSION
+		);
+
+		wp_enqueue_script(
+			'oba-auction',
+			OBA_PLUGIN_URL . 'assets/js/auction.js',
+			array( 'jquery' ),
+			OBA_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'oba-auction',
+			'obaAuction',
+			array(
+				'ajax_url'     => admin_url( 'admin-ajax.php' ),
+				'nonce'        => wp_create_nonce( 'oba_auction' ),
+				'auction_id'   => $product->get_id(),
+				'poll_interval'=> (int) $settings['poll_interval_ms'],
+				'terms_text'   => wp_kses_post( $settings['terms_text'] ),
+				'membership_links' => $settings['membership_links'],
+				'membership_labels'=> $settings['membership_labels'],
+				'login_url'    => $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ),
+				'i18n'         => $this->build_i18n( $settings ),
+				'currency_symbol' => function_exists( 'get_woocommerce_currency_symbol' ) ? get_woocommerce_currency_symbol() : '€',
+				'currency_code'   => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
+				'currency_decimals' => function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2,
+				'autobid_window_seconds' => isset( $settings['autobid_window_seconds'] ) ? (int) $settings['autobid_window_seconds'] : 300,
+				'autobid_cost_points'    => isset( $settings['autobid_activation_cost_points'] ) ? (int) $settings['autobid_activation_cost_points'] : 0,
+			)
+		);
+	}
+
+	public function ensure_assets_on_product() {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			$product = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+		}
+		if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
+			$this->enqueue_assets();
+			$this->enqueue_heartbeat();
+		}
+	}
+
+	/**
+	 * For auction products with Buy It Now enabled, inject price + add-to-cart so default WC purchase flow shows.
+	 */
+	public function maybe_inject_buy_now_summary() {
+		// Deprecated: no-op. Buy Now block is handled inside oba-single-auction template.
+		return;
+	}
+
+	public function render_buy_now_summary() {
+		static $rendered = false;
+		if ( $rendered ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+		$rendered = true;
+		// Simple add to cart form (works because purchasable filter is already in place).
+		woocommerce_simple_add_to_cart();
+	}
+
+	/**
+	 * Global buy panel for all products: title, price, add-to-cart, optional points line.
+	 */
+	public function render_global_buy_panel() {
+		if ( ! is_product() && ! is_singular( 'product' ) ) {
+			return;
+		}
+		global $product;
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+		$settings      = OBA_Settings::get_settings();
+		$points_suffix = isset( $settings['translations']['points_suffix'] ) && $settings['translations']['points_suffix'] ? $settings['translations']['points_suffix'] : __( 'pts', 'one-ba-auctions' );
+		$points        = (int) $product->get_meta( '_oba_buy_now_points' );
+		?>
+		<div class="oba-buy-panel oba-buy-panel-global">
+			<h1 class="product_title entry-title oba-moved"><?php echo esc_html( $product->get_name() ); ?></h1>
+			<p class="price oba-moved"><span class="oba-price-prefix"><?php esc_html_e( 'Reguliari kaina:', 'one-ba-auctions' ); ?></span><?php echo wp_kses_post( $product->get_price_html() ); ?></p>
+			<?php woocommerce_simple_add_to_cart(); ?>
+			<?php if ( $points > 0 ) : ?>
+				<p class="oba-buy-points"><?php printf( esc_html__( 'Earn %1$d %2$s with this purchase.', 'one-ba-auctions' ), $points, esc_html( $points_suffix ) ); ?></p>
+			<?php endif; ?>
+		</div>
+		<style>
+		.oba-buy-panel-global{border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px; text-align:center;}
+		.oba-buy-panel-global .product_title{font-size:1.65rem!important; margin:0!important; line-height:1.2; text-align:center;}
+		.oba-buy-panel-global .price{display:flex!important; justify-content:center; align-items:baseline; gap:8px; font-size:17px; color:#718096; margin:0;}
+		.oba-price-prefix{color:#718096;}
+		.oba-buy-panel-global .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
+		.oba-buy-panel-global .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
+		.oba-buy-panel-global form.cart{display:flex; flex-direction:column; gap:12px;}
+		.oba-buy-panel-global .single_add_to_cart_button{order:1; width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+		.oba-buy-panel-global .single_add_to_cart_button i{font-size:16px;}
+		.oba-buy-panel-global .quantity{order:2; width:100%;}
+		.oba-buy-panel-global .oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
+		/* Hide originals on single product pages after we render panel */
+		.single-product .summary .product_title,
+		.single-product .summary p.price,
+		.single-product .summary .price,
+		.single-product .summary form.cart,
+		.single-product .summary .single_add_to_cart_button,
+		.single-product .summary .quantity{display:none!important;}
+		</style>
+		<script>
+		jQuery(function($){
+			var $products = $('.single-product .product');
+			$products.each(function(){
+				var $panel = $(this).find('.oba-buy-panel-global').first();
+				var $summary = $(this).find('.summary, .entry-summary').first();
+				if(!$panel.length || !$summary.length) return;
+				['h1.product_title','p.price','form.cart'].forEach(function(sel){
+					var $el = $summary.find(sel).first();
+					if($el.length){ $el.addClass('oba-moved').appendTo($panel); }
+				});
+				$summary.find('h1.product_title, p.price, .price, form.cart, .single_add_to_cart_button, .quantity').not('.oba-buy-panel-global *').hide();
+			});
+		});
+		</script>
+		<?php
 	}
 
 	private function build_i18n( $settings ) {
@@ -579,5 +753,97 @@ class OBA_Frontend {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Render a single auction block via shortcode: [oba_auction id="123"]
+	 */
+	public function shortcode_single_auction( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'id'     => 0,
+				'layout' => 'custom', // custom | legacy
+			),
+			$atts
+		);
+
+		$auction_id = absint( $atts['id'] );
+
+		// If no ID passed, try current product context or queried object.
+		if ( ! $auction_id ) {
+			global $product;
+			if ( $product instanceof WC_Product && 'auction' === $product->get_type() ) {
+				$auction_id = $product->get_id();
+			} else {
+				$q_id = get_queried_object_id();
+				$q_product = $q_id ? wc_get_product( $q_id ) : null;
+				if ( $q_product && 'auction' === $q_product->get_type() ) {
+					$auction_id = $q_product->get_id();
+				}
+			}
+		}
+
+		if ( ! $auction_id ) {
+			return '';
+		}
+
+		$product = wc_get_product( $auction_id );
+		if ( ! $product || 'auction' !== $product->get_type() ) {
+			return '';
+		}
+
+		// Enqueue assets + localization regardless of context.
+		$this->enqueue_assets_for_product( $product );
+
+		ob_start();
+		// Set global product context so the template behaves correctly.
+		$prev_product = isset( $GLOBALS['product'] ) ? $GLOBALS['product'] : null;
+		$GLOBALS['product'] = $product;
+
+		$template = 'legacy' === $atts['layout'] ? 'oba-single-auction.php' : 'oba-shortcode-custom.php';
+
+		wc_get_template(
+			$template,
+			array( 'product' => $product ),
+			'',
+			OBA_PLUGIN_DIR . 'templates/'
+		);
+
+		$GLOBALS['product'] = $prev_product;
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Shortcode: [oba_buy_points] shows the points granted on Buy It Now (if enabled).
+	 */
+	public function shortcode_buy_points( $atts ) {
+		$atts = shortcode_atts( array(), $atts );
+		global $product;
+		$ctx = $product instanceof WC_Product ? $product : ( function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null );
+		if ( ! $ctx ) {
+			return '';
+		}
+		$pts = (int) $ctx->get_meta( '_oba_buy_now_points' );
+		if ( $pts <= 0 ) {
+			return '';
+		}
+		return sprintf( esc_html__( 'Earn %d points with this purchase.', 'one-ba-auctions' ), $pts );
+	}
+
+	/**
+	 * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+	 */
+	public function maybe_suppress_default_summary() {
+		global $product;
+		if ( ! $product instanceof WC_Product || 'auction' !== $product->get_type() ) {
+			return;
+		}
+		if ( 'yes' !== $product->get_meta( '_oba_buy_now_enabled' ) ) {
+			return;
+		}
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_price', 10 );
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+		remove_all_actions( 'woocommerce_auction_add_to_cart' );
 	}
 }

@@ -36,6 +36,8 @@ class OBA_Admin {
 		add_action( 'admin_post_oba_save_membership', array( $this, 'handle_save_membership' ) );
 		add_filter( 'bulk_actions-edit-product', array( $this, 'register_bulk_actions' ) );
 		add_filter( 'handle_bulk_actions-edit-product', array( $this, 'handle_bulk_actions' ), 10, 3 );
+		add_filter( 'manage_edit-product_columns', array( $this, 'add_product_list_columns' ) );
+		add_action( 'manage_product_posts_custom_column', array( $this, 'render_product_list_columns' ), 10, 2 );
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			$this->register_cli();
@@ -854,10 +856,16 @@ class OBA_Admin {
 			<h2 class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'general' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'general' === $active_tab || 'translations' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'General', 'one-ba-auctions' ); ?></a>
 				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'emails' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'emails' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Emails', 'one-ba-auctions' ); ?></a>
+				<a href="<?php echo esc_url( add_query_arg( array( 'page' => 'oba-1ba-settings', 'tab' => 'shortcodes' ), admin_url( 'admin.php' ) ) ); ?>" class="nav-tab <?php echo ( 'shortcodes' === $active_tab ) ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Shortcodes', 'one-ba-auctions' ); ?></a>
 			</h2>
 		<?php
 		if ( 'emails' === $active_tab ) {
 			$this->render_emails_page();
+			echo '</div>';
+			return;
+		}
+		if ( 'shortcodes' === $active_tab ) {
+			$this->render_shortcodes_page();
 			echo '</div>';
 			return;
 		}
@@ -981,6 +989,64 @@ class OBA_Admin {
 				</table>
 				<?php submit_button( __( 'Save Settings', 'one-ba-auctions' ) ); ?>
 			</form>
+		</div>
+		<?php
+	}
+
+	public function render_shortcodes_page() {
+		if ( ! $this->can_manage() ) {
+			return;
+		}
+
+		$shortcodes = array(
+			array(
+				'tag'         => '[oba_credits_balance]',
+				'description' => __( 'Shows the logged-in user points balance.', 'one-ba-auctions' ),
+				'attributes'  => __( 'None', 'one-ba-auctions' ),
+			),
+			array(
+				'tag'         => '[oba_live_auctions limit="6"]',
+				'description' => __( 'Card grid of live auctions with timer.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_upcoming_auctions limit="6"]',
+				'description' => __( 'Card grid of registration and pre-live auctions (lobby progress).', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_recent_ended_auctions limit="6"]',
+				'description' => __( 'Card grid of recently ended auctions with winner summary.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '6' ),
+			),
+			array(
+				'tag'         => '[oba_ended_auctions limit="20"]',
+				'description' => __( 'Table of ended auctions with winners and totals.', 'one-ba-auctions' ),
+				'attributes'  => sprintf( __( 'limit (default: %s)', 'one-ba-auctions' ), '20' ),
+			),
+		);
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Shortcodes', 'one-ba-auctions' ); ?></h1>
+			<p class="description"><?php esc_html_e( 'Use these shortcodes to embed auctions and widgets.', 'one-ba-auctions' ); ?></p>
+			<table class="widefat fixed striped">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Shortcode', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Description', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Attributes', 'one-ba-auctions' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $shortcodes as $row ) : ?>
+						<tr>
+							<td><code><?php echo esc_html( $row['tag'] ); ?></code></td>
+							<td><?php echo esc_html( $row['description'] ); ?></td>
+							<td><?php echo esc_html( $row['attributes'] ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
 		</div>
 		<?php
 	}
@@ -1573,6 +1639,46 @@ class OBA_Admin {
 
 		wp_redirect( admin_url( 'admin.php?page=oba-emails&updated=1' ) );
 		exit;
+	}
+
+	/**
+	 * Add auction stats columns to Products list (toggleable via Screen Options).
+	 */
+	public function add_product_list_columns( $columns ) {
+		$columns['oba_participants'] = __( 'Participants', 'one-ba-auctions' );
+		$columns['oba_profit']       = __( 'Est. profit', 'one-ba-auctions' );
+		return $columns;
+	}
+
+	public function render_product_list_columns( $column, $post_id ) {
+		if ( ! in_array( $column, array( 'oba_participants', 'oba_profit' ), true ) ) {
+			return;
+		}
+		$product = wc_get_product( $post_id );
+		if ( ! $product || 'auction' !== $product->get_type() ) {
+			echo '—';
+			return;
+		}
+
+		$repo        = $this->repo ?: new OBA_Auction_Repository();
+		$registered  = $repo->get_participant_count( $post_id );
+		$required    = (int) get_post_meta( $post_id, '_required_participants', true );
+		$reg_points  = (float) get_post_meta( $post_id, '_registration_points', true );
+		$settings    = OBA_Settings::get_settings();
+		$points_rate = isset( $settings['points_value'] ) ? (float) $settings['points_value'] : 1;
+		$cog         = (float) get_post_meta( $post_id, '_wc_cog_cost', true );
+		if ( ! $cog ) {
+			$cog = (float) get_post_meta( $post_id, '_product_cost', true );
+		}
+		if ( 'oba_participants' === $column ) {
+			echo esc_html( "{$registered}/" . ( $required ?: '—' ) );
+			return;
+		}
+		if ( 'oba_profit' === $column ) {
+			$profit = ( $reg_points * $registered * $points_rate ) - $cog;
+			echo wp_kses_post( wc_price( $profit ) );
+			return;
+		}
 	}
 
 	public function handle_send_test_email() {

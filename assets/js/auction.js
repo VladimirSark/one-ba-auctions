@@ -146,12 +146,12 @@
 		if (isGuest) {
 			$('.oba-guest-banner').show();
 			$('.oba-col-right').addClass('oba-guest-blur');
-			$('.oba-explainer').addClass('oba-guest-blur');
+		$('.oba-explainer').addClass('oba-guest-blur');
 			$('.oba-membership-overlay, .oba-points-overlay').hide();
 		} else {
 			$('.oba-guest-banner').hide();
 			$('.oba-col-right').removeClass('oba-guest-blur');
-			$('.oba-explainer').removeClass('oba-guest-blur');
+		$('.oba-explainer').removeClass('oba-guest-blur');
 		}
 		if (showLiveJoinCta) {
 			const cta = obaAuction.i18n?.live_join_cta || 'Participate in auction';
@@ -453,16 +453,25 @@
 	}
 
 	function applyMembershipLocks(status) {
+		const buyNowEnabled = $('.oba-auction-wrap').data('buy-now-enabled') === 1 || $('.oba-auction-wrap').data('buy-now-enabled') === '1';
 		const hasMembership = !!state.data.membership_active;
 		const unlocked = !!state.data.registration_unlocked;
 		const isRegistered = !!state.data.user_registered;
 		const layoutOverlay = $('.oba-membership-overlay');
 		const pointsOverlay = $('.oba-points-overlay');
+		const inlineMembership = $('.oba-membership-inline');
 		pointsOverlay.hide();
+		inlineMembership.hide().empty();
 		if (!unlocked) {
-			buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
-			layoutOverlay.css('display', 'flex');
-			$('.oba-phase-card').addClass('is-collapsed');
+			if (buyNowEnabled && inlineMembership.length) {
+				buildMembershipButtons(inlineMembership);
+				inlineMembership.show();
+				layoutOverlay.hide();
+			} else {
+				buildMembershipButtons(layoutOverlay.find('.oba-membership-links'));
+				layoutOverlay.css('display', 'flex');
+				$('.oba-phase-card').addClass('is-collapsed');
+			}
 		} else {
 			layoutOverlay.hide();
 		}
@@ -472,8 +481,13 @@
 		const balance = Number(state.data.user_points_balance || 0);
 		const fee = Number(state.data.registration_fee_plain || state.data.registration_fee || 0);
 		if (!isRegistered && unlocked && fee && balance < fee) {
-			buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
-			pointsOverlay.css('display', 'flex');
+			if (buyNowEnabled && inlineMembership.length) {
+				buildMembershipButtons(inlineMembership);
+				inlineMembership.show();
+			} else {
+				buildMembershipButtons(pointsOverlay.find('.oba-membership-links'));
+				pointsOverlay.css('display', 'flex');
+			}
 		}
 	}
 
@@ -521,6 +535,12 @@
 					showToast(response.message, true);
 					if (response.code === 'not_logged_in') {
 						showLoginHint();
+					} else if (response.code === 'membership_required') {
+						const overlay = $('.oba-membership-overlay');
+						if (overlay.length) {
+							buildMembershipButtons(overlay.find('.oba-membership-links'));
+							overlay.css('display', 'flex');
+						}
 					}
 				} else {
 					const msg = obaAuction.i18n?.registration_fail_custom || obaAuction.i18n?.login_required || obaAuction.i18n?.registration_fail || 'Please log in to register.';

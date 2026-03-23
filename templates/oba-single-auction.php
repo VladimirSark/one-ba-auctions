@@ -20,6 +20,8 @@ $get      = function( $key, $default ) use ( $tr ) {
 };
 $points_suffix = $get( 'points_suffix', __( 'pts', 'one-ba-auctions' ) );
 $product_cost  = (float) get_post_meta( $product->get_id(), '_product_cost', true );
+$buy_now_enabled = get_post_meta( $product->get_id(), '_oba_buy_now_enabled', true ) === 'yes';
+$buy_now_points  = (int) get_post_meta( $product->get_id(), '_oba_buy_now_points', true );
 $meta     = array(
 	'registration_fee' => $reg_points ? $reg_points . ' ' . $points_suffix : '',
 	'bid_cost'         => $bid_price_text,
@@ -33,7 +35,7 @@ $stage_tips = array(
 );
 ?>
 
-<div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>">
+<div class="oba-auction-wrap" data-product-cost="<?php echo esc_attr( $product_cost ); ?>" data-buy-now-enabled="<?php echo $buy_now_enabled ? '1' : '0'; ?>">
 	<style>
 	.oba-guest-banner {
 		display: none;
@@ -142,8 +144,104 @@ $stage_tips = array(
 	.oba-autobid-window-modal h4 { margin:0 0 10px; }
 	.oba-autobid-window-modal p { margin:0 0 12px; color:#475569; }
 	.oba-autobid-window-modal .oba-autobid-window { margin-top:0; }
-	.oba-autobid-window-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+	.oba-autobid-window-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+	.oba-autobid-window-actions .button { width:100%; text-align:center; }
+	.oba-autobid-window-actions .oba-autobid-window-cancel { background:#ef4444 !important; border-color:#ef4444 !important; color:#fff !important; }
+	.oba-autobid-window-actions .oba-autobid-window-cancel:hover { background:#dc2626 !important; border-color:#dc2626 !important; color:#fff !important; }
+	.oba-tab-nav { display:flex; gap:8px; margin-bottom:12px; }
+	.oba-tab-nav button { border:1px solid #e2e8f0; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+	.oba-tab-nav button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
+	.oba-tab-panel { display:none; }
+	.oba-tab-panel.is-active { display:block; }
+	.button,.button-primary{border-radius:10px;}
+	.oba-buy-panel {border:1px solid #e2e8f0; background:#fff; border-radius:16px; padding:24px; margin-bottom:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); display:flex; flex-direction:column; gap:16px; text-align:center;} 
+	.oba-buy-panel .product_title{font-size:1.65rem!important; margin:0!important; line-height:1.2; text-align:center;}
+	.oba-buy-panel .price{display:flex!important; justify-content:center; align-items:baseline; gap:8px; font-size:17px; color:#718096; margin:0;}
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-Price-amount,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .woocommerce-price-suffix,
+	.oba-auction-wrap[data-auction-tab="auction"] .oba-buy-panel .price bdi{display:flex!important; visibility:visible!important; opacity:1!important;}
+	.oba-price-prefix{color:#718096;}
+	.oba-buy-panel .price .woocommerce-Price-amount{font-size:1.25rem; font-weight:700; color:#1a202c;}
+	.oba-buy-panel .price .woocommerce-price-suffix{font-size:0.85rem; color:#475569;}
+	.oba-buy-panel form.cart{display:flex; flex-direction:column; gap:12px;}
+	.oba-buy-panel .single_add_to_cart_button{order:1; width:100%!important; padding:14px 16px!important; border-radius:12px!important; display:inline-flex; justify-content:center; align-items:center; gap:8px;}
+	.oba-buy-panel .single_add_to_cart_button i{font-size:16px;}
+	.oba-buy-panel .quantity{order:2; width:100%;}
+	.oba-buy-points{color:#475569; font-weight:600; margin:0; border-top:1px solid #f1f5f9; padding-top:12px; text-align:center; font-size:0.9rem;}
+	.oba-divider{display:none!important;}
+	.oba-divider:before,.oba-divider:after{display:none;}
+	/* Hide originals in summary; we re-render inside buy panel */
+	.single-product.product-type-auction .summary .product_title:not(.oba-moved),
+	.single-product.product-type-auction .summary .price:not(.oba-moved),
+	.single-product.product-type-auction .summary form.cart:not(.oba-moved),
+	.single-product.product-type-auction .summary .single_add_to_cart_button:not(.oba-moved),
+	.single-product.product-type-auction .summary .quantity:not(.oba-moved){display:none!important;}
+	/* Hide theme summary pieces within product_infos to avoid duplicates */
+	.single-product.product-type-auction .product_infos .product_summary_top,
+	.single-product.product-type-auction .product_infos .product_summary_middle,
+	.single-product.product-type-auction .product_infos > p.price:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > .price:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > form.cart:not(.oba-buy-panel *),
+	.single-product.product-type-auction .product_infos > .cart,
+	.single-product.product-type-auction .product_infos > .single_add_to_cart_button,
+	.single-product.product-type-auction .product_infos > .quantity{display:none!important;}
+	/* Extra guard: hide any title/price/cart outside buy panel within auction wrap */
+	.oba-auction-wrap h1.product_title:not(.oba-buy-panel *),
+	.oba-auction-wrap .price:not(.oba-buy-panel *),
+	.oba-auction-wrap form.cart:not(.oba-buy-panel *){display:none!important;}
 	</style>
+	<script>
+	(function($){
+		$(function(){
+			var $wrap = $('.oba-auction-wrap');
+			if(!$wrap.length) return;
+			$wrap.each(function(){
+				var $panel = $(this).find('.oba-buy-panel');
+				if(!$panel.length) return;
+				var $product = $(this).closest('.product');
+				var $summary = $product.find('.summary, .entry-summary').first();
+				if(!$summary.length) return;
+				['h1.product_title','p.price','form.cart'].forEach(function(sel){
+					var $el = $summary.find(sel).first();
+					if($el.length){
+						$el.addClass('oba-moved').appendTo($panel);
+					}
+				});
+				// Hide any remaining title/price/cart in the summary for this auction product only.
+				['h1.product_title','p.price','form.cart','.single_add_to_cart_button','.quantity'].forEach(function(sel){
+					$summary.find(sel).not('.oba-buy-panel *').hide();
+				});
+				// Extra guard: hide theme-rendered elements outside summary for this product only.
+				['h1.product_title','p.price','.price','.product_title','.cart','.single_add_to_cart_button','.quantity'].forEach(function(sel){
+					$product.find(sel).not('.oba-buy-panel *').hide();
+				});
+			});
+		});
+	})(jQuery);
+	// Move tabs/related into the left column on desktop to scroll with the gallery.
+	document.addEventListener('DOMContentLoaded', function(){
+		const adjustProductLayout = () => {
+			const tabs = document.querySelector('.woocommerce-tabs');
+			const related = document.querySelector('.single_product_summary_related');
+			const galleryCol = document.querySelector('.product_content_wrapper > .row > .columns:nth-child(1)');
+			const firstRow = document.querySelector('.product_content_wrapper > .row');
+			if (window.innerWidth > 1024) {
+				if (tabs && galleryCol && !galleryCol.contains(tabs)) { galleryCol.appendChild(tabs); }
+				if (related && galleryCol && !galleryCol.contains(related)) { galleryCol.appendChild(related); }
+			} else {
+				if (tabs && firstRow && firstRow.parentNode) {
+					firstRow.parentNode.insertBefore(tabs, firstRow.nextSibling);
+				}
+				if (related && firstRow && firstRow.parentNode) {
+					firstRow.parentNode.insertBefore(related, firstRow.nextSibling);
+				}
+			}
+		};
+		window.addEventListener('resize', adjustProductLayout);
+		adjustProductLayout();
+	});
+	</script>
 	<div class="oba-membership-overlay" style="display:none;">
 		<div class="oba-lock-overlay__inner">
 			<div class="oba-lock-title"><?php echo esc_html( $get( 'membership_required_title', __( 'Membership required to view auction details.', 'one-ba-auctions' ) ) ); ?></div>
@@ -157,13 +255,20 @@ $stage_tips = array(
 		</div>
 	</div>
 	<div class="oba-layout">
-		<div class="oba-guest-banner">
-			<div>
-				<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
-				<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
-			</div>
+		<?php
+		$price_html    = $product->get_price_html();
+		$description   = apply_filters( 'the_content', $product->get_description() );
+		$login_link    = ! empty( $settings['login_link'] ) ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) );
+		?>
+		<div class="oba-divider"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
+		<div class="oba-auction-panel">
+			<div class="oba-guest-banner">
+				<div>
+					<h4><?php esc_html_e( 'Log in to participate', 'one-ba-auctions' ); ?></h4>
+					<p><?php esc_html_e( 'Please log in or create an account to view details and join this auction.', 'one-ba-auctions' ); ?></p>
+				</div>
 			<div class="oba-guest-actions">
-				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>" target="_blank" rel="noopener">
+				<a class="button button-primary oba-guest-login" href="<?php echo esc_url( $login_link ); ?>" target="_blank" rel="noopener">
 					<?php esc_html_e( 'Log in / Sign up', 'one-ba-auctions' ); ?>
 				</a>
 				<?php if ( function_exists( 'shortcode_exists' ) && shortcode_exists( 'nextend_social_login_register_flow' ) && function_exists( 'do_shortcode' ) ) : ?>
@@ -198,6 +303,7 @@ $stage_tips = array(
 						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
 						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
 					</div>
+					<div class="oba-membership-inline" style="display:none;margin-top:10px;"></div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
 							<?php
@@ -207,9 +313,9 @@ $stage_tips = array(
 							);
 							?>
 						</p>
-						<div class="oba-login-cta" style="display:none;" data-login-url="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
+						<div class="oba-login-cta" style="display:none;" data-login-url="<?php echo esc_url( $login_link ); ?>">
 							<div class="oba-login-cta__text"><?php echo esc_html( $get( 'login_prompt', __( 'Please log in or create an account to register.', 'one-ba-auctions' ) ) ); ?></div>
-							<a class="button button-primary" href="<?php echo esc_url( $settings['login_link'] ? $settings['login_link'] : wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
+							<a class="button button-primary" href="<?php echo esc_url( $login_link ); ?>">
 								<?php echo esc_html( $get( 'login_button', __( 'Log in / Create account', 'one-ba-auctions' ) ) ); ?>
 							</a>
 						</div>
@@ -403,6 +509,7 @@ $stage_tips = array(
 			<div class="oba-toast" role="alert"></div>
 			<div class="oba-last-refreshed" style="display:none;"></div>
 		</div>
+		</div><!-- /.oba-auction-panel -->
 	</div>
 </div>
 
@@ -429,8 +536,8 @@ $stage_tips = array(
 			<span class="oba-autobid-window-remaining"></span>
 		</div>
 		<div class="oba-autobid-window-actions">
-			<button type="button" class="button oba-autobid-window-cancel"><?php echo esc_html( $get( 'autobid_modal_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
 			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php echo esc_html( $get( 'autobid_modal_enable', __( 'Enable', 'one-ba-auctions' ) ) ); ?></button>
+			<button type="button" class="button oba-autobid-window-cancel"><?php echo esc_html( $get( 'autobid_modal_cancel', __( 'Cancel', 'one-ba-auctions' ) ) ); ?></button>
 		</div>
 	</div>
 </div>
@@ -445,3 +552,9 @@ $stage_tips = array(
 		</div>
 	</div>
 </div>
+<script>
+(function($){
+	// Keep price hidden on the page (auction-first view).
+	$('.oba-auction-wrap').attr('data-auction-tab', 'auction');
+})(jQuery);
+</script>

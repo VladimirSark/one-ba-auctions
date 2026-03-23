@@ -58,6 +58,8 @@ class OBA_Plugin {
 		add_action( 'oba_run_expiry_check', array( $this, 'check_expired_auctions' ) );
 		add_action( 'oba_run_autobid_check', array( $this, 'run_autobid_check' ) );
 		add_action( 'oba_driver_tick', array( $this, 'run_driver_tick' ) );
+		add_filter( 'woocommerce_is_purchasable', array( $this, 'allow_buy_now_purchasable' ), 10, 2 );
+		add_action( 'user_register', array( $this, 'grant_welcome_points' ) );
 		add_filter(
 			'cron_schedules',
 			function ( $schedules ) {
@@ -258,6 +260,29 @@ class OBA_Plugin {
 			}
 			$service->maybe_run_autobids( $auction_id );
 		}
+	}
+
+	public function allow_buy_now_purchasable( $purchasable, $product ) {
+		if ( ! $product instanceof WC_Product ) {
+			return $purchasable;
+		}
+		if ( 'auction' !== $product->get_type() ) {
+			return $purchasable;
+		}
+		$enabled = $product->get_meta( '_oba_buy_now_enabled' );
+		if ( 'yes' === $enabled ) {
+			return true;
+		}
+		return $purchasable;
+	}
+
+	public function grant_welcome_points( $user_id ) {
+		if ( ! $user_id ) {
+			return;
+		}
+		$points = new OBA_Points_Service();
+		$points->add_points( $user_id, 5 );
+		update_user_meta( $user_id, '_oba_has_membership', 1 );
 	}
 
 	public function run_autobid_guard() { return; }
