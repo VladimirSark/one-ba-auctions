@@ -288,6 +288,13 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	visibility: visible !important;
 	opacity: 1 !important;
 }
+.oba-sc-buy .price,
+.oba-sc-buy p.price,
+.oba-sc-buy form.cart,
+.oba-sc-buy .quantity,
+.oba-sc-buy .single_add_to_cart_button {
+	display: flex !important;
+}
 body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy p.price,
 body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .price {
 	align-items: baseline;
