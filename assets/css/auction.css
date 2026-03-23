@@ -263,7 +263,7 @@
 	flex-wrap: nowrap !important;
 	align-items: stretch !important;
 	gap: 10px !important;
-	width: 100% !important;
+	width: auto !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	flex: 1 1 auto;
@@ -334,8 +334,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	flex: 0 0 auto;
 }
 body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity input.qty {
-	width: 80px;
-	max-width: 120px;
+	width: 100% !important;
+	max-width: 100% !important;
 	text-align: center;
 }
 .oba-buy-form button,
