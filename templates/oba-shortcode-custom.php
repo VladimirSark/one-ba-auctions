@@ -106,21 +106,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="oba-sc-card oba-sc-buy">
 			<div class="oba-sc-label">BUY</div>
 			<div class="oba-buy-block">
-				<div class="oba-buy-price">
-					<?php
-					$price_html = $product->get_price_html();
-					echo '<span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ';
-					echo wp_kses_post( $price_html );
-					?>
-				</div>
-				<div class="oba-buy-form">
-					<?php
-					if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
-						woocommerce_template_single_add_to_cart();
-					} else {
-						do_action( 'woocommerce_simple_add_to_cart' );
-					}
-					?>
+				<div class="oba-buy-inline">
+					<div class="oba-buy-price">
+						<?php
+						$price_html = $product->get_price_html();
+						echo '<span class="oba-price-pill">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . ' ' . wp_kses_post( $price_html ) . '</span>';
+						?>
+					</div>
+					<div class="oba-buy-form">
+						<?php
+						if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
+							woocommerce_template_single_add_to_cart();
+						} else {
+							do_action( 'woocommerce_simple_add_to_cart' );
+						}
+						?>
+					</div>
 				</div>
 				<?php
 				$pts = (int) $product->get_meta( '_oba_buy_now_points' );
@@ -135,11 +136,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="oba-sc-divider">
 			<span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span>
 		</div>
-		<div class="oba-sc-card oba-sc-auction">
-			<div class="oba-sc-label">AUCTION</div>
-			<?php
-			// Reuse legacy auction UI inside the panel for full functionality.
-			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	<div class="oba-sc-card oba-sc-auction">
+		<div class="oba-sc-label">AUCTION</div>
+		<?php
+		// Reuse legacy auction UI inside the panel for full functionality.
+		echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			?>
 		</div>
 	</div>
@@ -159,5 +160,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (active) active.classList.add('is-active');
 		});
 	});
+});
+
+// Change button text to "Buy it now" inside buy panel
+document.addEventListener('DOMContentLoaded', function(){
+	const btn = document.querySelector('.oba-shortcode-custom .oba-sc-buy .single_add_to_cart_button');
+	if(btn){
+		btn.textContent = btn.textContent.replace(/add to cart/i,'Buy it now');
+	}
 });
 </script>

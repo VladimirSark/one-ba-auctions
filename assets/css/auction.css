@@ -221,23 +221,26 @@
 	flex-direction: column;
 	gap: 10px;
 }
-.oba-buy-price {
-	font-size: 18px;
-	font-weight: 700;
-	color: #0f172a;
+.oba-buy-inline {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: nowrap;
+}
+.oba-buy-price {
 	order: 0;
 }
-.oba-sc-buy .woocommerce-price-suffix {
-	display: none !important;
-}
-.oba-price-prefix,
-.oba-price-suffix {
-	font-weight: 600;
-	color: #334155;
-	font-size: 14px;
+.oba-price-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 12px;
+	border: 1px solid #d7dde6;
+	border-radius: 999px;
+	background: #f8fafc;
+	font-weight: 700;
+	color: #0f172a;
+	gap: 6px;
+	white-space: nowrap;
 }
 .oba-buy-form {
 	display: flex;
