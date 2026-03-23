@@ -273,6 +273,21 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy form.
 	flex-direction: column;
 	gap: 10px;
 }
+
+/* Quantity below button, centered */
+body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .single_add_to_cart_button {
+	order: 1;
+}
+body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity {
+	order: 2;
+	justify-content: center;
+	width: 100%;
+}
+body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity input.qty {
+	width: 100%;
+	max-width: 260px;
+	text-align: center;
+}
 .oba-buy-form button,
 .oba-buy-form .single_add_to_cart_button {
 	width: 100%;
