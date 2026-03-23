@@ -13,12 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="oba-shortcode-custom" data-auction-id="<?php echo esc_attr( $product->get_id() ); ?>">
 	<div class="oba-sc-header oba-sc-card">
-		<div class="oba-sc-label">HEADER</div>
 		<h1 class="oba-sc-title"><?php echo esc_html( $product->get_title() ); ?></h1>
 	</div>
 	<div class="oba-sc-left">
 		<div class="oba-sc-card oba-sc-gallery">
-			<div class="oba-sc-label">MEDIA</div>
 			<div class="oba-media-main">
 				<?php
 				// Render main image only.
@@ -56,7 +54,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 		<div class="oba-sc-card oba-sc-info">
-			<div class="oba-sc-label">DETAILS</div>
 			<div class="oba-details-tabs">
 				<ul class="oba-tabs-nav">
 					<li class="is-active" data-tab="description"><?php esc_html_e( 'Description', 'one-ba-auctions' ); ?></li>
@@ -104,7 +101,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 	<div class="oba-sc-right">
 		<div class="oba-sc-card oba-sc-buy">
-			<div class="oba-sc-label">BUY</div>
 			<div class="oba-buy-block">
 				<div class="oba-buy-inline">
 					<div class="oba-buy-price">
@@ -136,11 +132,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="oba-sc-divider">
 			<span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span>
 		</div>
-	<div class="oba-sc-card oba-sc-auction">
-		<div class="oba-sc-label">AUCTION</div>
-		<?php
-		// Reuse legacy auction UI inside the panel for full functionality.
-		echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		<div class="oba-sc-card oba-sc-auction">
+			<?php
+			// Reuse legacy auction UI inside the panel for full functionality.
+			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			?>
 		</div>
 	</div>
