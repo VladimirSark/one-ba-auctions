@@ -229,6 +229,9 @@
 	flex-wrap: wrap;
 	gap: 6px;
 }
+.oba-sc-buy .woocommerce-price-suffix {
+	display: none !important;
+}
 .oba-price-prefix,
 .oba-price-suffix {
 	font-weight: 600;
@@ -240,8 +243,15 @@
 	flex-direction: column;
 	gap: 10px;
 }
+.oba-buy-form form.cart {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
 .oba-buy-form .quantity {
 	max-width: 140px;
+	display: flex;
+	align-items: center;
 }
 .oba-buy-form button,
 .oba-buy-form .single_add_to_cart_button {
