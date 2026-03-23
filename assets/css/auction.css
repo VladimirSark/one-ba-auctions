@@ -325,6 +325,9 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .sing
 	font-size: 14px !important;
 	font-weight: 700 !important;
 	text-transform: uppercase !important;
+	min-height: 60px !important;
+	height: 60px !important;
+	line-height: 1.2 !important;
 }
 body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity {
 	order: 2;
