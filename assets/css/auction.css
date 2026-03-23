@@ -468,14 +468,14 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		align-items: stretch;
 	}
 	.oba-sc-left {
-		max-height: calc(100vh - 140px);
-		overflow-y: auto;
+		max-height: none;
+		overflow: visible;
 	}
 	.oba-sc-right {
 		position: sticky;
 		top: 110px;
-		max-height: calc(100vh - 140px);
-		overflow: hidden;
+		max-height: none;
+		overflow: visible;
 		align-self: flex-start;
 	}
 }
