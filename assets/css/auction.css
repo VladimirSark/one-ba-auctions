@@ -513,6 +513,10 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		align-items: stretch;
 		overflow: visible;
 	}
+	/* Prevent right-column cards from shrinking when viewport height is reduced; let the column scroll instead */
+	.oba-sc-right > * {
+		flex: 0 0 auto;
+	}
 	.oba-buy-form,
 	.oba-buy-form form.cart {
 		flex-wrap: nowrap !important;
