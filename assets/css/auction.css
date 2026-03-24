@@ -349,6 +349,18 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 .oba-buy-form button,
 .oba-buy-form .single_add_to_cart_button {
+	justify-content: center;
+	align-items: center;
+}
+
+/* Desktop: keep buy row on one line */
+@media (min-width: 961px) {
+	.oba-buy-inline { flex-wrap: nowrap !important; }
+	.oba-buy-form { flex: 1 1 auto; flex-wrap: nowrap !important; }
+	.oba-buy-form form.cart { flex-wrap: nowrap !important; }
+}
+.oba-buy-form button,
+.oba-buy-form .single_add_to_cart_button {
 	width: auto !important;
 	flex: 1 1 auto;
 }
