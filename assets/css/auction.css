@@ -116,9 +116,10 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	gap: 14px;
-	max-width: inherit;
+	max-width: 100%;
 	margin: 32px auto;
 	padding: 0 35px 24px;
+	overflow: hidden;
 }
 .oba-sc-left,
 .oba-sc-right {
@@ -154,6 +155,13 @@
 	font-size: 24.487px !important;
 	line-height: 1.25;
 	color: #0f172a;
+}
+.oba-header-inline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
 }
 .oba-sc-label {
 	position: absolute;
@@ -221,14 +229,32 @@
 	flex-direction: column;
 	gap: 10px;
 }
+.oba-sc-divider.inline {
+	text-align: center;
+	margin: 14px 0;
+	color: #475569;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.oba-sc-divider.inline:before,
+.oba-sc-divider.inline:after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: #e2e8f0;
+}
 .oba-buy-inline {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	flex-wrap: nowrap;
+	flex-wrap: wrap;
 }
 .oba-buy-price {
 	order: 0;
+	flex: 0 0 auto;
 }
 .oba-price-pill {
 	display: inline-flex;
@@ -254,7 +280,7 @@
 	flex: 1 1 auto;
 	display: flex !important;
 	flex-direction: row !important;
-	flex-wrap: nowrap !important;
+	flex-wrap: wrap !important;
 	align-items: center !important;
 	gap: 12px !important;
 	width: 100% !important;
@@ -263,7 +289,7 @@
 .oba-buy-form form.cart {
 	display: flex !important;
 	flex-direction: row !important;
-	flex-wrap: nowrap !important;
+	flex-wrap: wrap !important;
 	align-items: center !important;
 	gap: 10px !important;
 	width: auto !important;
@@ -316,10 +342,12 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .sing
 	justify-content: center;
 	align-items: center;
 	width: auto !important;
+	min-width: 140px;
 	display: flex !important;
 	margin: 0 !important;
 	flex-grow: 1 !important;
 	padding: 12px 20px !important;
+	padding-top: 14px !important;
 	white-space: nowrap !important;
 	border-radius: 12px !important;
 	font-size: 14px !important;
@@ -347,6 +375,18 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 .oba-buy-form button,
 .oba-buy-form .single_add_to_cart_button {
+	justify-content: center;
+	align-items: center;
+}
+
+/* Desktop: keep buy row on one line */
+@media (min-width: 961px) {
+	.oba-buy-inline { flex-wrap: nowrap !important; }
+	.oba-buy-form { flex: 1 1 auto; flex-wrap: nowrap !important; }
+	.oba-buy-form form.cart { flex-wrap: nowrap !important; }
+}
+.oba-buy-form button,
+.oba-buy-form .single_add_to_cart_button {
 	width: auto !important;
 	flex: 1 1 auto;
 }
@@ -361,6 +401,11 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	color: #334155;
 	border-top: 1px solid #e2e8f0;
 	padding-top: 8px;
+}
+.oba-buy-points-line.inline {
+	border-top: none;
+	padding-top: 0;
+	margin-bottom: 12px;
 }
 .oba-details-tabs {
 	display: flex;
@@ -464,15 +509,41 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 @media only screen and (min-width: 1025px) {
 	.oba-shortcode-custom {
-		grid-template-columns: 60% 40%;
+		grid-template-columns: 58% 42%;
 		align-items: stretch;
+		overflow: visible;
+	}
+	/* Prevent right-column cards from shrinking when viewport height is reduced; let the column scroll instead */
+	.oba-sc-right > * {
+		flex: 0 0 auto;
+	}
+	.oba-buy-form,
+	.oba-buy-form form.cart {
+		flex-wrap: nowrap !important;
 	}
 	.oba-sc-left {
-		overflow-y: visible;
+		max-height: none;
+		overflow: visible;
 	}
 	.oba-sc-right {
 		position: sticky;
-		top: 120px;
+		top: 110px;
+		max-height: calc(100vh - 120px);
+		overflow-y: auto;
+		overflow-x: hidden;
+		align-self: flex-start;
+		padding-right: 8px;
+	}
+}
+
+@media only screen and (min-width: 1025px) and (max-width: 1280px) {
+	.oba-auction-buy-inline { gap: 10px; }
+	.oba-buy-form { gap: 10px !important; }
+	.oba-buy-form form.cart { gap: 8px !important; }
+	.oba-price-pill { padding: 6px 10px; font-size: 16px; }
+	body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .single_add_to_cart_button {
+		padding: 10px 16px !important;
+		min-height: 52px !important;
 	}
 }
 
@@ -1296,6 +1367,32 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-explainer {
 		grid-template-columns: repeat(2, 1fr);
 	}
+	.oba-shortcode-custom {
+		grid-template-columns: 1fr;
+		padding: 0 12px 20px;
+		max-width: 100%;
+		width: 100%;
+		overflow: hidden;
+	}
+	.oba-sc-left,
+	.oba-sc-right {
+		max-height: none;
+		overflow: visible;
+		display: contents;
+	}
+	.oba-sc-right {
+		position: static;
+		top: auto;
+	}
+	/* Mobile order: Title, Media, Buy, Auction, Details */
+	.oba-sc-header { order: 1; }
+	.oba-sc-gallery { order: 2; }
+	.oba-sc-auction { order: 3; }
+	.oba-sc-info { order: 4; }
+	/* Media sizing on mobile */
+	.oba-media-main { width: 100%; }
+	.oba-media-main img { max-width: 100%; width: 100%; height: auto; }
+	.oba-sc-card { width: 100%; box-sizing: border-box; }
 }
 
 @media (max-width: 640px) {
@@ -1308,6 +1405,22 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-credit-pill {
 		padding: 8px 12px;
 		font-size: 12px;
+	}
+	/* Wrap buy row to prevent overflow on very small screens */
+	.oba-buy-inline { flex-wrap: wrap !important; gap: 10px !important; }
+	.oba-buy-price { flex: 1 1 100%; }
+	.oba-price-pill { width: 100%; justify-content: center; }
+	.oba-buy-form form.cart { flex-wrap: wrap !important; }
+	body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .single_add_to_cart_button {
+		width: 100% !important;
+	}
+	body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity {
+		width: 100% !important;
+		max-width: 100% !important;
+		justify-content: center;
+	}
+	body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quantity input.qty {
+		max-width: 120px !important;
 	}
 }
 .oba-auction-wrap[data-auction-tab="auction"] .oba-auction-panel .price,

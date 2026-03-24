@@ -34,8 +34,9 @@
 - Point value setting stored in options to estimate monetary equivalents.
 
 ## Frontend
-- Assets: `assets/js/auction.js` (polling, actions), `assets/css/auction.css` (layout/styling).
-- UI: 4-step cards (registration, pre-live, live, ended), lobby bar with %, timers, history list, toasts, T&C modal, winner/loser blocks, leading-bidder lockout, membership lock overlays, “Your points” display.
+- Templates: `templates/oba-single-shortcode-only.php` forces auction products to use a custom shortcode shell; `templates/oba-shortcode-custom.php` builds the layout with header (title + price pill), left column (main image + thumbnails + tabs for Description/Additional info/Reviews), and sticky right column (legacy auction UI, divider, buy row).
+- Assets: `assets/js/auction.js` (polling, actions), `assets/css/auction.css` (layout/styling: 58/42 desktop split, sticky right column that scrolls instead of shrinking, mobile order media → auction → buy → details).
+- UI: 4-step cards (registration, pre-live, live, ended), lobby bar with %, timers, history list, toasts, T&C modal, winner/loser blocks, leading-bidder lockout, membership lock overlays, “Your points” display, redesigned buy row (price pill in header; qty + button inline on desktop).
 
 ## Admin
 - Menu: **1BA Auctions** with All Auctions (filter by status, participants registered/required), auction detail (status, winner, claim/order link, end time, totals, participant log with inline removal), Audit Log, Settings (General/Emails/Translations inline), Memberships screen (membership flag + points editor).

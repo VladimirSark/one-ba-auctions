@@ -59,3 +59,9 @@
 - **Why:** Operational visibility and support.
 - **Alternatives:** Minimal UI. Rejected to avoid SQL reliance.
 - **Consequences:** More surfaces to maintain; audit must stay in sync with actions.
+
+## Auction product layout via shortcode shell
+- **Decision:** Auction products bypass the default WooCommerce single-product summary and render a custom shortcode shell (`oba-single-shortcode-only.php` + `oba-shortcode-custom.php`) that composes media/tabs on the left and auction + buy panels on a sticky right column.
+- **Why:** Ensure a consistent, branded layout and avoid conflicting WooCommerce summary output while keeping auction controls visible and responsive.
+- **Alternatives:** Inject auction UI into the native Woo summary. Rejected due to layout clashes and lack of control over mobile ordering.
+- **Consequences:** Any theme hooks into the default summary won’t appear for auction products; layout/styling changes belong in the shortcode template/CSS.

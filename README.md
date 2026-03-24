@@ -8,10 +8,11 @@ WooCommerce auction product type with an AJAX 4-step frontend. Registration now 
 - **Membership & points:** membership is required to view/participate. Membership products grant points on order completion (stored in `wp_auction_user_points`). Registration deducts points instantly—no checkout for registration.
 - **Live join (optional):** auctions can allow late joiners during live for a higher points fee than registration; live CTA shows “Participate in auction (X pts)” with T&C gating and deducts points on join before bidding is enabled.
 - **Bidding:** bid fee = bid product price; bids logged; live timer resets per bid.
-- **Autobid (per auction):** users must select a window (10/30/60 minutes) when enabling autobid; points are charged on enable, the window starts at live, and autobid turns off when the window expires. Manual bids are blocked while autobid is on; the bid button shows remaining autobid time.
+- **Autobid (per auction):** modal-driven max-bid proxy (supports limitless “stay on top”); charges points on enable, fires near the end of the live timer, rotates fairly across autobidders, and blocks manual bids while enabled.
 - **Claim:** winner claim adds total bid fees to checkout; claim order tagged with `_oba_claim_auction_id`; claimed status shows with order link when completed.
 - **Data tables:** participants, bids, winners, audit log, user points (+ ledger).
-- **Frontend:** single template with 4 step cards, lobby %, timers, history, winner/loser blocks, T&C modal, membership lock overlay, and “Your points” display. Guests see a blurred view with a stacked login/signup prompt; primary actions open the configured login URL in a new tab.
+- **Frontend layout:** auction products use a custom shortcode shell (title + price pill header, left media + tabs, sticky right column with auction UI, divider, buy row). Mobile stacks (media → auction → buy → details); desktop uses a sticky right column that scrolls instead of shrinking.
+- **Guest UX:** auction UI stays visible but blurred with a login/signup prompt; primary actions open the configured login URL in a new tab.
 - **Admin (1BA menu):** All Auctions list with status filter and “registered/required” counts; auction detail shows status, winner, claim/order, end time, totals (registration points/value and bids/savings), participant log with inline removal; Audit Log; Settings (General/Emails/Translations); Memberships screen to toggle membership and edit points.
 - **Settings:** default timers, poll interval, T&C text, login link, status-info HTML, email sender, translations overrides, email templates, point value (for money equivalent).
 - **Ops/reliability:** cron expiry check, manual status actions, CLI tools for expiry/end/list; admin “End now”.

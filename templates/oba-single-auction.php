@@ -341,13 +341,7 @@ $stage_tips = array(
 						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
 					</div>
 					<div class="oba-registered-note" style="display:none;margin-top:8px;">
-						<?php echo esc_html( $get( 'register_note', __( 'You are registered, wait for Step 2. Share this auction to reach 100% faster!', 'one-ba-auctions' ) ) ); ?>
-						<div class="oba-share-buttons">
-							<a class="oba-share-btn oba-share-fb" href="#" data-network="facebook"><?php esc_html_e( 'Share on Facebook', 'one-ba-auctions' ); ?></a>
-							<a class="oba-share-btn oba-share-instagram" href="#" data-network="instagram"><?php esc_html_e( 'Share on Instagram', 'one-ba-auctions' ); ?></a>
-							<a class="oba-share-btn oba-share-x" href="#" data-network="x"><?php esc_html_e( 'Share on X', 'one-ba-auctions' ); ?></a>
-							<a class="oba-share-btn oba-share-copy" href="#" data-network="copy"><?php esc_html_e( 'Copy link', 'one-ba-auctions' ); ?></a>
-						</div>
+						<?php echo esc_html__( "You're in. Waiting for more participants.", 'one-ba-auctions' ); ?>
 					</div>
 					<div class="oba-autobid-setup" data-phase="registration" style="margin-top:12px;">
 						<div class="oba-autobid-card">
