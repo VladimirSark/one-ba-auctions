@@ -341,7 +341,7 @@ $stage_tips = array(
 						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
 					</div>
 					<div class="oba-registered-note" style="display:none;margin-top:8px;">
-						<?php echo esc_html__( "You're in. Waiting for more participants. (+5 pts if 3 people join from your link)", 'one-ba-auctions' ); ?>
+						<?php echo esc_html__( "You're in. Waiting for more participants.", 'one-ba-auctions' ); ?>
 					</div>
 					<div class="oba-autobid-setup" data-phase="registration" style="margin-top:12px;">
 						<div class="oba-autobid-card">
