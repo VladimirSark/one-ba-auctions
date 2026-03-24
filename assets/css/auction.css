@@ -226,10 +226,11 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	flex-wrap: nowrap;
+	flex-wrap: wrap;
 }
 .oba-buy-price {
 	order: 0;
+	flex: 0 0 auto;
 }
 .oba-price-pill {
 	display: inline-flex;
@@ -252,10 +253,10 @@
 	flex: 1 1 auto;
 }
 .oba-buy-form {
-	flex: 1 1 auto;
+	flex: 1 1 220px;
 	display: flex !important;
 	flex-direction: row !important;
-	flex-wrap: nowrap !important;
+	flex-wrap: wrap !important;
 	align-items: center !important;
 	gap: 12px !important;
 	width: 100% !important;
@@ -264,7 +265,7 @@
 .oba-buy-form form.cart {
 	display: flex !important;
 	flex-direction: row !important;
-	flex-wrap: nowrap !important;
+	flex-wrap: wrap !important;
 	align-items: center !important;
 	gap: 10px !important;
 	width: auto !important;
