@@ -114,6 +114,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			?>
 		</div>
+		<div class="oba-sc-divider inline"><span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span></div>
 		<div class="oba-sc-card oba-sc-buy">
 			<div class="oba-buy-block">
 				<div class="oba-buy-form">

@@ -229,6 +229,23 @@
 	flex-direction: column;
 	gap: 10px;
 }
+.oba-sc-divider.inline {
+	text-align: center;
+	margin: 14px 0;
+	color: #475569;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.oba-sc-divider.inline:before,
+.oba-sc-divider.inline:after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: #e2e8f0;
+}
 .oba-buy-inline {
 	display: flex;
 	align-items: center;
