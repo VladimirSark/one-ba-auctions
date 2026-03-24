@@ -406,6 +406,14 @@
 - **Constraints/Assumptions:** Woo core saves stock/virtual/downloadable meta; auction products inherit simple product stock semantics (typically stock=1, manage stock on).
 - **How to test:** Edit an auction product → Inventory tab visible; set “Manage stock” + qty, save; toggle Virtual/Downloadable, add a file, save; confirm values persist and shipping behaves accordingly on checkout/claim.
 
+## 2026-03-24 — Dedicated auction product layout (shortcode-only) + sticky column stability
+- **Summary:** Replaced the default Woo single-product rendering for auction products with a custom shortcode shell: header with inline price pill, left column (main image + thumbnails + tabs for Description/Additional info/Reviews), and a sticky right column containing the legacy auction UI, spacer, and a horizontal buy row (price pill stays in header, qty + buy button inline, points line below). Mobile stacks to a single column (media → auction → buy → details), desktop keeps 58/42 split with sticky right column that now scrolls instead of shrinking when viewport height changes.
+- **Why:** Needed a self-contained, on-brand layout that hides Woo’s default summary while keeping auction controls visible and stable across viewport sizes.
+- **Files/Classes:** `templates/oba-single-shortcode-only.php`, `templates/oba-shortcode-custom.php`, `assets/css/auction.css` (layout, sticky, buy row, mobile order), `includes/class-frontend.php` (template hook, shortcode rendering).
+- **DB:** None.
+- **Constraints/Assumptions:** Applies only to `product-type-auction`; standard products use native Woo layouts. Legacy auction shortcode is reused inside the right column for functional parity.
+- **How to test:** Create/view an auction product on desktop and mobile. Verify default Woo summary is hidden; see header with title + price pill, left media + tabs, right sticky column (auction → “or” divider → buy row with qty and button). Resize browser vertically—right column should become scrollable without collapsing its contents; horizontally, buy row stays inline on desktop and wraps neatly on small screens.
+
 ## 2025-11-21 — Custom login/account link
 - **Summary:** Added settings field for custom login/account URL used in logged-out registration prompts.
 - **Why:** Let sites direct users to a specific login/signup page.

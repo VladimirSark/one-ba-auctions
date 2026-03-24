@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-03-24
+### Added
+- Auction products now render through a dedicated shortcode layout (`oba-single-shortcode-only.php` + `oba-shortcode-custom.php`): header with title + price pill, left column (main image, thumbnails, tabs for description/additional info/reviews), and sticky right column containing the legacy auction UI plus buy row.
+### Changed
+- Default WooCommerce product summary is suppressed for auction products; the custom layout loads automatically with no shortcode ID required.
+- Buy row redesigned: price pill stays in the header, quantity + “Buy it now” button stay inline on desktop and wrap cleanly on small screens; points-earned line sits beneath.
+- Layout is mobile-first (media → auction → buy → details) and desktop uses a 58/42 split; the right column is sticky and now scrolls instead of shrinking when viewport height changes.
+
 ## 2026-01-08
 ### Added
 - Optional live join stage: auctions can allow unregistered users to join during live for a higher points fee than registration; live CTA shows “Participate in auction (X pts)” with T&C gating, deducts points on join, and replaces the bid button until registered.
