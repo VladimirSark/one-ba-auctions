@@ -13,7 +13,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="oba-shortcode-custom" data-auction-id="<?php echo esc_attr( $product->get_id() ); ?>">
 	<div class="oba-sc-header oba-sc-card">
-		<h1 class="oba-sc-title"><?php echo esc_html( $product->get_title() ); ?></h1>
+		<div class="oba-header-inline">
+			<h1 class="oba-sc-title"><?php echo esc_html( $product->get_title() ); ?></h1>
+			<div class="oba-buy-price">
+				<?php
+				$price_html = $product->get_price_html();
+				echo '<span class="oba-price-pill"><span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ' . wp_kses_post( $price_html ) . '</span>';
+				?>
+			</div>
+		</div>
 	</div>
 	<div class="oba-sc-left">
 		<div class="oba-sc-card oba-sc-gallery">
@@ -101,13 +109,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 	<div class="oba-sc-right">
 		<div class="oba-sc-card oba-sc-auction">
-			<div class="oba-auction-buy-inline">
-				<div class="oba-buy-price">
-					<?php
-					$price_html = $product->get_price_html();
-					echo '<span class="oba-price-pill"><span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ' . wp_kses_post( $price_html ) . '</span>';
-					?>
-				</div>
+			<?php
+			// Reuse legacy auction UI inside the panel for full functionality.
+			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			?>
+		</div>
+		<div class="oba-sc-card oba-sc-buy">
+			<div class="oba-buy-block">
 				<div class="oba-buy-form">
 					<?php
 					if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
@@ -117,20 +125,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 					}
 					?>
 				</div>
+				<?php
+				$pts = (int) $product->get_meta( '_oba_buy_now_points' );
+				if ( $pts > 0 ) :
+					?>
+					<div class="oba-buy-points-line">
+						<?php printf( esc_html__( 'Earn %d pts with this purchase.', 'one-ba-auctions' ), $pts ); ?>
+					</div>
+				<?php endif; ?>
 			</div>
-			<?php
-			$pts = (int) $product->get_meta( '_oba_buy_now_points' );
-			if ( $pts > 0 ) :
-				?>
-				<div class="oba-buy-points-line inline">
-					<?php printf( esc_html__( 'Earn %d pts with this purchase.', 'one-ba-auctions' ), $pts ); ?>
-				</div>
-			<?php endif; ?>
-
-			<?php
-			// Reuse legacy auction UI inside the panel for full functionality.
-			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			?>
 		</div>
 	</div>
 </div>

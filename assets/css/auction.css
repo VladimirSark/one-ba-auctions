@@ -156,6 +156,13 @@
 	line-height: 1.25;
 	color: #0f172a;
 }
+.oba-header-inline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
 .oba-sc-label {
 	position: absolute;
 	top: 10px;
@@ -217,16 +224,6 @@
 .thumb-placeholder {
 	height: 70px;
 }
-.oba-auction-buy-inline {
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: center;
-	gap: 12px;
-	margin-bottom: 10px;
-}
-.oba-auction-buy-inline > * {
-	min-width: 0;
-}
 .oba-buy-block {
 	display: flex;
 	flex-direction: column;
@@ -263,7 +260,7 @@
 	flex: 1 1 auto;
 }
 .oba-buy-form {
-	flex: 1 1 220px;
+	flex: 1 1 auto;
 	display: flex !important;
 	flex-direction: row !important;
 	flex-wrap: wrap !important;
@@ -499,7 +496,6 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		align-items: stretch;
 		overflow: visible;
 	}
-	.oba-auction-buy-inline,
 	.oba-buy-form,
 	.oba-buy-form form.cart {
 		flex-wrap: nowrap !important;
