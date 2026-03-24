@@ -11,6 +11,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
+<?php
+$gallery_ids = array();
+if ( $product instanceof WC_Product ) {
+	$main_id     = $product->get_image_id();
+	$gallery_ids = $product->get_gallery_image_ids();
+	// Ensure main image is first and unique.
+	$ordered_ids = array_values( array_filter( array_unique( array_merge( array( $main_id ), $gallery_ids ) ) ) );
+} else {
+	$ordered_ids = array();
+}
+$gallery_urls = array();
+foreach ( $ordered_ids as $oid ) {
+	$url = wp_get_attachment_image_url( $oid, 'full' );
+	if ( $url ) {
+		$gallery_urls[] = $url;
+	}
+}
+$gallery_json = esc_attr( wp_json_encode( $gallery_urls ) );
+$main_id      = $ordered_ids[0] ?? 0;
+?>
 <div class="oba-shortcode-custom" data-auction-id="<?php echo esc_attr( $product->get_id() ); ?>">
 	<div class="oba-sc-header oba-sc-card">
 		<div class="oba-header-inline">
@@ -24,17 +44,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 	<div class="oba-sc-left">
-		<div class="oba-sc-card oba-sc-gallery">
+		<div class="oba-sc-card oba-sc-gallery" data-gallery="<?php echo $gallery_json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>">
 			<div class="oba-media-main">
 				<?php
 				// Render main image only.
 				if ( function_exists( 'wc_get_gallery_image_html' ) && $product instanceof WC_Product ) {
-					$attachment_ids = $product->get_gallery_image_ids();
-					$main_id        = $product->get_image_id();
 					if ( $main_id ) {
-						echo wp_get_attachment_image( $main_id, 'large', false, array( 'class' => 'oba-main-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					} elseif ( ! empty( $attachment_ids ) ) {
-						echo wp_get_attachment_image( $attachment_ids[0], 'large', false, array( 'class' => 'oba-main-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo wp_get_attachment_image( $main_id, 'large', false, array( 'class' => 'oba-main-image', 'data-index' => 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					} elseif ( ! empty( $ordered_ids ) ) {
+						echo wp_get_attachment_image( $ordered_ids[0], 'large', false, array( 'class' => 'oba-main-image', 'data-index' => 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					} else {
 						echo '<div class="oba-sc-placeholder"></div>';
 					}
@@ -43,15 +61,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 			<div class="oba-media-thumbs">
 				<?php
-				if ( function_exists( 'wc_get_gallery_image_html' ) && $product instanceof WC_Product ) {
-					$thumb_ids = $product->get_gallery_image_ids();
-					if ( $product->get_image_id() ) {
-						$thumb_ids = array_diff( $thumb_ids, array( $product->get_image_id() ) );
-					}
+				if ( ! empty( $ordered_ids ) ) {
+					$thumb_ids = $ordered_ids;
+					// Drop the first one (main) for thumbs.
+					array_shift( $thumb_ids );
 					if ( ! empty( $thumb_ids ) ) {
 						echo '<div class="oba-thumb-list">';
+						$thumb_index = 1;
 						foreach ( $thumb_ids as $tid ) {
-							echo wp_get_attachment_image( $tid, 'thumbnail', false, array( 'class' => 'oba-thumb-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo wp_get_attachment_image( $tid, 'thumbnail', false, array( 'class' => 'oba-thumb-image', 'data-index' => $thumb_index ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							$thumb_index++;
 						}
 						echo '</div>';
 					} else {
