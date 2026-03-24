@@ -1183,3 +1183,70 @@ $(document).on('click', '.oba-autobid-window-btn', function (e) {
 		e.preventDefault();
 	});
 })(jQuery);
+
+/* ===== Lightbox for product media (shortcode layout) ===== */
+(function ($) {
+	let currentIndex = 0;
+	let currentGallery = [];
+
+	const ensureLightbox = () => {
+		if ($('#oba-lightbox').length) {
+			return $('#oba-lightbox');
+		}
+		const tpl = `
+			<div id="oba-lightbox" class="oba-lightbox" aria-hidden="true">
+				<div class="oba-lightbox-content">
+					<button class="oba-lightbox-close" type="button" aria-label="Close">×</button>
+					<button class="oba-lightbox-prev" type="button" aria-label="Previous">‹</button>
+					<img class="oba-lightbox-img" src="" alt="">
+					<button class="oba-lightbox-next" type="button" aria-label="Next">›</button>
+					<div class="oba-lightbox-counter"></div>
+				</div>
+			</div>`;
+		$('body').append(tpl);
+		return $('#oba-lightbox');
+	};
+
+	const showImage = (idx) => {
+		if (!currentGallery.length) return;
+		currentIndex = (idx + currentGallery.length) % currentGallery.length;
+		const $lb = ensureLightbox();
+		$lb.find('.oba-lightbox-img').attr('src', currentGallery[currentIndex]);
+		$lb.find('.oba-lightbox-counter').text((currentIndex + 1) + ' / ' + currentGallery.length);
+		$lb.addClass('is-open');
+		$('body').addClass('oba-lightbox-open');
+	};
+
+	const closeLightbox = () => {
+		const $lb = $('#oba-lightbox');
+		$lb.removeClass('is-open');
+		$('body').removeClass('oba-lightbox-open');
+	};
+
+	$(document).on('click', '.oba-main-image, .oba-thumb-image', function (e) {
+		e.preventDefault();
+		const $gallery = $(this).closest('.oba-sc-gallery');
+		let data = $gallery.data('gallery');
+		if (typeof data === 'string') {
+			try { data = JSON.parse(data); } catch (err) { data = []; }
+		}
+		currentGallery = Array.isArray(data) ? data : [];
+		if (!currentGallery.length) return;
+		const idx = parseInt($(this).data('index'), 10) || 0;
+		showImage(idx);
+	});
+
+	$(document).on('click', '.oba-lightbox-close', function (e) { e.preventDefault(); closeLightbox(); });
+	$(document).on('click', '.oba-lightbox-prev', function (e) { e.preventDefault(); showImage(currentIndex - 1); });
+	$(document).on('click', '.oba-lightbox-next', function (e) { e.preventDefault(); showImage(currentIndex + 1); });
+	$(document).on('click', '#oba-lightbox', function (e) {
+		if ($(e.target).is('#oba-lightbox')) { closeLightbox(); }
+	});
+	$(document).on('keydown', function (e) {
+		const $lb = $('#oba-lightbox');
+		if (!$lb.hasClass('is-open')) return;
+		if (e.key === 'Escape') { closeLightbox(); }
+		if (e.key === 'ArrowLeft') { showImage(currentIndex - 1); }
+		if (e.key === 'ArrowRight') { showImage(currentIndex + 1); }
+	});
+})(jQuery);
