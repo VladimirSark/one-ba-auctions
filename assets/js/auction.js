@@ -181,16 +181,16 @@
 			showAlert(obaAuction.i18n?.membership_required || 'Membership required to register.');
 			$('.oba-autobid').hide();
 		} else if (state.data.user_registered) {
-			regBtn.addClass('oba-registered').prop('disabled', true);
+			regBtn.addClass('oba-registered').prop('disabled', true).hide();
 			$('.oba-terms').hide();
-			$('.oba-registered-note').show();
+			$('.oba-registered-note').show().text(obaAuction.i18n?.registered_waiting || "You're in. Waiting for more participants. (+5 pts if 3 people join from your link)");
 			$('.oba-not-registered').hide();
-			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').show();
+			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').hide();
 			$('.oba-pending-banner').hide();
 			$('.oba-autobid').show();
 			$('.oba-autobid-config').prop('disabled', false).show();
 		} else {
-			regBtn.removeClass('oba-registered').prop('disabled', false);
+			regBtn.removeClass('oba-registered').prop('disabled', false).show();
 			$('.oba-terms').show();
 			$('.oba-live-terms').hide();
 			$('.oba-registered-note').hide();
