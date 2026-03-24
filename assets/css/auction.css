@@ -217,6 +217,16 @@
 .thumb-placeholder {
 	height: 70px;
 }
+.oba-auction-buy-inline {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+.oba-auction-buy-inline > * {
+	min-width: 0;
+}
 .oba-buy-block {
 	display: flex;
 	flex-direction: column;
@@ -376,6 +386,11 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	border-top: 1px solid #e2e8f0;
 	padding-top: 8px;
 }
+.oba-buy-points-line.inline {
+	border-top: none;
+	padding-top: 0;
+	margin-bottom: 12px;
+}
 .oba-details-tabs {
 	display: flex;
 	flex-direction: column;
@@ -482,6 +497,11 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		align-items: stretch;
 		overflow: visible;
 	}
+	.oba-auction-buy-inline,
+	.oba-buy-form,
+	.oba-buy-form form.cart {
+		flex-wrap: nowrap !important;
+	}
 	.oba-sc-left {
 		max-height: none;
 		overflow: visible;
@@ -492,6 +512,17 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		max-height: calc(100vh - 140px);
 		overflow: auto;
 		align-self: flex-start;
+	}
+}
+
+@media only screen and (min-width: 1025px) and (max-width: 1280px) {
+	.oba-auction-buy-inline { gap: 10px; }
+	.oba-buy-form { gap: 10px !important; }
+	.oba-buy-form form.cart { gap: 8px !important; }
+	.oba-price-pill { padding: 6px 10px; font-size: 16px; }
+	body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .single_add_to_cart_button {
+		padding: 10px 16px !important;
+		min-height: 52px !important;
 	}
 }
 
@@ -1335,10 +1366,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	/* Mobile order: Title, Media, Buy, Auction, Details */
 	.oba-sc-header { order: 1; }
 	.oba-sc-gallery { order: 2; }
-	.oba-sc-buy { order: 3; }
-	.oba-sc-divider { order: 4; }
-	.oba-sc-auction { order: 5; }
-	.oba-sc-info { order: 6; }
+	.oba-sc-auction { order: 3; }
+	.oba-sc-info { order: 4; }
 	/* Media sizing on mobile */
 	.oba-media-main { width: 100%; }
 	.oba-media-main img { max-width: 100%; width: 100%; height: auto; }

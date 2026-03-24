@@ -100,39 +100,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 	<div class="oba-sc-right">
-		<div class="oba-sc-card oba-sc-buy">
-			<div class="oba-buy-block">
-				<div class="oba-buy-inline">
-					<div class="oba-buy-price">
-						<?php
-						$price_html = $product->get_price_html();
-						echo '<span class="oba-price-pill"><span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ' . wp_kses_post( $price_html ) . '</span>';
-						?>
-					</div>
-					<div class="oba-buy-form">
-						<?php
-						if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
-							woocommerce_template_single_add_to_cart();
-						} else {
-							do_action( 'woocommerce_simple_add_to_cart' );
-						}
-						?>
-					</div>
-				</div>
-				<?php
-				$pts = (int) $product->get_meta( '_oba_buy_now_points' );
-				if ( $pts > 0 ) :
-					?>
-					<div class="oba-buy-points-line">
-						<?php printf( esc_html__( 'Earn %d pts with this purchase.', 'one-ba-auctions' ), $pts ); ?>
-					</div>
-				<?php endif; ?>
-			</div>
-		</div>
-		<div class="oba-sc-divider">
-			<span><?php esc_html_e( 'or', 'one-ba-auctions' ); ?></span>
-		</div>
 		<div class="oba-sc-card oba-sc-auction">
+			<div class="oba-auction-buy-inline">
+				<div class="oba-buy-price">
+					<?php
+					$price_html = $product->get_price_html();
+					echo '<span class="oba-price-pill"><span class="oba-price-prefix">' . esc_html__( 'Reguliari kaina:', 'one-ba-auctions' ) . '</span> ' . wp_kses_post( $price_html ) . '</span>';
+					?>
+				</div>
+				<div class="oba-buy-form">
+					<?php
+					if ( function_exists( 'woocommerce_template_single_add_to_cart' ) ) {
+						woocommerce_template_single_add_to_cart();
+					} else {
+						do_action( 'woocommerce_simple_add_to_cart' );
+					}
+					?>
+				</div>
+			</div>
+			<?php
+			$pts = (int) $product->get_meta( '_oba_buy_now_points' );
+			if ( $pts > 0 ) :
+				?>
+				<div class="oba-buy-points-line inline">
+					<?php printf( esc_html__( 'Earn %d pts with this purchase.', 'one-ba-auctions' ), $pts ); ?>
+				</div>
+			<?php endif; ?>
+
 			<?php
 			// Reuse legacy auction UI inside the panel for full functionality.
 			echo do_shortcode( '[oba_auction id="' . $product->get_id() . '" layout="legacy"]' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
