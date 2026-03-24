@@ -328,6 +328,7 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .sing
 	justify-content: center;
 	align-items: center;
 	width: auto !important;
+	min-width: 140px;
 	display: flex !important;
 	margin: 0 !important;
 	flex-grow: 1 !important;
