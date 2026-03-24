@@ -525,7 +525,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 		position: sticky;
 		top: 110px;
 		max-height: calc(100vh - 140px);
-		overflow: auto;
+		overflow-y: auto;
+		overflow-x: visible;
 		align-self: flex-start;
 	}
 }
