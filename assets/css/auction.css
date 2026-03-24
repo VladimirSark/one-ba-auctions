@@ -190,6 +190,13 @@
 	display: flex;
 	justify-content: center;
 }
+.oba-main-image {
+	max-width: 100%;
+	height: auto;
+	object-fit: contain;
+	border-radius: 10px;
+	box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+}
 .oba-media-main img {
 	max-width: 100%;
 	height: auto;
@@ -207,6 +214,13 @@
 	gap: 10px;
 	flex-wrap: wrap;
 	justify-content: center;
+}
+.oba-thumb-image {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border-radius: 10px;
+	box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 .oba-thumb-list li,
 .oba-thumb-list figure {

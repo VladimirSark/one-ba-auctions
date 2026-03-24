@@ -32,9 +32,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 					$attachment_ids = $product->get_gallery_image_ids();
 					$main_id        = $product->get_image_id();
 					if ( $main_id ) {
-						echo wc_get_gallery_image_html( $main_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo wp_get_attachment_image( $main_id, 'large', false, array( 'class' => 'oba-main-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					} elseif ( ! empty( $attachment_ids ) ) {
-						echo wc_get_gallery_image_html( $attachment_ids[0] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo wp_get_attachment_image( $attachment_ids[0], 'large', false, array( 'class' => 'oba-main-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					} else {
 						echo '<div class="oba-sc-placeholder"></div>';
 					}
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					if ( ! empty( $thumb_ids ) ) {
 						echo '<div class="oba-thumb-list">';
 						foreach ( $thumb_ids as $tid ) {
-							echo wc_get_gallery_image_html( $tid, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo wp_get_attachment_image( $tid, 'thumbnail', false, array( 'class' => 'oba-thumb-image' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						}
 						echo '</div>';
 					} else {
