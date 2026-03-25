@@ -1462,6 +1462,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-sc-gallery { order: 2; }
 	.oba-sc-auction { order: 3; }
 	.oba-sc-info { order: 4; }
+	.oba-sc-divider.inline { order: 5; }
+	.oba-sc-buy { order: 6; }
 	/* Media sizing on mobile */
 	.oba-media-main { width: 100%; }
 	.oba-media-main img { max-width: 100%; width: 100%; height: auto; }
