@@ -493,6 +493,7 @@ class OBA_Ajax_Controller {
 			),
 			'can_bid'                   => $can_bid,
 			'has_enough_credits'        => true,
+			// NOTE: credits == payable balance (real money). This flag is not a validation check; do not rely on it for payment enforcement.
 			'has_enough_credits_to_claim' => true,
 			'wc_order_id'               => $winner_row ? (int) $winner_row['wc_order_id'] : null,
 			'is_admin'                  => current_user_can( 'manage_woocommerce' ),

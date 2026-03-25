@@ -412,7 +412,8 @@ class OBA_Frontend {
 		}
 		$credits_service = new OBA_Credits_Service();
 		$balance         = $credits_service->get_balance( get_current_user_id() );
-		return '<span class="oba-credit-shortcode">' . esc_html( $balance ) . '</span>';
+		// Credits here mean payable auction balance (real money), not utility points.
+		return '<span class="oba-credit-shortcode" title="' . esc_attr__( 'Payable auction balance (not utility points)', 'one-ba-auctions' ) . '">' . esc_html( $balance ) . '</span>';
 	}
 
 	public function render_archive_teaser() {
@@ -815,7 +816,7 @@ class OBA_Frontend {
 	}
 
 	/**
-	 * Shortcode: [oba_buy_points] shows the points granted on Buy It Now (if enabled).
+ * Shortcode: [oba_buy_points] shows the utility points granted on Buy It Now (non-monetary).
 	 */
 	public function shortcode_buy_points( $atts ) {
 		$atts = shortcode_atts( array(), $atts );
@@ -832,7 +833,9 @@ class OBA_Frontend {
 	}
 
 	/**
-	 * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+ * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+ * Points referenced here are utility-only; claim/payable amounts remain monetary.
+ * Points here are utility-only; payable claim amounts remain monetary.
 	 */
 	public function maybe_suppress_default_summary() {
 		global $product;
