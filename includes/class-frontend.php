@@ -25,6 +25,12 @@ class OBA_Frontend {
 		// Ensure Buy Now add-to-cart shows for auction products with Buy Now enabled.
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
 		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+
+		// My Account endpoint for utility points (non-monetary).
+		add_action( 'init', array( $this, 'register_points_endpoint' ) );
+		add_filter( 'query_vars', array( $this, 'register_points_query_var' ) );
+		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_points_account_link' ) );
+		add_action( 'woocommerce_account_oba-points_endpoint', array( $this, 'render_points_account_page' ) );
 	}
 
 	/**
@@ -816,7 +822,7 @@ class OBA_Frontend {
 	}
 
 	/**
- * Shortcode: [oba_buy_points] shows the utility points granted on Buy It Now (non-monetary).
+	 * Shortcode: [oba_buy_points] shows the utility points granted on Buy It Now (non-monetary).
 	 */
 	public function shortcode_buy_points( $atts ) {
 		$atts = shortcode_atts( array(), $atts );
@@ -833,9 +839,115 @@ class OBA_Frontend {
 	}
 
 	/**
- * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
- * Points referenced here are utility-only; claim/payable amounts remain monetary.
- * Points here are utility-only; payable claim amounts remain monetary.
+	 * Register My Account endpoint for utility points (non-monetary).
+	 */
+	public function register_points_endpoint() {
+		add_rewrite_endpoint( 'oba-points', EP_ROOT | EP_PAGES );
+	}
+
+	public function register_points_query_var( $vars ) {
+		$vars[] = 'oba-points';
+		return $vars;
+	}
+
+	public function add_points_account_link( $items ) {
+		if ( ! is_user_logged_in() ) {
+			return $items;
+		}
+		// Insert before logout for visibility.
+		$new = array();
+		foreach ( $items as $key => $label ) {
+			if ( 'customer-logout' === $key ) {
+				$new['oba-points'] = __( 'My Points (utility)', 'one-ba-auctions' );
+			}
+			$new[ $key ] = $label;
+		}
+		if ( ! isset( $new['oba-points'] ) ) {
+			$new['oba-points'] = __( 'My Points (utility)', 'one-ba-auctions' );
+		}
+		return $new;
+	}
+
+	/**
+	 * Render My Account -> My Points (utility) page.
+	 * Displays current balance and earned entries from completed membership/buy-now orders.
+	 * Points here are non-monetary utility points; payable balances are separate.
+	 */
+	public function render_points_account_page() {
+		if ( ! is_user_logged_in() ) {
+			echo wp_kses_post( __( 'You must be logged in to view your points.', 'one-ba-auctions' ) );
+			return;
+		}
+		$user_id       = get_current_user_id();
+		$points_service = new OBA_Points_Service();
+		$balance       = $points_service->get_balance( $user_id );
+
+		$orders = wc_get_orders(
+			array(
+				'customer_id' => $user_id,
+				'status'      => array( 'completed', 'processing', 'on-hold' ),
+				'limit'       => 20,
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+			)
+		);
+
+		$earn_rows = array();
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$product = $item->get_product();
+				if ( ! $product ) {
+					continue;
+				}
+				$is_membership = 'yes' === $product->get_meta( '_is_membership_plan_points' );
+				$buy_now_pts   = (int) $product->get_meta( '_oba_buy_now_points' );
+				$plan_pts      = (float) $product->get_meta( '_points_amount' );
+				$earned        = 0;
+				$source        = '';
+				if ( $is_membership && $plan_pts > 0 ) {
+					$earned = $plan_pts;
+					$source = __( 'Membership plan', 'one-ba-auctions' );
+				} elseif ( $buy_now_pts > 0 ) {
+					$earned = $buy_now_pts;
+					$source = __( 'Buy Now bonus', 'one-ba-auctions' );
+				}
+				if ( $earned > 0 ) {
+					$earn_rows[] = array(
+						'date'   => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) ) : '',
+						'item'   => $item->get_name(),
+						'points' => $earned,
+						'source' => $source,
+					);
+				}
+			}
+		}
+
+		echo '<h2>' . esc_html__( 'My Points (utility)', 'one-ba-auctions' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Points are non-monetary utility units used for registration and autobid activation. Payable auction amounts are separate.', 'one-ba-auctions' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Current balance:', 'one-ba-auctions' ) . '</strong> ' . esc_html( $balance ) . '</p>';
+
+		echo '<h3>' . esc_html__( 'Points earned', 'one-ba-auctions' ) . '</h3>';
+		if ( empty( $earn_rows ) ) {
+			echo '<p>' . esc_html__( 'No points earnings found yet.', 'one-ba-auctions' ) . '</p>';
+		} else {
+			echo '<table class="shop_table shop_table_responsive">';
+			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+			foreach ( $earn_rows as $row ) {
+				echo '<tr>';
+				echo '<td>' . esc_html( $row['date'] ) . '</td>';
+				echo '<td>' . esc_html( $row['item'] ) . '</td>';
+				echo '<td>' . esc_html( $row['points'] ) . '</td>';
+				echo '<td>' . esc_html( $row['source'] ) . '</td>';
+				echo '</tr>';
+			}
+			echo '</tbody></table>';
+		}
+
+		echo '<p>' . esc_html__( 'Points usage history (registrations/autobid) is not tracked per-event in this version.', 'one-ba-auctions' ) . '</p>';
+	}
+	/**
+	 * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+	 * Points referenced here are utility-only; payable claim amounts remain monetary.
 	 */
 	public function maybe_suppress_default_summary() {
 		global $product;
