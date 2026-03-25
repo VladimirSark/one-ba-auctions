@@ -982,12 +982,37 @@ class OBA_Frontend {
 		echo '<p>' . esc_html__( 'Points are non-monetary utility units used for registration and autobid activation. Payable auction amounts are separate.', 'one-ba-auctions' ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Current balance:', 'one-ba-auctions' ) . '</strong> ' . esc_html( $balance ) . '</p>';
 
+		global $wpdb;
+		$ledger_table = $wpdb->prefix . 'auction_points_ledger';
+		$ledger_rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT amount, balance_after, reason, created_at FROM {$ledger_table} WHERE user_id = %d ORDER BY created_at DESC LIMIT 50",
+				$user_id
+			),
+			ARRAY_A
+		);
+
 		echo '<h3>' . esc_html__( 'Points history', 'one-ba-auctions' ) . '</h3>';
-		if ( empty( $earn_rows ) ) {
-			echo '<p>' . esc_html__( 'No points history found yet.', 'one-ba-auctions' ) . '</p>';
-		} else {
-		echo '<table class="shop_table shop_table_responsive">';
-		echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+		if ( ! empty( $ledger_rows ) ) {
+			echo '<table class="shop_table shop_table_responsive">';
+			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Change', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Balance after', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Reason', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+			foreach ( $ledger_rows as $row ) {
+				$amount = (float) $row['amount'];
+				$cls    = $amount >= 0 ? 'oba-points-add' : 'oba-points-deduct';
+				$sign   = $amount >= 0 ? '+' : '';
+				$date   = $row['created_at'] ? mysql2date( get_option( 'date_format' ), $row['created_at'] ) : '';
+				echo '<tr>';
+				echo '<td>' . esc_html( $date ) . '</td>';
+				echo '<td class="' . esc_attr( $cls ) . '">' . esc_html( $sign . $amount ) . '</td>';
+				echo '<td>' . esc_html( $row['balance_after'] ) . '</td>';
+				echo '<td>' . esc_html( $row['reason'] ) . '</td>';
+				echo '</tr>';
+			}
+			echo '</tbody></table>';
+		} elseif ( ! empty( $earn_rows ) ) {
+			// Fallback to earnings list if no ledger entries exist yet.
+			echo '<table class="shop_table shop_table_responsive">';
+			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
 			foreach ( $earn_rows as $row ) {
 				echo '<tr>';
 				echo '<td>' . esc_html( $row['date'] ) . '</td>';
@@ -997,9 +1022,9 @@ class OBA_Frontend {
 				echo '</tr>';
 			}
 			echo '</tbody></table>';
+		} else {
+			echo '<p>' . esc_html__( 'No points history found yet.', 'one-ba-auctions' ) . '</p>';
 		}
-
-		echo '<p>' . esc_html__( 'Points usage history (registrations/autobid) is not tracked per-event in this version.', 'one-ba-auctions' ) . '</p>';
 	}
 
 	/**
