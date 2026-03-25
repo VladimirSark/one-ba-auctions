@@ -3,6 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Repository for auction meta/totals.
+ *
+ * Points = utility (registration/live join/autobid).
+ * Credits fields = monetary payables (bid value, claim amount).
+ */
+
 class OBA_Auction_Repository {
 
 	public function get_auction_meta( $auction_id ) {

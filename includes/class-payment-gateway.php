@@ -8,15 +8,21 @@ if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
 	return;
 }
 
+/**
+ * Payables gateway.
+ *
+ * This gateway spends the user's monetary "credits"/payables balance to pay claim orders.
+ * Utility points are NOT used here; points remain non-monetary.
+ */
 class OBA_Credits_Gateway extends WC_Payment_Gateway {
 
 	public function __construct() {
 		$this->id                 = 'oba_credits_gateway';
-		$this->method_title       = __( 'Auction Credits', 'one-ba-auctions' );
-		$this->method_description = __( 'Pay auction claim orders with your credits balance.', 'one-ba-auctions' );
+		$this->method_title       = __( 'Auction Payables (credits)', 'one-ba-auctions' );
+		$this->method_description = __( 'Pay claim orders with your payable credits balance (real money).', 'one-ba-auctions' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );
-		$this->title              = __( 'Pay with credits', 'one-ba-auctions' );
+		$this->title              = __( 'Pay with payable credits', 'one-ba-auctions' );
 		$this->enabled            = 'yes';
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -26,7 +32,7 @@ class OBA_Credits_Gateway extends WC_Payment_Gateway {
 		$this->form_fields = array(
 			'enabled' => array(
 				'title'   => __( 'Enable/Disable', 'one-ba-auctions' ),
-				'label'   => __( 'Enable Auction Credits payment', 'one-ba-auctions' ),
+				'label'   => __( 'Enable Auction Payables (credits) payment', 'one-ba-auctions' ),
 				'type'    => 'checkbox',
 				'default' => 'yes',
 			),
@@ -34,13 +40,13 @@ class OBA_Credits_Gateway extends WC_Payment_Gateway {
 				'title'       => __( 'Title', 'one-ba-auctions' ),
 				'type'        => 'text',
 				'description' => __( 'Displayed at checkout', 'one-ba-auctions' ),
-				'default'     => __( 'Pay with credits', 'one-ba-auctions' ),
+				'default'     => __( 'Pay with payable credits', 'one-ba-auctions' ),
 			),
 			'description' => array(
 				'title'       => __( 'Description', 'one-ba-auctions' ),
 				'type'        => 'textarea',
 				'description' => __( 'Shown next to the payment option.', 'one-ba-auctions' ),
-				'default'     => __( 'Use your auction credits to pay for the claim.', 'one-ba-auctions' ),
+				'default'     => __( 'Use your monetary payable credits to pay for the claim.', 'one-ba-auctions' ),
 			),
 		);
 	}

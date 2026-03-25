@@ -3,6 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Core auction engine.
+ *
+ * Points = non-monetary utility units (registration, live join, autobid activation).
+ * Credits (payables) = monetary bid spend / claim amounts owed by the winner.
+ * Naming retained for compatibility; do not interchange them.
+ */
+
 class OBA_Auction_Engine {
 
 	private $credits;

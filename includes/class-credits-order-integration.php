@@ -3,6 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Grants monetary payables (historically called credits) when credit-pack products complete.
+ * Utility points are handled separately in Points_Order_Integration.
+ */
+
 class OBA_Credits_Order_Integration {
 
 	private $credits;

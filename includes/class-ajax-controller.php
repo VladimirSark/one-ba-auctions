@@ -3,6 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * AJAX controller.
+ *
+ * Points in responses = utility-only balances.
+ * Credits fields in responses = monetary payables (bid spend / claim amount).
+ * Aliases added for clarity; legacy keys retained for compatibility.
+ */
+
 class OBA_Ajax_Controller {
 
 	private $engine;
@@ -428,9 +436,12 @@ class OBA_Ajax_Controller {
 			}
 		}
 
-		$winner_total_bids  = $winner_row ? (int) $winner_row['total_bids'] : 0;
-		$winner_total_value = $winner_row ? (float) $winner_row['total_credits_consumed'] : 0.0;
-		$saved_amount       = $meta['product_cost'] > 0 ? max( 0, $meta['product_cost'] - $winner_total_value ) : 0;
+		$winner_total_bids      = $winner_row ? (int) $winner_row['total_bids'] : 0;
+		$winner_total_value     = $winner_row ? (float) $winner_row['total_credits_consumed'] : 0.0;
+		$total_payable_spent    = $winner_total_value; // alias: monetary payable spend (legacy credits naming).
+		$saved_amount           = $meta['product_cost'] > 0 ? max( 0, $meta['product_cost'] - $winner_total_value ) : 0;
+		$claim_payable_amount   = ( $user_is_winning && $auction_ended ) ? $user_bid_total : 0;
+		$claim_payable_amount_f = $claim_payable_amount ? wc_price( $claim_payable_amount ) : '';
 
 		$can_bid = 'live' === $meta['auction_status']
 			&& $is_registered
@@ -451,7 +462,11 @@ class OBA_Ajax_Controller {
 			'bid_cost'                  => $this->get_bid_fee_amount( $meta ),
 			'bid_cost_formatted'        => $this->get_bid_fee_formatted( $meta ),
 			'bid_cost_plain'            => $this->get_bid_fee_plain( $meta ),
+			'payable_bid_cost'          => $this->get_bid_fee_amount( $meta ), // alias for monetary bid value.
 			'claim_price'               => 0,
+			'claim_payable_amount'      => $claim_payable_amount,
+			'claim_payable_amount_fmt'  => $claim_payable_amount_f,
+			'claim_payable_amount_plain'=> $claim_payable_amount ? wp_strip_all_tags( $claim_payable_amount_f ) : '',
 			'required_participants'     => (int) $meta['required_participants'],
 			'current_participants'      => $participant_count,
 			'pre_live_seconds_left'     => $this->calculate_seconds_left( $meta['pre_live_start'], $meta['prelive_timer_seconds'] ),
@@ -474,6 +489,7 @@ class OBA_Ajax_Controller {
 				'bid_value_fmt'  => $user_bids ? wc_price( $user_bids * $bid_fee_amount ) : '',
 				'bid_value_plain'=> $user_bids ? wp_strip_all_tags( wc_price( $user_bids * $bid_fee_amount ) ) : '',
 				'bid_value_num'  => $user_bids * $bid_fee_amount,
+				'payable_total'  => $user_bids * $bid_fee_amount, // alias for clarity.
 			),
 			'can_bid'                   => $can_bid,
 			'has_enough_credits'        => true,
@@ -506,6 +522,7 @@ class OBA_Ajax_Controller {
 				'order_id'       => $winner_row ? (int) $winner_row['wc_order_id'] : 0,
 				'total_bids'     => $winner_total_bids,
 				'total_value'    => $winner_total_value,
+				'total_payable_amount'=> $total_payable_spent,
 				'total_value_fmt'=> $winner_total_value ? wc_price( $winner_total_value ) : '',
 				'saved_amount'   => $saved_amount,
 				'saved_amount_fmt'=> $saved_amount ? wc_price( $saved_amount ) : '',

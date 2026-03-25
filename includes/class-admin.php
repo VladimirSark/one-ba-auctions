@@ -3,6 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Admin layer (menus, screens, exports).
+ *
+ * Points = utility-only. Credits fields/columns represent monetary payables (bid spend/claim),
+ * not utility points. Labels adjusted for clarity; storage unchanged.
+ */
+
 class OBA_Admin {
 
 	private $repo;
@@ -339,7 +346,7 @@ class OBA_Admin {
 						<th><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Total bids', 'one-ba-auctions' ); ?></th>
-						<th><?php esc_html_e( 'Credits consumed', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Credits (payable) consumed', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Claim price', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Order', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Created', 'one-ba-auctions' ); ?></th>
@@ -398,7 +405,7 @@ class OBA_Admin {
 						<th><?php esc_html_e( 'Auction', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Winner', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Bids', 'one-ba-auctions' ); ?></th>
-						<th><?php esc_html_e( 'Credits used', 'one-ba-auctions' ); ?></th>
+						<th><?php esc_html_e( 'Credits (payable) used', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Refunded', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Claim price', 'one-ba-auctions' ); ?></th>
 						<th><?php esc_html_e( 'Trigger', 'one-ba-auctions' ); ?></th>
@@ -540,7 +547,7 @@ class OBA_Admin {
 		$credits = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY user_id ASC LIMIT 100", ARRAY_A );
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'User Credits', 'one-ba-auctions' ); ?></h1>
+			<h1><?php esc_html_e( 'User Credits (payable balance)', 'one-ba-auctions' ); ?></h1>
 			<div style="overflow-x:auto;">
 			<table class="widefat fixed striped" style="min-width: 1100px; table-layout: auto;">
 				<thead>
