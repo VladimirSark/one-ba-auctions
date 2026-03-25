@@ -85,6 +85,28 @@ class OBA_Email {
 		return get_the_title( $auction_id ) ?: sprintf( __( 'Auction #%d', 'one-ba-auctions' ), $auction_id );
 	}
 
+	private function get_bid_cost_amount( $auction_id ) {
+		$product_id = (int) get_post_meta( $auction_id, '_bid_product_id', true );
+		if ( ! $product_id ) {
+			return 0;
+		}
+		if ( function_exists( 'wc_get_product' ) ) {
+			$product = wc_get_product( $product_id );
+			if ( $product && '' !== $product->get_price() ) {
+				return (float) $product->get_price();
+			}
+		}
+		return 0;
+	}
+
+	private function format_price_value( $amount ) {
+		$amount = $amount ? (float) $amount : 0;
+		if ( function_exists( 'wc_price' ) ) {
+			return wc_price( $amount );
+		}
+		return number_format_i18n( $amount, 2 );
+	}
+
 	public function notify_registration_pending( $user_id, $data ) {
 		$auction_id = isset( $data['auction_id'] ) ? (int) $data['auction_id'] : 0;
 		$order_id   = isset( $data['order_id'] ) ? (int) $data['order_id'] : 0;
@@ -145,6 +167,11 @@ class OBA_Email {
 			'balance'       => 99,
 			'status'        => __( 'active', 'one-ba-auctions' ),
 			'autobid_max_bids' => __( 'No limit', 'one-ba-auctions' ),
+			'autobid_bids_used' => 0,
+			'autobid_window_minutes' => 60,
+			'autobid_window_minutes_left' => 60,
+			'autobid_bid_value' => '€0.10',
+			'autobid_price_total' => '€0.00',
 		);
 		foreach ( $keys as $key ) {
 			$subject = __( '[Auction Test]', 'one-ba-auctions' );
@@ -228,7 +255,7 @@ class OBA_Email {
 				list( $subject, $body ) = $this->resolve_template(
 					'autobid_on',
 					__( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
-					__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Autobid set for: {autobid_window_minutes} minutes.<br />Autobid time left: {autobid_window_minutes_left} minutes.<br />Bids placed so far: {autobid_bid_value} x {autobid_bids_used}.<br />Your price: {autobid_price_total}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 					$tokens_base
 				);
 				break;
@@ -236,7 +263,7 @@ class OBA_Email {
 				list( $subject, $body ) = $this->resolve_template(
 					'autobid_on_reminder',
 					__( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
-					__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+					__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Autobid set for: {autobid_window_minutes} minutes.<br />Autobid time left: {autobid_window_minutes_left} minutes.<br />Bids placed so far: {autobid_bid_value} x {autobid_bids_used}.<br />Your price: {autobid_price_total}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 					$tokens_base
 				);
 				break;
@@ -298,16 +325,25 @@ class OBA_Email {
 	public function notify_autobid_on( $user_id, $auction_id, $data ) {
 		$max_bids = isset( $data['autobid_max_bids'] ) ? (int) $data['autobid_max_bids'] : 0;
 		$window   = isset( $data['autobid_window_minutes'] ) ? (int) $data['autobid_window_minutes'] : 0;
+		$bids_used = isset( $data['autobid_bids_used'] ) ? (int) $data['autobid_bids_used'] : 0;
+		$window_left = isset( $data['autobid_window_minutes_left'] ) ? (int) $data['autobid_window_minutes_left'] : ( $window ? $window : 0 );
+		$bid_cost_amount = isset( $data['autobid_bid_cost'] ) ? (float) $data['autobid_bid_cost'] : $this->get_bid_cost_amount( $auction_id );
+		$bid_value = isset( $data['autobid_bid_value'] ) ? $data['autobid_bid_value'] : $this->format_price_value( $bid_cost_amount );
+		$total_cost = isset( $data['autobid_price_total'] ) ? $data['autobid_price_total'] : $this->format_price_value( $bid_cost_amount * $bids_used );
 		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
 			'autobid_on',
 			__( '[Auction] Autobid enabled: {auction_title}', 'one-ba-auctions' ),
-			__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is now ON for "<strong>{auction_title}</strong>".<br />Autobid set for: {autobid_window_minutes} minutes.<br />Autobid time left: {autobid_window_minutes_left} minutes.<br />Bids placed so far: {autobid_bid_value} x {autobid_bids_used}.<br />Your price: {autobid_price_total}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 			array(
 				'user_name'        => $this->get_user_name( $user_id ),
 				'auction_title'    => $this->auction_title( $auction_id ),
 				'auction_link'     => $this->product_link( $auction_id ),
 				'autobid_max_bids' => $max_bids ? $max_bids : __( 'No limit', 'one-ba-auctions' ),
 				'autobid_window_minutes' => $window ? $window : __( 'selected', 'one-ba-auctions' ),
+				'autobid_window_minutes_left' => $window_left,
+				'autobid_bids_used' => $bids_used,
+				'autobid_bid_value' => $bid_value,
+				'autobid_price_total' => $total_cost,
 			)
 		);
 		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );
@@ -317,10 +353,14 @@ class OBA_Email {
 		$max_bids  = isset( $data['autobid_max_bids'] ) ? (int) $data['autobid_max_bids'] : 0;
 		$bids_used = isset( $data['autobid_bids_used'] ) ? (int) $data['autobid_bids_used'] : 0;
 		$window    = isset( $data['autobid_window_minutes'] ) ? (int) $data['autobid_window_minutes'] : 0;
+		$window_left = isset( $data['autobid_window_minutes_left'] ) ? (int) $data['autobid_window_minutes_left'] : ( $window ? $window : 0 );
+		$bid_cost_amount = isset( $data['autobid_bid_cost'] ) ? (float) $data['autobid_bid_cost'] : $this->get_bid_cost_amount( $auction_id );
+		$bid_value = isset( $data['autobid_bid_value'] ) ? $data['autobid_bid_value'] : $this->format_price_value( $bid_cost_amount );
+		$total_cost = isset( $data['autobid_price_total'] ) ? $data['autobid_price_total'] : $this->format_price_value( $bid_cost_amount * $bids_used );
 		list( $subject_tpl, $body_tpl ) = $this->resolve_template(
 			'autobid_on_reminder',
 			__( '[Auction] Autobid reminder: {auction_title}', 'one-ba-auctions' ),
-			__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Window: {autobid_window_minutes} minutes.<br />Bids placed so far: {autobid_bids_used}.<br />Max bids: {autobid_max_bids}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
+			__( 'Hi {user_name},<br />Your autobid is still ON for "<strong>{auction_title}</strong>".<br />Autobid set for: {autobid_window_minutes} minutes.<br />Autobid time left: {autobid_window_minutes_left} minutes.<br />Bids placed so far: {autobid_bid_value} x {autobid_bids_used}.<br />Your price: {autobid_price_total}.<br /><a href="{auction_link}">Open auction</a>', 'one-ba-auctions' ),
 			array(
 				'user_name'          => $this->get_user_name( $user_id ),
 				'auction_title'      => $this->auction_title( $auction_id ),
@@ -328,6 +368,9 @@ class OBA_Email {
 				'autobid_max_bids'   => $max_bids ? $max_bids : __( 'No limit', 'one-ba-auctions' ),
 				'autobid_bids_used'  => $bids_used,
 				'autobid_window_minutes' => $window ? $window : __( 'selected', 'one-ba-auctions' ),
+				'autobid_window_minutes_left' => $window_left,
+				'autobid_bid_value' => $bid_value,
+				'autobid_price_total' => $total_cost,
 			)
 		);
 		$this->send( $user_id, $subject_tpl, $body_tpl, __( 'Open auction', 'one-ba-auctions' ), $this->product_link( $auction_id ) );

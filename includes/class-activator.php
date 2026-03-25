@@ -158,21 +158,22 @@ class OBA_Activator {
 		$table_exists  = (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $autobid_table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( ! $table_exists ) {
 			$sql_autobid = "CREATE TABLE {$autobid_table} (
-		  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		  auction_id BIGINT UNSIGNED NOT NULL,
-		  user_id BIGINT UNSIGNED NOT NULL,
-		  enabled TINYINT(1) NOT NULL DEFAULT 0,
-		  max_bids INT UNSIGNED NOT NULL DEFAULT 0,
-		  remaining_bids INT UNSIGNED NOT NULL DEFAULT 0,
-		  enabled_at DATETIME NULL,
-		  window_started_at DATETIME NULL,
-		  window_ends_at DATETIME NULL,
-		  reminder_sent TINYINT(1) NOT NULL DEFAULT 0,
-		  max_spend DECIMAL(12,2) NOT NULL DEFAULT 0,
-		  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		  UNIQUE KEY auction_user (auction_id, user_id),
-		  KEY enabled_idx (auction_id, enabled)
-		) {$charset_collate};";
+	  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	  auction_id BIGINT UNSIGNED NOT NULL,
+	  user_id BIGINT UNSIGNED NOT NULL,
+	  enabled TINYINT(1) NOT NULL DEFAULT 0,
+	  max_bids INT UNSIGNED NOT NULL DEFAULT 0,
+	  remaining_bids INT UNSIGNED NOT NULL DEFAULT 0,
+	  enabled_at DATETIME NULL,
+	  window_started_at DATETIME NULL,
+	  window_ends_at DATETIME NULL,
+	  reminder_sent TINYINT(1) NOT NULL DEFAULT 0,
+	  reminder_opt_in TINYINT(1) NOT NULL DEFAULT 1,
+	  max_spend DECIMAL(12,2) NOT NULL DEFAULT 0,
+	  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	  UNIQUE KEY auction_user (auction_id, user_id),
+	  KEY enabled_idx (auction_id, enabled)
+	) {$charset_collate};";
 			dbDelta( $sql_autobid );
 		}
 
@@ -194,9 +195,13 @@ class OBA_Activator {
 		if ( empty( $reminder ) ) {
 			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN reminder_sent TINYINT(1) NOT NULL DEFAULT 0 AFTER window_ends_at" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
+		$reminder_opt_in = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'reminder_opt_in'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		if ( empty( $reminder_opt_in ) ) {
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN reminder_opt_in TINYINT(1) NOT NULL DEFAULT 1 AFTER reminder_sent" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		}
 		$max_spend = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'max_spend'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( empty( $max_spend ) ) {
-			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN max_spend DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER reminder_sent" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( "ALTER TABLE {$autobid_table} ADD COLUMN max_spend DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER reminder_opt_in" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 		$window_minutes = $wpdb->get_results( "SHOW COLUMNS FROM {$autobid_table} LIKE 'window_minutes'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		if ( empty( $window_minutes ) ) {

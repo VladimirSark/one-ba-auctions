@@ -241,6 +241,8 @@ class OBA_Ajax_Controller {
 		$max_spend = isset( $_POST['max_spend'] ) ? (float) $_POST['max_spend'] : 0;
 		$limitless = ! empty( $_POST['limitless'] );
 		$window_minutes = isset( $_POST['window_minutes'] ) ? (int) $_POST['window_minutes'] : 0;
+		$reminder_opt_in = isset( $_POST['reminder_opt_in'] ) ? (int) $_POST['reminder_opt_in'] : 1;
+		$reminder_opt_in = $reminder_opt_in ? 1 : 0;
 		$allowed_windows = array( 0, 10, 30, 60 );
 		if ( ! in_array( $window_minutes, $allowed_windows, true ) ) {
 			$window_minutes = 0;
@@ -276,7 +278,7 @@ class OBA_Ajax_Controller {
 			$max_spend = 0;
 		}
 
-		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids, $window_minutes );
+		$settings = $service->set_user_settings( $auction_id, $user_id, (bool) $enable, $max_bids, $window_minutes, $reminder_opt_in );
 		OBA_Audit_Log::log(
 			'autobid_toggle',
 			array(
@@ -286,6 +288,7 @@ class OBA_Ajax_Controller {
 				'max_bids'   => (int) $settings['max_bids'],
 				'limitless'  => ! empty( $settings['limitless'] ),
 				'window_minutes' => $window_minutes,
+				'reminder_opt_in' => $reminder_opt_in,
 			),
 			$auction_id
 		);
@@ -299,6 +302,7 @@ class OBA_Ajax_Controller {
 				'autobid_window_seconds_left' => isset( $settings['window_seconds_left'] ) ? (int) $settings['window_seconds_left'] : 0,
 				'autobid_window_ends_at' => isset( $settings['window_ends_at'] ) ? $settings['window_ends_at'] : null,
 				'autobid_window_minutes' => isset( $settings['window_minutes'] ) ? (int) $settings['window_minutes'] : 0,
+				'autobid_reminder_opt_in' => isset( $settings['reminder_opt_in'] ) ? (bool) $settings['reminder_opt_in'] : true,
 				'user_points_balance' => ( new OBA_Points_Service() )->get_balance( $user_id ),
 			)
 		);
@@ -517,6 +521,7 @@ class OBA_Ajax_Controller {
 			'autobid_window_seconds_left' => $autobid_allowed ? ( isset( $autobid_user['window_seconds_left'] ) ? (int) $autobid_user['window_seconds_left'] : 0 ) : 0,
 			'autobid_window_ends_at'      => $autobid_allowed ? ( isset( $autobid_user['window_ends_at'] ) ? $autobid_user['window_ends_at'] : null ) : null,
 			'autobid_window_minutes'      => $autobid_allowed ? ( isset( $autobid_user['window_minutes'] ) ? (int) $autobid_user['window_minutes'] : 0 ) : 0,
+			'autobid_reminder_opt_in'     => $autobid_allowed ? ( isset( $autobid_user['reminder_opt_in'] ) ? (bool) $autobid_user['reminder_opt_in'] : true ) : false,
 			'winner'                     => array(
 				'anonymous_name' => $winner_anonymous,
 				'claimed'        => $winner_claimed,

@@ -905,6 +905,13 @@ function renderInlineAutobidTotal($block) {
 
 	function openAutobidWindowModal() {
 		setSelectedAutobidWindow(10);
+		const reminder = $('.oba-autobid-reminder-opt');
+		if (reminder.length) {
+			const checked = typeof state?.data?.autobid_reminder_opt_in !== 'undefined'
+				? !!state.data.autobid_reminder_opt_in
+				: true;
+			reminder.prop('checked', checked);
+		}
 		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').css('display', 'flex');
 	}
 
@@ -936,6 +943,7 @@ function toggleAutobid(enable) {
 		const spend = 0;
 		const limitless = false;
 		const maxBidsDefault = 1000000; // large cap to satisfy server requirement when using time windows.
+		const reminderOptIn = $('.oba-autobid-reminder-opt').is(':checked');
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -947,6 +955,7 @@ function toggleAutobid(enable) {
 				max_spend: spend,
 				limitless: limitless ? 1 : 0,
 				window_minutes: windowMinutes,
+				reminder_opt_in: reminderOptIn ? 1 : 0,
 			},
 			(response) => {
 				if (response && response.success) {
@@ -956,6 +965,7 @@ function toggleAutobid(enable) {
 					state.data.autobid_window_seconds_left = response.data.autobid_window_seconds_left;
 					state.data.autobid_window_ends_at = response.data.autobid_window_ends_at;
 					state.data.autobid_window_minutes = response.data.autobid_window_minutes;
+					state.data.autobid_reminder_opt_in = response.data.autobid_reminder_opt_in;
 					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
 					state.data.autobid_limitless = response.data.autobid_limitless;

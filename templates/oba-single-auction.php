@@ -138,6 +138,8 @@ $stage_tips = array(
 	}
 	.oba-autobid-window button.is-active { background:#0f172a; color:#fff; border-color:#0f172a; }
 	.oba-autobid-window-remaining { font-size:13px; color:#475569; display:inline-block; }
+	.oba-autobid-reminder { display:flex; gap:8px; align-items:flex-start; font-size:13px; color:#334155; margin-top:10px; }
+	.oba-autobid-reminder input { margin-top:3px; }
 	.oba-autobid-window-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.35); display:none; z-index:12000; }
 	.oba-autobid-window-modal { position:fixed; inset:0; display:none; z-index:12001; align-items:center; justify-content:center; }
 	.oba-autobid-window-modal__inner { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; width:320px; box-shadow:0 15px 40px rgba(15,23,42,0.18); }
@@ -531,6 +533,10 @@ $stage_tips = array(
 			<button type="button" class="oba-autobid-window-btn" data-minutes="30"><?php echo esc_html( $get( 'autobid_window_30', __( '30m', 'one-ba-auctions' ) ) ); ?></button>
 			<button type="button" class="oba-autobid-window-btn" data-minutes="60"><?php echo esc_html( $get( 'autobid_window_60', __( '60m', 'one-ba-auctions' ) ) ); ?></button>
 			<span class="oba-autobid-window-remaining"></span>
+		</div>
+		<div class="oba-autobid-reminder">
+			<input type="checkbox" class="oba-autobid-reminder-opt" checked />
+			<span><?php echo esc_html( $get( 'autobid_reminder_opt_in_label', __( 'Send me reminder emails every 30 minutes while autobid is ON', 'one-ba-auctions' ) ) ); ?></span>
 		</div>
 		<div class="oba-autobid-window-actions">
 			<button type="button" class="button button-primary oba-autobid-window-confirm"><?php echo esc_html( $get( 'autobid_modal_enable', __( 'Enable', 'one-ba-auctions' ) ) ); ?></button>
