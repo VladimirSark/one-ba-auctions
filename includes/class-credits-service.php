@@ -3,6 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Monetary payables service.
+ *
+ * NOTE: In this codebase "credits" == real-money payable balance (bid spend / claim amount),
+ * while "points" are non-monetary utility units for registration/autobid/live-join.
+ * Naming kept for compatibility; do not treat credits as utility points.
+ */
+
 class OBA_Credits_Service {
 
 	public function get_balance( $user_id ) {

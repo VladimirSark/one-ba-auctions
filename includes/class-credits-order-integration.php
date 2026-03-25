@@ -3,6 +3,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Grants monetary payables (historically called credits) when credit-pack products complete.
+ * Utility points are handled separately in Points_Order_Integration.
+ */
+
 class OBA_Credits_Order_Integration {
 
 	private $credits;
@@ -16,9 +21,10 @@ class OBA_Credits_Order_Integration {
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_fields' ) );
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( $this, 'show_meta_on_order' ) );
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'flag_registration_on_create' ), 10, 2 );
-		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_account_tabs' ) );
-		add_action( 'woocommerce_account_oba-credits_endpoint', array( $this, 'render_account_endpoint' ) );
-		add_action( 'woocommerce_account_oba-registrations_endpoint', array( $this, 'render_registrations_endpoint' ) );
+		// Deprecated account endpoints; hidden to avoid confusion with utility points.
+		// add_filter( 'woocommerce_account_menu_items', array( $this, 'add_account_tabs' ) );
+		// add_action( 'woocommerce_account_oba-credits_endpoint', array( $this, 'render_account_endpoint' ) );
+		// add_action( 'woocommerce_account_oba-registrations_endpoint', array( $this, 'render_registrations_endpoint' ) );
 		add_action( 'init', array( $this, 'register_endpoint' ) );
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( $this, 'add_order_badge' ), 10, 2 );
 	}
@@ -166,16 +172,16 @@ class OBA_Credits_Order_Integration {
 	}
 
 	public function add_account_tabs( $items ) {
-		$items['oba-registrations'] = __( 'My Auctions', 'one-ba-auctions' );
-		$items['oba-credits']       = __( 'My Credits', 'one-ba-auctions' );
+		// Hidden: credits/payables are handled elsewhere; keep endpoints registered for compatibility.
 		return $items;
 	}
 
 	public function render_account_endpoint() {
 		$balance = $this->credits->get_balance( get_current_user_id() );
 
-		echo '<h3>' . esc_html__( 'My Credits', 'one-ba-auctions' ) . '</h3>';
-		echo '<p>' . sprintf( esc_html__( 'Your current balance: %s credits', 'one-ba-auctions' ), esc_html( $balance ) ) . '</p>';
+		// Endpoint retained but not linked; credits = payables (real money).
+		echo '<h3>' . esc_html__( 'My Credits (payable balance)', 'one-ba-auctions' ) . '</h3>';
+		echo '<p>' . sprintf( esc_html__( 'Your current balance: %s credits (payable)', 'one-ba-auctions' ), esc_html( $balance ) ) . '</p>';
 	}
 
 	public function render_registrations_endpoint() {

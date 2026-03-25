@@ -25,6 +25,20 @@ class OBA_Frontend {
 		// Ensure Buy Now add-to-cart shows for auction products with Buy Now enabled.
 		add_action( 'woocommerce_single_product_summary', array( $this, 'render_buy_now_summary' ), 30 );
 		add_action( 'woocommerce_auction_add_to_cart', array( $this, 'render_buy_now_summary' ) );
+
+		// My Account endpoint for utility points (non-monetary).
+		add_action( 'init', array( $this, 'register_points_endpoint' ) );
+		add_filter( 'query_vars', array( $this, 'register_points_query_var' ) );
+		add_filter( 'woocommerce_get_query_vars', array( $this, 'add_points_wc_query_var' ) );
+		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_points_account_link' ) );
+		add_action( 'woocommerce_account_oba-points_endpoint', array( $this, 'render_points_account_page' ) );
+
+		// My Account endpoint for auction participation history.
+		add_action( 'init', array( $this, 'register_auctions_endpoint' ) );
+		add_filter( 'query_vars', array( $this, 'register_auctions_query_var' ) );
+		add_filter( 'woocommerce_get_query_vars', array( $this, 'add_auctions_wc_query_var' ) );
+		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_auctions_account_link' ) );
+		add_action( 'woocommerce_account_oba-auctions_endpoint', array( $this, 'render_auctions_account_page' ) );
 	}
 
 	/**
@@ -412,7 +426,8 @@ class OBA_Frontend {
 		}
 		$credits_service = new OBA_Credits_Service();
 		$balance         = $credits_service->get_balance( get_current_user_id() );
-		return '<span class="oba-credit-shortcode">' . esc_html( $balance ) . '</span>';
+		// Credits here mean payable auction balance (real money), not utility points.
+		return '<span class="oba-credit-shortcode" title="' . esc_attr__( 'Payable auction balance (not utility points)', 'one-ba-auctions' ) . '">' . esc_html( $balance ) . '</span>';
 	}
 
 	public function render_archive_teaser() {
@@ -815,7 +830,7 @@ class OBA_Frontend {
 	}
 
 	/**
-	 * Shortcode: [oba_buy_points] shows the points granted on Buy It Now (if enabled).
+	 * Shortcode: [oba_buy_points] shows the utility points granted on Buy It Now (non-monetary).
 	 */
 	public function shortcode_buy_points( $atts ) {
 		$atts = shortcode_atts( array(), $atts );
@@ -832,7 +847,274 @@ class OBA_Frontend {
 	}
 
 	/**
+	 * Register My Account endpoint for utility points (non-monetary).
+	 */
+	public function register_points_endpoint() {
+		add_rewrite_endpoint( 'oba-points', EP_ROOT | EP_PAGES );
+		// One-time flush to register the new endpoint without requiring manual permalink save.
+		if ( 'yes' !== get_option( 'oba_points_endpoint_flushed_v2' ) ) {
+			flush_rewrite_rules( false );
+			update_option( 'oba_points_endpoint_flushed_v2', 'yes' );
+		}
+	}
+
+	public function register_points_query_var( $vars ) {
+		$vars[] = 'oba-points';
+		return $vars;
+	}
+
+	public function add_points_wc_query_var( $vars ) {
+		$vars['oba-points'] = 'oba-points';
+		return $vars;
+	}
+
+	/**
+	 * My Auctions endpoint helpers.
+	 */
+	public function register_auctions_endpoint() {
+		add_rewrite_endpoint( 'oba-auctions', EP_ROOT | EP_PAGES );
+		if ( 'yes' !== get_option( 'oba_auctions_endpoint_flushed_v1' ) ) {
+			flush_rewrite_rules( false );
+			update_option( 'oba_auctions_endpoint_flushed_v1', 'yes' );
+		}
+	}
+
+	public function register_auctions_query_var( $vars ) {
+		$vars[] = 'oba-auctions';
+		return $vars;
+	}
+
+	public function add_auctions_wc_query_var( $vars ) {
+		$vars['oba-auctions'] = 'oba-auctions';
+		return $vars;
+	}
+
+	public function add_points_account_link( $items ) {
+		if ( ! is_user_logged_in() ) {
+			return $items;
+		}
+		// Insert before logout for visibility.
+		$new = array();
+		foreach ( $items as $key => $label ) {
+			if ( 'customer-logout' === $key ) {
+				$new['oba-points'] = __( 'My Points (utility)', 'one-ba-auctions' );
+			}
+			$new[ $key ] = $label;
+		}
+		if ( ! isset( $new['oba-points'] ) ) {
+			$new['oba-points'] = __( 'My Points (utility)', 'one-ba-auctions' );
+		}
+		return $new;
+	}
+
+	public function add_auctions_account_link( $items ) {
+		if ( ! is_user_logged_in() ) {
+			return $items;
+		}
+		$new = array();
+		foreach ( $items as $key => $label ) {
+			if ( 'customer-logout' === $key ) {
+				$new['oba-auctions'] = __( 'My Auctions', 'one-ba-auctions' );
+			}
+			$new[ $key ] = $label;
+		}
+		if ( ! isset( $new['oba-auctions'] ) ) {
+			$new['oba-auctions'] = __( 'My Auctions', 'one-ba-auctions' );
+		}
+		return $new;
+	}
+
+	/**
+	 * Render My Account -> My Points (utility) page.
+	 * Displays current balance and earned entries from completed membership/buy-now orders.
+	 * Points here are non-monetary utility points; payable balances are separate.
+	 */
+	public function render_points_account_page() {
+		if ( ! is_user_logged_in() ) {
+			echo wp_kses_post( __( 'You must be logged in to view your points.', 'one-ba-auctions' ) );
+			return;
+		}
+		$user_id       = get_current_user_id();
+		$points_service = new OBA_Points_Service();
+		$balance       = $points_service->get_balance( $user_id );
+
+		$orders = wc_get_orders(
+			array(
+				'customer_id' => $user_id,
+				'status'      => array( 'completed', 'processing', 'on-hold' ),
+				'limit'       => 20,
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+			)
+		);
+
+		$earn_rows = array();
+		foreach ( $orders as $order ) {
+			foreach ( $order->get_items() as $item ) {
+				$product = $item->get_product();
+				if ( ! $product ) {
+					continue;
+				}
+				$is_membership = 'yes' === $product->get_meta( '_is_membership_plan_points' );
+				$buy_now_pts   = (int) $product->get_meta( '_oba_buy_now_points' );
+				$plan_pts      = (float) $product->get_meta( '_points_amount' );
+				$earned        = 0;
+				$source        = '';
+				if ( $is_membership && $plan_pts > 0 ) {
+					$earned = $plan_pts;
+					$source = __( 'Membership plan', 'one-ba-auctions' );
+				} elseif ( $buy_now_pts > 0 ) {
+					$earned = $buy_now_pts;
+					$source = __( 'Buy Now bonus', 'one-ba-auctions' );
+				}
+				if ( $earned > 0 ) {
+					$earn_rows[] = array(
+						'date'   => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) ) : '',
+						'item'   => $item->get_name(),
+						'points' => $earned,
+						'source' => $source,
+					);
+				}
+			}
+		}
+
+		echo '<h2>' . esc_html__( 'My Points (utility)', 'one-ba-auctions' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Points are non-monetary utility units used for registration and autobid activation. Payable auction amounts are separate.', 'one-ba-auctions' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Current balance:', 'one-ba-auctions' ) . '</strong> ' . esc_html( $balance ) . '</p>';
+
+		global $wpdb;
+		$ledger_table = $wpdb->prefix . 'auction_points_ledger';
+		$ledger_rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT amount, balance_after, reason, created_at FROM {$ledger_table} WHERE user_id = %d ORDER BY created_at DESC LIMIT 50",
+				$user_id
+			),
+			ARRAY_A
+		);
+
+		echo '<h3>' . esc_html__( 'Points history', 'one-ba-auctions' ) . '</h3>';
+		if ( ! empty( $ledger_rows ) ) {
+			echo '<table class="shop_table shop_table_responsive">';
+			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Change', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Balance after', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Reason', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+			foreach ( $ledger_rows as $row ) {
+				$amount = (float) $row['amount'];
+				$cls    = $amount >= 0 ? 'oba-points-add' : 'oba-points-deduct';
+				$sign   = $amount >= 0 ? '+' : '';
+				$date   = $row['created_at'] ? mysql2date( get_option( 'date_format' ), $row['created_at'] ) : '';
+				echo '<tr>';
+				echo '<td>' . esc_html( $date ) . '</td>';
+				echo '<td class="' . esc_attr( $cls ) . '">' . esc_html( $sign . $amount ) . '</td>';
+				echo '<td>' . esc_html( $row['balance_after'] ) . '</td>';
+				echo '<td>' . esc_html( $row['reason'] ) . '</td>';
+				echo '</tr>';
+			}
+			echo '</tbody></table>';
+		} elseif ( ! empty( $earn_rows ) ) {
+			// Fallback to earnings list if no ledger entries exist yet.
+			echo '<table class="shop_table shop_table_responsive">';
+			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+			foreach ( $earn_rows as $row ) {
+				echo '<tr>';
+				echo '<td>' . esc_html( $row['date'] ) . '</td>';
+				echo '<td>' . esc_html( $row['item'] ) . '</td>';
+				echo '<td class="oba-points-add">+' . esc_html( $row['points'] ) . '</td>';
+				echo '<td>' . esc_html( $row['source'] ) . '</td>';
+				echo '</tr>';
+			}
+			echo '</tbody></table>';
+		} else {
+			echo '<p>' . esc_html__( 'No points history found yet.', 'one-ba-auctions' ) . '</p>';
+		}
+	}
+
+	/**
+	 * Render My Account -> My Auctions page.
+	 * Shows auctions the user registered for and outcomes based on winners table.
+	 */
+	public function render_auctions_account_page() {
+		if ( ! is_user_logged_in() ) {
+			echo wp_kses_post( __( 'You must be logged in to view your auctions.', 'one-ba-auctions' ) );
+			return;
+		}
+		global $wpdb;
+		$user_id   = get_current_user_id();
+		$prefix    = $wpdb->prefix . 'auction_';
+		$part_tbl  = $prefix . 'participants';
+		$win_tbl   = $prefix . 'winners';
+		$bids_tbl  = $prefix . 'bids';
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.auction_id, p.registered_at, p.status, w.winner_user_id, w.total_bids, w.total_credits_consumed, w.wc_order_id
+				 FROM {$part_tbl} p
+				 LEFT JOIN {$win_tbl} w ON w.auction_id = p.auction_id
+				 WHERE p.user_id = %d
+				 ORDER BY p.registered_at DESC
+				 LIMIT 50",
+				$user_id
+			),
+			ARRAY_A
+		);
+
+		echo '<h2>' . esc_html__( 'My Auctions', 'one-ba-auctions' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Summary of auctions you registered for. Outcomes are based on winner records. Payable amounts are monetary; points are utility-only.', 'one-ba-auctions' ) . '</p>';
+
+		if ( empty( $rows ) ) {
+			echo '<p>' . esc_html__( 'No auction participation found.', 'one-ba-auctions' ) . '</p>';
+			return;
+		}
+
+		echo '<table class="shop_table shop_table_responsive">';
+		echo '<thead><tr>';
+		echo '<th>' . esc_html__( 'Auction', 'one-ba-auctions' ) . '</th>';
+		echo '<th>' . esc_html__( 'Registered', 'one-ba-auctions' ) . '</th>';
+		echo '<th>' . esc_html__( 'Status', 'one-ba-auctions' ) . '</th>';
+		echo '<th>' . esc_html__( 'Outcome', 'one-ba-auctions' ) . '</th>';
+		echo '<th>' . esc_html__( 'Bids placed', 'one-ba-auctions' ) . '</th>';
+		echo '<th>' . esc_html__( 'Payable total', 'one-ba-auctions' ) . '</th>';
+		echo '</tr></thead><tbody>';
+
+		foreach ( $rows as $row ) {
+			$auction_id = (int) $row['auction_id'];
+			$title      = get_the_title( $auction_id );
+			$link       = get_permalink( $auction_id );
+			$reg_date   = $row['registered_at'] ? mysql2date( get_option( 'date_format' ), $row['registered_at'] ) : '';
+
+			$outcome = __( 'Registered', 'one-ba-auctions' );
+			if ( $row['winner_user_id'] ) {
+				if ( (int) $row['winner_user_id'] === $user_id ) {
+					$outcome = __( 'Won', 'one-ba-auctions' );
+				} else {
+					$outcome = __( 'Lost', 'one-ba-auctions' );
+				}
+			}
+
+			$bid_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$bids_tbl} WHERE auction_id = %d AND user_id = %d",
+					$auction_id,
+					$user_id
+				)
+			);
+
+			$payable_total = $row['total_credits_consumed'] ? (float) $row['total_credits_consumed'] : 0;
+			$payable_fmt   = $payable_total ? wc_price( $payable_total ) : '';
+
+			echo '<tr>';
+			echo '<td><a href="' . esc_url( $link ) . '">' . esc_html( $title ) . '</a></td>';
+			echo '<td>' . esc_html( $reg_date ) . '</td>';
+			echo '<td>' . esc_html( ucfirst( $row['status'] ) ) . '</td>';
+			echo '<td>' . esc_html( $outcome ) . '</td>';
+			echo '<td>' . esc_html( $bid_count ) . '</td>';
+			echo '<td>' . wp_kses_post( $payable_fmt ) . '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table>';
+	}
+	/**
 	 * Hide default price/add-to-cart for Buy Now auctions so the custom panel can render them once.
+	 * Points referenced here are utility-only; payable claim amounts remain monetary.
 	 */
 	public function maybe_suppress_default_summary() {
 		global $product;

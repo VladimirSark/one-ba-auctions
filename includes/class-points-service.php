@@ -6,10 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class OBA_Points_Service {
 
 	private $table;
+	private $ledger_table;
 
 	public function __construct() {
 		global $wpdb;
-		$this->table = $wpdb->prefix . 'auction_user_points';
+		$this->table        = $wpdb->prefix . 'auction_user_points';
+		$this->ledger_table = $wpdb->prefix . 'auction_points_ledger';
 	}
 
 	public function get_balance( $user_id ) {
@@ -23,6 +25,7 @@ class OBA_Points_Service {
 		$current = $this->get_balance( $user_id );
 		$new     = $current + (float) $amount;
 		$this->set_balance( $user_id, $new );
+		$this->log_ledger( $user_id, (float) $amount, $new, 'add_points' );
 		return $new;
 	}
 
@@ -37,6 +40,7 @@ class OBA_Points_Service {
 		}
 		$new = $current - $amount;
 		$this->set_balance( $user_id, $new );
+		$this->log_ledger( $user_id, - $amount, $new, 'deduct_points' );
 		return $new;
 	}
 
@@ -63,5 +67,31 @@ class OBA_Points_Service {
 			);
 		}
 		return $amount;
+	}
+
+	private function log_ledger( $user_id, $delta, $balance_after, $reason = 'adjust', $reference_id = null, $meta = null ) {
+		global $wpdb;
+		if ( ! $this->ledger_table ) {
+			return;
+		}
+		$wpdb->insert(
+			$this->ledger_table,
+			array(
+				'user_id'       => (int) $user_id,
+				'amount'        => (float) $delta,
+				'balance_after' => (float) $balance_after,
+				'reason'        => $reason,
+				'reference_id'  => $reference_id ? (int) $reference_id : null,
+				'meta'          => $meta ? maybe_serialize( $meta ) : null,
+			),
+			array(
+				'%d',
+				'%f',
+				'%f',
+				'%s',
+				'%d',
+				'%s',
+			)
+		);
 	}
 }

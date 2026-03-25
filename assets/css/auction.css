@@ -978,6 +978,16 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	padding: 10px 12px;
 	border-radius: 10px;
 }
+.oba-bid-cost-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+.oba-bid-cost-inline .amount,
+.oba-bid-cost-inline .woocommerce-Price-amount,
+.oba-bid-cost-inline .woocommerce-Price-currencySymbol {
+	display: inline !important;
+}
 
 .oba-legend .oba-card {
 	padding: 12px;
@@ -1285,6 +1295,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 .oba-credit-amount {
 	font-weight: 700;
 }
+.oba-points-add { color: #16a34a; font-weight: 700; }
+.oba-points-deduct { color: #dc2626; font-weight: 700; }
 
 .oba-credit-floating {
 	position: fixed;
@@ -1460,6 +1472,8 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	.oba-sc-gallery { order: 2; }
 	.oba-sc-auction { order: 3; }
 	.oba-sc-info { order: 4; }
+	.oba-sc-divider.inline { order: 5; }
+	.oba-sc-buy { order: 6; }
 	/* Media sizing on mobile */
 	.oba-media-main { width: 100%; }
 	.oba-media-main img { max-width: 100%; width: 100%; height: auto; }
