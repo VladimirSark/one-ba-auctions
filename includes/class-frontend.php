@@ -843,6 +843,11 @@ class OBA_Frontend {
 	 */
 	public function register_points_endpoint() {
 		add_rewrite_endpoint( 'oba-points', EP_ROOT | EP_PAGES );
+		// One-time flush to register the new endpoint without requiring manual permalink save.
+		if ( 'yes' !== get_option( 'oba_points_endpoint_flushed' ) ) {
+			flush_rewrite_rules( false );
+			update_option( 'oba_points_endpoint_flushed', 'yes' );
+		}
 	}
 
 	public function register_points_query_var( $vars ) {
