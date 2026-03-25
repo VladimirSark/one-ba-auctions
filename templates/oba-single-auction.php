@@ -390,11 +390,15 @@ $stage_tips = array(
 				<div class="oba-phase-body">
 					<div class="oba-timer-large"><span class="oba-live-seconds">0</span></div>
 					<div class="oba-bar oba-live-bar"><span style="width:0%"></span></div>
+					<?php
+					$bid_cost_amount = isset( $meta['bid_cost'] ) ? (float) $meta['bid_cost'] : 0;
+					$bid_cost_html   = $bid_cost_amount ? wc_price( $bid_cost_amount ) : '';
+					?>
 					<div class="oba-legend">
 						<div class="oba-card">
 							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_bids_label', __( 'Your bids', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value">
-								<span class="oba-bid-cost-inline"><?php echo wp_kses_post( $meta['bid_cost'] ); ?></span>
+								<span class="oba-bid-cost-inline"><?php echo $bid_cost_html ? wp_kses_post( $bid_cost_html ) : esc_html( $meta['bid_cost'] ); ?></span>
 								<span aria-hidden="true">&nbsp;×&nbsp;</span>
 								<span class="oba-user-bids">0</span>
 							</div>

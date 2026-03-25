@@ -978,6 +978,16 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 	padding: 10px 12px;
 	border-radius: 10px;
 }
+.oba-bid-cost-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+.oba-bid-cost-inline .amount,
+.oba-bid-cost-inline .woocommerce-Price-amount,
+.oba-bid-cost-inline .woocommerce-Price-currencySymbol {
+	display: inline !important;
+}
 
 .oba-legend .oba-card {
 	padding: 12px;
