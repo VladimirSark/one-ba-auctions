@@ -982,17 +982,17 @@ class OBA_Frontend {
 		echo '<p>' . esc_html__( 'Points are non-monetary utility units used for registration and autobid activation. Payable auction amounts are separate.', 'one-ba-auctions' ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'Current balance:', 'one-ba-auctions' ) . '</strong> ' . esc_html( $balance ) . '</p>';
 
-		echo '<h3>' . esc_html__( 'Points earned', 'one-ba-auctions' ) . '</h3>';
+		echo '<h3>' . esc_html__( 'Points history', 'one-ba-auctions' ) . '</h3>';
 		if ( empty( $earn_rows ) ) {
-			echo '<p>' . esc_html__( 'No points earnings found yet.', 'one-ba-auctions' ) . '</p>';
+			echo '<p>' . esc_html__( 'No points history found yet.', 'one-ba-auctions' ) . '</p>';
 		} else {
-			echo '<table class="shop_table shop_table_responsive">';
-			echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
+		echo '<table class="shop_table shop_table_responsive">';
+		echo '<thead><tr><th>' . esc_html__( 'Date', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Item', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Points', 'one-ba-auctions' ) . '</th><th>' . esc_html__( 'Source', 'one-ba-auctions' ) . '</th></tr></thead><tbody>';
 			foreach ( $earn_rows as $row ) {
 				echo '<tr>';
 				echo '<td>' . esc_html( $row['date'] ) . '</td>';
 				echo '<td>' . esc_html( $row['item'] ) . '</td>';
-				echo '<td>' . esc_html( $row['points'] ) . '</td>';
+				echo '<td class="oba-points-add">+' . esc_html( $row['points'] ) . '</td>';
 				echo '<td>' . esc_html( $row['source'] ) . '</td>';
 				echo '</tr>';
 			}
