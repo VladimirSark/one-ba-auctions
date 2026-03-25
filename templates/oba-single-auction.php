@@ -391,16 +391,15 @@ $stage_tips = array(
 					<div class="oba-timer-large"><span class="oba-live-seconds">0</span></div>
 					<div class="oba-bar oba-live-bar"><span style="width:0%"></span></div>
 					<?php
-					$bid_cost_amount = isset( $meta['bid_cost'] ) ? (float) $meta['bid_cost'] : 0;
-					$bid_cost_raw    = isset( $meta['bid_cost'] ) ? $meta['bid_cost'] : '';
-					$bid_cost_html   = $bid_cost_amount ? wc_price( $bid_cost_amount ) : '';
-					$bid_cost_display = $bid_cost_html ? $bid_cost_html : esc_html( $bid_cost_raw );
+					$bid_cost_amount  = isset( $meta['bid_cost'] ) ? (float) $meta['bid_cost'] : 0;
+					$bid_cost_raw     = isset( $meta['bid_cost'] ) ? wp_strip_all_tags( (string) $meta['bid_cost'] ) : '';
+					$bid_cost_display = $bid_cost_amount ? wp_strip_all_tags( wc_price( $bid_cost_amount ) ) : $bid_cost_raw;
 					?>
 					<div class="oba-legend">
 						<div class="oba-card">
 							<div class="oba-legend-label"><?php echo esc_html( $get( 'your_bids_label', __( 'Your bids', 'one-ba-auctions' ) ) ); ?></div>
 							<div class="oba-legend-value">
-								<span class="oba-bid-cost-inline"><?php echo wp_kses_post( $bid_cost_display ); ?></span>
+								<span class="oba-bid-cost-inline"><?php echo esc_html( $bid_cost_display ); ?></span>
 								<span aria-hidden="true">&nbsp;×&nbsp;</span>
 								<span class="oba-user-bids">0</span>
 							</div>
