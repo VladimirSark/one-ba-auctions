@@ -29,6 +29,7 @@ class OBA_Frontend {
 		// My Account endpoint for utility points (non-monetary).
 		add_action( 'init', array( $this, 'register_points_endpoint' ) );
 		add_filter( 'query_vars', array( $this, 'register_points_query_var' ) );
+		add_filter( 'woocommerce_get_query_vars', array( $this, 'add_points_wc_query_var' ) );
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'add_points_account_link' ) );
 		add_action( 'woocommerce_account_oba-points_endpoint', array( $this, 'render_points_account_page' ) );
 	}
@@ -844,14 +845,19 @@ class OBA_Frontend {
 	public function register_points_endpoint() {
 		add_rewrite_endpoint( 'oba-points', EP_ROOT | EP_PAGES );
 		// One-time flush to register the new endpoint without requiring manual permalink save.
-		if ( 'yes' !== get_option( 'oba_points_endpoint_flushed' ) ) {
+		if ( 'yes' !== get_option( 'oba_points_endpoint_flushed_v2' ) ) {
 			flush_rewrite_rules( false );
-			update_option( 'oba_points_endpoint_flushed', 'yes' );
+			update_option( 'oba_points_endpoint_flushed_v2', 'yes' );
 		}
 	}
 
 	public function register_points_query_var( $vars ) {
 		$vars[] = 'oba-points';
+		return $vars;
+	}
+
+	public function add_points_wc_query_var( $vars ) {
+		$vars['oba-points'] = 'oba-points';
 		return $vars;
 	}
 
