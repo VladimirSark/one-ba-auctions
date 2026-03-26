@@ -211,9 +211,6 @@
 			$('.oba-pending-banner').hide();
 			$('.oba-autobid').show();
 			$('.oba-autobid-config').prop('disabled', false).show();
-			$('.oba-phase-card[data-step=\"registration\"] p')
-				.first()
-				.html('<span class=\"oba-badge success\">' + (obaAuction.i18n?.registered || 'Registered') + '</span>');
 		} else {
 			regBtn.removeClass('oba-registered').prop('disabled', false).show();
 			$('.oba-terms').show();
