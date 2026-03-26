@@ -607,7 +607,7 @@ class OBA_Ajax_Controller {
 
 	private function get_bid_fee_plain( $meta ) {
 		$formatted = $this->get_bid_fee_formatted( $meta );
-		return $formatted ? wp_strip_all_tags( $formatted ) : '';
+		return $formatted ? html_entity_decode( wp_strip_all_tags( $formatted ), ENT_QUOTES, 'UTF-8' ) : '';
 	}
 
 	private function calculate_seconds_left( $start_time, $duration, $absolute = false ) {

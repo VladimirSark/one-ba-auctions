@@ -37,7 +37,8 @@
 		$('.oba-info-registration').text(regVal);
 
 		const bidVal = state.data.bid_cost_plain || state.data.bid_cost_formatted || state.data.bid_cost || '';
-		$('.oba-info-bid').text(bidVal);
+		const cleanBid = bidVal.replace(/&nbsp;/g, ' ').replace(/&euro;/gi, '€');
+		$('.oba-info-bid').text(cleanBid);
 
 		const timerSeconds = Number(state.data.live_total || 0);
 		const timerVal = timerSeconds ? formatDurationShort(timerSeconds) : '';
