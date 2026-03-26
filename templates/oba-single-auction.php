@@ -164,10 +164,40 @@ $stage_tips = array(
 		align-items: center;
 		color: #94a3b8;
 		cursor: help;
+		position: relative;
 	}
 	.oba-auction-info .oba-info-help svg {
 		width: 14px;
 		height: 14px;
+	}
+	.oba-auction-info .oba-info-help:hover::after,
+	.oba-auction-info .oba-info-help:focus-visible::after {
+		content: attr(data-tip);
+		position: absolute;
+		top: 125%;
+		left: 50%;
+		transform: translateX(-50%);
+		white-space: normal;
+		min-width: 180px;
+		max-width: 240px;
+		background: #0f172a;
+		color: #fff;
+		padding: 8px 10px;
+		border-radius: 8px;
+		font-size: 12px;
+		line-height: 1.4;
+		box-shadow: 0 10px 30px rgba(15,23,42,0.18);
+		z-index: 25;
+	}
+	.oba-auction-info .oba-info-help:hover::before,
+	.oba-auction-info .oba-info-help:focus-visible::before {
+		content: '';
+		position: absolute;
+		top: 118%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 6px solid transparent;
+		border-bottom-color: #0f172a;
 	}
 	.oba-auction-info .oba-info-value {
 		font-size: 15px;
@@ -361,7 +391,7 @@ $stage_tips = array(
 					<div class="oba-info-pill">
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?>
-							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['registration'] ); ?>">
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['registration'] ); ?>" data-tip="<?php echo esc_attr( $info_tips['registration'] ); ?>">
 								<?php echo $info_icon; ?>
 							</span>
 						</div>
@@ -370,7 +400,7 @@ $stage_tips = array(
 					<div class="oba-info-pill">
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?>
-							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['bid_value'] ); ?>">
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['bid_value'] ); ?>" data-tip="<?php echo esc_attr( $info_tips['bid_value'] ); ?>">
 								<?php echo $info_icon; ?>
 							</span>
 						</div>
@@ -379,7 +409,7 @@ $stage_tips = array(
 					<div class="oba-info-pill">
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?>
-							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['live_timer'] ); ?>">
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['live_timer'] ); ?>" data-tip="<?php echo esc_attr( $info_tips['live_timer'] ); ?>">
 								<?php echo $info_icon; ?>
 							</span>
 						</div>
