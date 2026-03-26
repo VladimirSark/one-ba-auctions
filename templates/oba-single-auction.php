@@ -12,7 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 $reg_points     = (float) get_post_meta( $product->get_id(), '_registration_points', true );
 $bid_product_id = (int) get_post_meta( $product->get_id(), '_bid_product_id', true );
 $bid_price      = $bid_product_id ? wc_get_product( $bid_product_id ) : null;
-$bid_price_text = ( $bid_price && $bid_price->get_price() !== '' ) ? wc_price( $bid_price->get_price() ) : '';
+$bid_price_text = '';
+if ( $bid_price && $bid_price->get_price() !== '' ) {
+	$raw_price      = wc_price( $bid_price->get_price() );
+	$bid_price_text = wp_strip_all_tags( str_replace( '&nbsp;', ' ', $raw_price ) );
+}
 $settings = OBA_Settings::get_settings();
 $tr       = isset( $settings['translations'] ) ? $settings['translations'] : array();
 $get      = function( $key, $default ) use ( $tr ) {
@@ -342,12 +346,6 @@ $stage_tips = array(
 							<div class="oba-info-value oba-info-autobid"><?php echo $autobid_allowed ? esc_html__( 'Allowed', 'one-ba-auctions' ) : esc_html__( 'Not allowed', 'one-ba-auctions' ); ?></div>
 						</div>
 					</div>
-					<p>
-						<?php
-						$label = $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) );
-						echo wp_kses_post( $label . ( $meta['registration_fee'] ? ': ' . $meta['registration_fee'] : '' ) );
-						?>
-					</p>
 					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
 					<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
 					<div class="oba-register-note">
