@@ -207,7 +207,7 @@
 			$('.oba-terms').hide();
 			$('.oba-registered-note').show().text(obaAuction.i18n?.registered_waiting || "You're in. Waiting for more participants.");
 			$('.oba-not-registered').hide();
-			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').hide();
+			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').show();
 			$('.oba-pending-banner').hide();
 			$('.oba-autobid').show();
 			$('.oba-autobid-config').prop('disabled', false).show();

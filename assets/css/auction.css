@@ -1068,7 +1068,7 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 
 .oba-refund-note {
-	margin: 6px 0 0;
+	margin: 6px 0 6px;
 	font-size: 13px;
 	opacity: 0.9;
 }
@@ -1396,13 +1396,22 @@ body.single-product.product-type-auction .oba-shortcode-custom .oba-sc-buy .quan
 }
 
 .oba-lobby-count {
-	margin: 6px 0 0;
+	margin: 6px 0 6px;
 	color: #0f172a;
 	font-weight: 600;
 }
 
 .oba-register-note {
 	margin-top: 8px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.oba-register-note .oba-registered-note {
+	font-size: 14px;
+	color: #0f172a;
 }
 .oba-points-row {
 	margin: 6px 0;

@@ -156,6 +156,17 @@ $stage_tips = array(
 		font-weight: 700;
 		white-space: nowrap;
 	}
+	.oba-register-note {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-top: 8px;
+		flex-wrap: wrap;
+	}
+	.oba-register-note .oba-registered-note {
+		font-size: 14px;
+		color: #0f172a;
+	}
 	.oba-toggle-text {
 		font-weight: 600;
 		color: #0f172a;
@@ -327,26 +338,29 @@ $stage_tips = array(
 				</div>
 				<div class="oba-phase-body">
 					<div class="oba-pending-banner" style="display:none;"><?php esc_html_e( 'Registration pending admin approval.', 'one-ba-auctions' ); ?></div>
-					<div class="oba-auction-info" aria-label="<?php esc_attr_e( 'Auction quick info', 'one-ba-auctions' ); ?>">
-						<div class="oba-info-pill">
-							<div class="oba-info-label"><?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?></div>
-							<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
-						</div>
-						<div class="oba-info-pill">
-							<div class="oba-info-label"><?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?></div>
-							<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
-						</div>
-						<div class="oba-info-pill">
-							<div class="oba-info-label"><?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?></div>
-							<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
-						</div>
+				<div class="oba-auction-info" aria-label="<?php esc_attr_e( 'Auction quick info', 'one-ba-auctions' ); ?>">
+					<div class="oba-info-pill">
+						<div class="oba-info-label"><?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
 					</div>
-					<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
-					<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
-					<div class="oba-register-note">
-						<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
-						<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
+					<div class="oba-info-pill">
+						<div class="oba-info-label"><?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
 					</div>
+					<div class="oba-info-pill">
+						<div class="oba-info-label"><?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
+					</div>
+				</div>
+				<p class="oba-lobby-count"><?php echo esc_html( $get( 'lobby_progress', __( 'Lobby progress', 'one-ba-auctions' ) ) . ': 0%' ); ?></p>
+				<div class="oba-bar oba-lobby-bar"><span style="width:0%"></span></div>
+				<div class="oba-register-note">
+					<span class="oba-badge danger oba-not-registered"><?php echo esc_html( $get( 'not_registered_badge', __( 'Not registered', 'one-ba-auctions' ) ) ); ?></span>
+					<span class="oba-badge success oba-registered" style="display:none;"><?php echo esc_html( $get( 'registered_badge', __( 'Registered', 'one-ba-auctions' ) ) ); ?></span>
+					<span class="oba-registered-note" style="display:none;">
+						<?php echo esc_html__( 'You\'re in. Waiting for more participants.', 'one-ba-auctions' ); ?>
+					</span>
+				</div>
 					<div class="oba-membership-inline" style="display:none;margin-top:10px;"></div>
 					<?php if ( ! is_user_logged_in() ) : ?>
 						<p class="oba-login-hint" style="display:none;" data-login-url="<?php echo esc_url( wp_login_url( get_permalink( $product->get_id() ) ) ); ?>">
@@ -381,17 +395,14 @@ $stage_tips = array(
 							</div>
 						</div>
 					<?php endif; ?>
-					<div class="oba-actions">
-						<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
-					</div>
-					<div class="oba-registered-note" style="display:none;margin-top:8px;">
-						<?php echo esc_html__( "You're in. Waiting for more participants.", 'one-ba-auctions' ); ?>
-					</div>
-					<div class="oba-autobid-setup" data-phase="registration" style="margin-top:12px;">
-						<div class="oba-autobid-card">
-							<div class="oba-autobid-left">
-								<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
-							</div>
+				<div class="oba-actions">
+					<button class="button button-primary oba-register"><?php echo esc_html( $get( 'register_cta', __( 'Register & Reserve Spot', 'one-ba-auctions' ) ) ); ?></button>
+				</div>
+				<div class="oba-autobid-setup" data-phase="registration" style="margin-top:12px;">
+					<div class="oba-autobid-card">
+						<div class="oba-autobid-left">
+							<h4 style="margin:0;font-size:15px;font-weight:700;"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></h4>
+						</div>
 							<div class="oba-autobid-toggle-col">
 								<label class="oba-toggle">
 									<input type="checkbox" class="oba-autobid-switch" />
