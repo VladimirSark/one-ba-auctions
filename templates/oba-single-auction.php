@@ -362,7 +362,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['registration'] ); ?>">
-								<?php echo wp_kses_post( $info_icon ); ?>
+								<?php echo $info_icon; ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
@@ -371,7 +371,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['bid_value'] ); ?>">
-								<?php echo wp_kses_post( $info_icon ); ?>
+								<?php echo $info_icon; ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
@@ -380,7 +380,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['live_timer'] ); ?>">
-								<?php echo wp_kses_post( $info_icon ); ?>
+								<?php echo $info_icon; ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
