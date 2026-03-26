@@ -33,6 +33,7 @@ $meta     = array(
 	'bid_cost'         => $bid_price_text,
 	'claim_price'      => '',
 );
+$info_icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
 $info_tips = array(
 	'registration' => __( 'How many points are required to register for the auction.', 'one-ba-auctions' ),
 	'bid_value'    => __( 'Cost of one bid. You pay only for bids you place; if you lose, you pay nothing.', 'one-ba-auctions' ),
@@ -361,7 +362,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['registration'] ); ?>">
-								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+								<?php echo wp_kses_post( $info_icon ); ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
@@ -370,7 +371,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['bid_value'] ); ?>">
-								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+								<?php echo wp_kses_post( $info_icon ); ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
@@ -379,7 +380,7 @@ $stage_tips = array(
 						<div class="oba-info-label">
 							<?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?>
 							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['live_timer'] ); ?>">
-								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+								<?php echo wp_kses_post( $info_icon ); ?>
 							</span>
 						</div>
 						<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
