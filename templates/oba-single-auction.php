@@ -33,6 +33,11 @@ $meta     = array(
 	'bid_cost'         => $bid_price_text,
 	'claim_price'      => '',
 );
+$info_tips = array(
+	'registration' => __( 'How many points are required to register for the auction.', 'one-ba-auctions' ),
+	'bid_value'    => __( 'Cost of one bid. You pay only for bids you place; if you lose, you pay nothing.', 'one-ba-auctions' ),
+	'live_timer'   => __( 'How long your bid stays active. If it reaches zero without new bids, you win.', 'one-ba-auctions' ),
+);
 $stage_tips = array(
 	'registration' => isset( $tr['stage1_tip'] ) ? $tr['stage1_tip'] : '',
 	'pre_live' => isset( $tr['stage2_tip'] ) ? $tr['stage2_tip'] : '',
@@ -149,6 +154,19 @@ $stage_tips = array(
 		font-size: 12px;
 		color: #475569;
 		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.oba-auction-info .oba-info-help {
+		display: inline-flex;
+		align-items: center;
+		color: #94a3b8;
+		cursor: help;
+	}
+	.oba-auction-info .oba-info-help svg {
+		width: 14px;
+		height: 14px;
 	}
 	.oba-auction-info .oba-info-value {
 		font-size: 15px;
@@ -340,15 +358,30 @@ $stage_tips = array(
 					<div class="oba-pending-banner" style="display:none;"><?php esc_html_e( 'Registration pending admin approval.', 'one-ba-auctions' ); ?></div>
 				<div class="oba-auction-info" aria-label="<?php esc_attr_e( 'Auction quick info', 'one-ba-auctions' ); ?>">
 					<div class="oba-info-pill">
-						<div class="oba-info-label"><?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-label">
+							<?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?>
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['registration'] ); ?>">
+								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+							</span>
+						</div>
 						<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
 					</div>
 					<div class="oba-info-pill">
-						<div class="oba-info-label"><?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-label">
+							<?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?>
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['bid_value'] ); ?>">
+								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+							</span>
+						</div>
 						<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
 					</div>
 					<div class="oba-info-pill">
-						<div class="oba-info-label"><?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?></div>
+						<div class="oba-info-label">
+							<?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?>
+							<span class="oba-info-help" title="<?php echo esc_attr( $info_tips['live_timer'] ); ?>">
+								<?php echo wp_kses_post( OBA_Product_Type::lucide_svg( 'info' ) ); ?>
+							</span>
+						</div>
 						<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
 					</div>
 				</div>
