@@ -29,6 +29,26 @@
 		return `${secs}s`;
 	}
 
+	function updateInfoPills() {
+		if (!state.data) return;
+		const suffix = obaAuction.i18n?.points_suffix || 'pts';
+		const regValRaw = (state.data.registration_fee_plain ?? state.data.registration_fee_plain === 0 ? state.data.registration_fee_plain : state.data.registration_fee) || '';
+		const regVal = regValRaw === '' ? '' : `${regValRaw} ${suffix}`.trim();
+		$('.oba-info-registration').text(regVal);
+
+		const bidVal = state.data.bid_cost_plain || state.data.bid_cost_formatted || state.data.bid_cost || '';
+		$('.oba-info-bid').text(bidVal);
+
+		const timerSeconds = Number(state.data.live_total || 0);
+		const timerVal = timerSeconds ? formatDurationShort(timerSeconds) : '';
+		$('.oba-info-timer').text(timerVal);
+
+		const autobidAllowed = !!state.data.autobid_allowed_for_auction;
+		const allowedText = obaAuction.i18n?.autobid_allowed_label || 'Autobid allowed';
+		const notAllowedText = obaAuction.i18n?.autobid_not_allowed_label || 'Autobid not allowed';
+		$('.oba-info-autobid').text(autobidAllowed ? allowedText : notAllowedText);
+	}
+
 	function formatTimeStamp(ts) {
 		const d = new Date(ts);
 		if (Number.isNaN(d.getTime())) return ts;
@@ -111,6 +131,7 @@
 		updateStepBar(status);
 		updatePhaseCards(status);
 		applyMembershipLocks(status);
+		updateInfoPills();
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
 		const lobbyLabel = obaAuction.i18n?.lobby_progress || 'Lobby progress';

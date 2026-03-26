@@ -22,6 +22,9 @@ $points_suffix = $get( 'points_suffix', __( 'pts', 'one-ba-auctions' ) );
 $product_cost  = (float) get_post_meta( $product->get_id(), '_product_cost', true );
 $buy_now_enabled = get_post_meta( $product->get_id(), '_oba_buy_now_enabled', true ) === 'yes';
 $buy_now_points  = (int) get_post_meta( $product->get_id(), '_oba_buy_now_points', true );
+$live_timer_seconds = (int) get_post_meta( $product->get_id(), '_live_timer_seconds', true );
+$live_timer_text = $live_timer_seconds ? ( $live_timer_seconds >= MINUTE_IN_SECONDS ? sprintf( _n( '%d minute', '%d minutes', ceil( $live_timer_seconds / MINUTE_IN_SECONDS ), 'one-ba-auctions' ), ceil( $live_timer_seconds / MINUTE_IN_SECONDS ) ) : sprintf( _n( '%d second', '%d seconds', $live_timer_seconds, 'one-ba-auctions' ), $live_timer_seconds ) ) : '';
+$autobid_allowed = get_post_meta( $product->get_id(), '_oba_autobid_enabled', true );
 $meta     = array(
 	'registration_fee' => $reg_points ? $reg_points . ' ' . $points_suffix : '',
 	'bid_cost'         => $bid_price_text,
@@ -121,6 +124,34 @@ $stage_tips = array(
 	}
 	.oba-toggle input:checked + .oba-toggle-slider:after {
 		transform: translateX(22px);
+	}
+	.oba-auction-info {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 6px 0 10px;
+	}
+	.oba-auction-info .oba-info-pill {
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 12px;
+		padding: 10px 12px;
+		min-width: 140px;
+		flex: 1 1 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.oba-auction-info .oba-info-label {
+		font-size: 12px;
+		color: #475569;
+		font-weight: 600;
+	}
+	.oba-auction-info .oba-info-value {
+		font-size: 15px;
+		color: #0f172a;
+		font-weight: 700;
+		white-space: nowrap;
 	}
 	.oba-toggle-text {
 		font-weight: 600;
@@ -293,6 +324,24 @@ $stage_tips = array(
 				</div>
 				<div class="oba-phase-body">
 					<div class="oba-pending-banner" style="display:none;"><?php esc_html_e( 'Registration pending admin approval.', 'one-ba-auctions' ); ?></div>
+					<div class="oba-auction-info" aria-label="<?php esc_attr_e( 'Auction quick info', 'one-ba-auctions' ); ?>">
+						<div class="oba-info-pill">
+							<div class="oba-info-label"><?php echo esc_html( $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) ) ); ?></div>
+							<div class="oba-info-value oba-info-registration"><?php echo esc_html( $meta['registration_fee'] ); ?></div>
+						</div>
+						<div class="oba-info-pill">
+							<div class="oba-info-label"><?php echo esc_html( $get( 'bid_cost_label', __( 'Bid value', 'one-ba-auctions' ) ) ); ?></div>
+							<div class="oba-info-value oba-info-bid"><?php echo esc_html( $meta['bid_cost'] ); ?></div>
+						</div>
+						<div class="oba-info-pill">
+							<div class="oba-info-label"><?php echo esc_html( $get( 'live_timer_label', __( 'Live timer', 'one-ba-auctions' ) ) ); ?></div>
+							<div class="oba-info-value oba-info-timer"><?php echo esc_html( $live_timer_text ); ?></div>
+						</div>
+						<div class="oba-info-pill">
+							<div class="oba-info-label"><?php esc_html_e( 'Autobid', 'one-ba-auctions' ); ?></div>
+							<div class="oba-info-value oba-info-autobid"><?php echo $autobid_allowed ? esc_html__( 'Allowed', 'one-ba-auctions' ) : esc_html__( 'Not allowed', 'one-ba-auctions' ); ?></div>
+						</div>
+					</div>
 					<p>
 						<?php
 						$label = $get( 'registration_fee_label', __( 'Registration fee', 'one-ba-auctions' ) );
