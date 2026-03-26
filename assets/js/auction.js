@@ -29,6 +29,27 @@
 		return `${secs}s`;
 	}
 
+	function updateInfoPills() {
+		if (!state.data) return;
+		const suffix = obaAuction.i18n?.points_suffix || 'pts';
+		const regValRaw = (state.data.registration_fee_plain ?? state.data.registration_fee_plain === 0 ? state.data.registration_fee_plain : state.data.registration_fee) || '';
+		const regVal = regValRaw === '' ? '' : `${regValRaw} ${suffix}`.trim();
+		$('.oba-info-registration').text(regVal);
+
+		const bidVal = state.data.bid_cost_plain || state.data.bid_cost_formatted || state.data.bid_cost || '';
+		const cleanBid = bidVal.replace(/&nbsp;/g, ' ').replace(/&euro;/gi, '€');
+		$('.oba-info-bid').text(cleanBid);
+
+		const timerSeconds = Number(state.data.live_total || 0);
+		const timerVal = timerSeconds ? formatDurationShort(timerSeconds) : '';
+		$('.oba-info-timer').text(timerVal);
+
+		const autobidAllowed = !!state.data.autobid_allowed_for_auction;
+		const allowedText = obaAuction.i18n?.autobid_allowed_label || 'Autobid allowed';
+		const notAllowedText = obaAuction.i18n?.autobid_not_allowed_label || 'Autobid not allowed';
+		$('.oba-info-autobid').text(autobidAllowed ? allowedText : notAllowedText);
+	}
+
 	function formatTimeStamp(ts) {
 		const d = new Date(ts);
 		if (Number.isNaN(d.getTime())) return ts;
@@ -111,6 +132,7 @@
 		updateStepBar(status);
 		updatePhaseCards(status);
 		applyMembershipLocks(status);
+		updateInfoPills();
 
 		$('.oba-lobby-bar span').css('width', `${state.data.lobby_percent}%`);
 		const lobbyLabel = obaAuction.i18n?.lobby_progress || 'Lobby progress';
@@ -185,13 +207,10 @@
 			$('.oba-terms').hide();
 			$('.oba-registered-note').show().text(obaAuction.i18n?.registered_waiting || "You're in. Waiting for more participants.");
 			$('.oba-not-registered').hide();
-			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').hide();
+			$('.oba-registered').text(obaAuction.i18n?.registered || 'Registered').show();
 			$('.oba-pending-banner').hide();
 			$('.oba-autobid').show();
 			$('.oba-autobid-config').prop('disabled', false).show();
-			$('.oba-phase-card[data-step=\"registration\"] p')
-				.first()
-				.html('<span class=\"oba-badge success\">' + (obaAuction.i18n?.registered || 'Registered') + '</span>');
 		} else {
 			regBtn.removeClass('oba-registered').prop('disabled', false).show();
 			$('.oba-terms').show();
@@ -905,6 +924,13 @@ function renderInlineAutobidTotal($block) {
 
 	function openAutobidWindowModal() {
 		setSelectedAutobidWindow(10);
+		const reminder = $('.oba-autobid-reminder-opt');
+		if (reminder.length) {
+			const checked = typeof state?.data?.autobid_reminder_opt_in !== 'undefined'
+				? !!state.data.autobid_reminder_opt_in
+				: true;
+			reminder.prop('checked', checked);
+		}
 		$('.oba-autobid-window-overlay, .oba-autobid-window-modal').css('display', 'flex');
 	}
 
@@ -936,6 +962,7 @@ function toggleAutobid(enable) {
 		const spend = 0;
 		const limitless = false;
 		const maxBidsDefault = 1000000; // large cap to satisfy server requirement when using time windows.
+		const reminderOptIn = $('.oba-autobid-reminder-opt').is(':checked');
 		$.post(
 			obaAuction.ajax_url,
 			{
@@ -947,6 +974,7 @@ function toggleAutobid(enable) {
 				max_spend: spend,
 				limitless: limitless ? 1 : 0,
 				window_minutes: windowMinutes,
+				reminder_opt_in: reminderOptIn ? 1 : 0,
 			},
 			(response) => {
 				if (response && response.success) {
@@ -956,6 +984,7 @@ function toggleAutobid(enable) {
 					state.data.autobid_window_seconds_left = response.data.autobid_window_seconds_left;
 					state.data.autobid_window_ends_at = response.data.autobid_window_ends_at;
 					state.data.autobid_window_minutes = response.data.autobid_window_minutes;
+					state.data.autobid_reminder_opt_in = response.data.autobid_reminder_opt_in;
 					state.data.autobid_max_spend = response.data.autobid_max_spend;
 					state.data.autobid_max_bids = response.data.autobid_max_bids;
 					state.data.autobid_limitless = response.data.autobid_limitless;

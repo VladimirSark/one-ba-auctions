@@ -70,13 +70,26 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT enabled, max_bids, enabled_at, window_started_at, window_ends_at, window_minutes FROM {$table} WHERE auction_id = %d AND user_id = %d",
+				"SELECT enabled, max_bids, enabled_at, window_started_at, window_ends_at, window_minutes, reminder_opt_in FROM {$table} WHERE auction_id = %d AND user_id = %d",
 				$auction_id,
 				$user_id
 			),
 			ARRAY_A
 		);
 		$bid_cost = $this->get_bid_cost( $auction_id );
+		if ( ! $row ) {
+			return array(
+				'enabled'            => 0,
+				'max_bids'           => 0,
+				'enabled_at'         => null,
+				'max_spend'          => 0,
+				'limitless'          => false,
+				'window_ends_at'     => null,
+				'window_seconds_left'=> 0,
+				'window_minutes'     => 0,
+				'reminder_opt_in'    => 1,
+			);
+		}
 		$window_ends_at = isset( $row['window_ends_at'] ) ? $row['window_ends_at'] : null;
 		$window_left = 0;
 		if ( ! empty( $row['window_started_at'] ) && $window_ends_at && class_exists( 'OBA_Time' ) ) {
@@ -87,38 +100,28 @@ class OBA_Autobid_Service {
 		} elseif ( ! empty( $row['window_minutes'] ) ) {
 			$window_left = (int) $row['window_minutes'] * MINUTE_IN_SECONDS;
 		}
-		if ( ! $row ) {
-			return array(
-				'enabled'    => 0,
-				'max_bids'   => 0,
-				'enabled_at' => null,
-				'max_spend'  => 0,
-				'limitless'  => false,
-				'window_ends_at' => null,
-				'window_seconds_left' => 0,
-				'window_minutes' => 0,
-			);
-		}
 		$is_limitless = (int) $row['max_bids'] === 0;
 		return array(
-			'enabled'    => (int) $row['enabled'],
-			'max_bids'   => (int) $row['max_bids'],
-			'enabled_at' => $row['enabled_at'],
-			'max_spend'  => ( ! $is_limitless && $bid_cost ) ? (float) $row['max_bids'] * (float) $bid_cost : 0,
-			'limitless'  => $is_limitless,
-			'window_ends_at' => $window_ends_at,
-			'window_seconds_left' => $window_left,
-			'window_minutes' => isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0,
+			'enabled'            => (int) $row['enabled'],
+			'max_bids'           => (int) $row['max_bids'],
+			'enabled_at'         => $row['enabled_at'],
+			'max_spend'          => ( ! $is_limitless && $bid_cost ) ? (float) $row['max_bids'] * (float) $bid_cost : 0,
+			'limitless'          => $is_limitless,
+			'window_ends_at'     => $window_ends_at,
+			'window_seconds_left'=> $window_left,
+			'window_minutes'     => isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0,
+			'reminder_opt_in'    => isset( $row['reminder_opt_in'] ) ? (int) $row['reminder_opt_in'] : 1,
 		);
 	}
 
-	public function set_user_settings( $auction_id, $user_id, $enabled, $max_bids, $window_minutes = 0 ) {
+	public function set_user_settings( $auction_id, $user_id, $enabled, $max_bids, $window_minutes = 0, $reminder_opt_in = null ) {
 		global $wpdb;
 		$table   = $wpdb->prefix . 'auction_autobid';
 		$enabled = $enabled ? 1 : 0;
 		$is_limitless = (int) $max_bids === 0;
 		$max_bids = $is_limitless ? 0 : max( 1, (int) $max_bids );
 		$window_minutes = max( 0, (int) $window_minutes );
+		$reminder_opt_in = is_null( $reminder_opt_in ) ? null : ( $reminder_opt_in ? 1 : 0 );
 		$window_ends_at = null;
 		$window_started_at = null;
 		if ( $enabled && $window_minutes > 0 ) {
@@ -135,6 +138,20 @@ class OBA_Autobid_Service {
 			)
 		);
 
+		if ( $exists && is_null( $reminder_opt_in ) ) {
+			$reminder_opt_in = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT reminder_opt_in FROM {$table} WHERE auction_id = %d AND user_id = %d",
+					$auction_id,
+					$user_id
+				)
+			);
+		}
+
+		if ( is_null( $reminder_opt_in ) ) {
+			$reminder_opt_in = 1;
+		}
+
 		$data = array(
 			'enabled'    => $enabled,
 			'max_bids'   => $max_bids,
@@ -142,8 +159,9 @@ class OBA_Autobid_Service {
 			'window_started_at' => $enabled ? $window_started_at : null,
 			'window_ends_at'    => $enabled ? $window_ends_at : null,
 			'window_minutes'    => $enabled ? $window_minutes : 0,
+			'reminder_opt_in'   => $reminder_opt_in,
 		);
-		$formats = array( '%d', '%d', '%s', '%s', '%s', '%d' );
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%d', '%d' );
 
 		if ( $exists ) {
 			$wpdb->update(
@@ -383,7 +401,7 @@ class OBA_Autobid_Service {
 		$table = $wpdb->prefix . 'auction_autobid';
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT user_id, max_bids, window_minutes FROM {$table} WHERE auction_id = %d AND enabled = 1",
+				"SELECT user_id, max_bids, window_minutes, window_ends_at, window_started_at, reminder_opt_in FROM {$table} WHERE auction_id = %d AND enabled = 1",
 				$auction_id
 			),
 			ARRAY_A
@@ -393,10 +411,17 @@ class OBA_Autobid_Service {
 		}
 
 		$mailer = new OBA_Email();
-		$interval = isset( $this->settings['autobid_reminder_minutes'] ) ? max( 1, (int) $this->settings['autobid_reminder_minutes'] ) : 10;
+		$interval_setting = isset( $this->settings['autobid_reminder_minutes'] ) ? (int) $this->settings['autobid_reminder_minutes'] : 30;
+		$interval = max( 30, $interval_setting );
+		$bid_cost = $this->get_bid_cost( $auction_id );
+
 		foreach ( $rows as $row ) {
 			$user_id = (int) $row['user_id'];
-			// Rate limit: once every 10 minutes per user+auction.
+			if ( isset( $row['reminder_opt_in'] ) && ! $row['reminder_opt_in'] ) {
+				continue;
+			}
+
+			// Rate limit per user+auction.
 			$key           = '_oba_autobid_reminder_' . $auction_id;
 			$last_reminded = (int) get_user_meta( $user_id, $key, true );
 			if ( $last_reminded && ( time() - $last_reminded ) < MINUTE_IN_SECONDS * $interval ) {
@@ -404,14 +429,33 @@ class OBA_Autobid_Service {
 			}
 
 			$used = $this->repo->get_user_bids( $auction_id, $user_id );
+			$window_minutes_selected = isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0;
+			$seconds_left = 0;
+			if ( ! empty( $row['window_ends_at'] ) && class_exists( 'OBA_Time' ) ) {
+				$ends_ts = OBA_Time::parse_utc_mysql_datetime_to_timestamp( $row['window_ends_at'] );
+				if ( $ends_ts ) {
+					$seconds_left = max( 0, $ends_ts - time() );
+				}
+			}
+			if ( ! $seconds_left && $window_minutes_selected > 0 ) {
+				$seconds_left = $window_minutes_selected * MINUTE_IN_SECONDS;
+			}
+			$minutes_left = $seconds_left ? max( 1, (int) ceil( $seconds_left / MINUTE_IN_SECONDS ) ) : 0;
+
+			$bid_value_display = $bid_cost ? ( function_exists( 'wc_price' ) ? wc_price( $bid_cost ) : number_format_i18n( $bid_cost, 2 ) ) : ( function_exists( 'wc_price' ) ? wc_price( 0 ) : number_format_i18n( 0, 2 ) );
+			$total_cost_amount = $bid_cost * $used;
+			$total_cost_display = $total_cost_amount ? ( function_exists( 'wc_price' ) ? wc_price( $total_cost_amount ) : number_format_i18n( $total_cost_amount, 2 ) ) : ( function_exists( 'wc_price' ) ? wc_price( 0 ) : number_format_i18n( 0, 2 ) );
 
 			$mailer->notify_autobid_on_reminder(
 				$user_id,
 				$auction_id,
 				array(
-					'autobid_max_bids'  => (int) $row['max_bids'],
-					'autobid_bids_used' => (int) $used,
-					'autobid_window_minutes' => isset( $row['window_minutes'] ) ? (int) $row['window_minutes'] : 0,
+					'autobid_max_bids'            => (int) $row['max_bids'],
+					'autobid_bids_used'           => (int) $used,
+					'autobid_window_minutes'      => $window_minutes_selected,
+					'autobid_window_minutes_left' => $minutes_left,
+					'autobid_bid_value'           => $bid_value_display,
+					'autobid_price_total'         => $total_cost_display,
 				)
 			);
 			update_user_meta( $user_id, $key, time() );

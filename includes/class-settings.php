@@ -24,7 +24,7 @@ class OBA_Settings {
 			'autobid_enabled'         => true,
 			'autobid_window_seconds'  => 300, // legacy/no-op, kept for compatibility
 			'autobid_activation_cost_points' => 5,
-			'autobid_reminder_minutes'=> 10,
+			'autobid_reminder_minutes'=> 30,
 			'translations'            => array(),
 			'email_templates'         => array(),
 		);
@@ -55,7 +55,7 @@ class OBA_Settings {
 			'autobid_enabled'         => true,
 			'autobid_window_seconds'  => isset( $stored['autobid_window_seconds'] ) ? (int) $stored['autobid_window_seconds'] : $defaults['autobid_window_seconds'],
 			'autobid_activation_cost_points' => isset( $data['autobid_activation_cost_points'] ) ? max( 0, (int) $data['autobid_activation_cost_points'] ) : $defaults['autobid_activation_cost_points'],
-			'autobid_reminder_minutes'=> isset( $data['autobid_reminder_minutes'] ) ? max( 1, (int) $data['autobid_reminder_minutes'] ) : $defaults['autobid_reminder_minutes'],
+			'autobid_reminder_minutes'=> isset( $data['autobid_reminder_minutes'] ) ? max( 30, (int) $data['autobid_reminder_minutes'] ) : $defaults['autobid_reminder_minutes'],
 			'translations'            => isset( $data['translations'] ) && is_array( $data['translations'] ) ? array_map( 'sanitize_text_field', $data['translations'] ) : ( isset( $stored['translations'] ) ? $stored['translations'] : array() ),
 			'email_templates'         => isset( $data['email_templates'] ) && is_array( $data['email_templates'] ) ? self::sanitize_email_templates( $data['email_templates'] ) : ( isset( $stored['email_templates'] ) ? $stored['email_templates'] : array() ),
 		);
@@ -148,7 +148,11 @@ class OBA_Settings {
 				'autobid_on_badge' => __( 'ON', 'one-ba-auctions' ),
 				'autobid_off_badge' => __( 'OFF', 'one-ba-auctions' ),
 				'outbid_label' => __( 'Outbid', 'one-ba-auctions' ),
+				'autobid_reminder_opt_in_label' => __( 'Send me reminder emails every 30 minutes while autobid is ON', 'one-ba-auctions' ),
 				'autobid_limitless_label' => __( 'Unlimited autobid', 'one-ba-auctions' ),
+				'live_timer_label' => __( 'Live timer', 'one-ba-auctions' ),
+				'autobid_allowed_label' => __( 'Autobid allowed', 'one-ba-auctions' ),
+				'autobid_not_allowed_label' => __( 'Autobid not allowed', 'one-ba-auctions' ),
 				'autobid_window_title' => __( 'Enable autobid for:', 'one-ba-auctions' ),
 				'autobid_window_10' => __( '10m', 'one-ba-auctions' ),
 				'autobid_window_30' => __( '30m', 'one-ba-auctions' ),
